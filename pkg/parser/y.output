@@ -1,0 +1,3671 @@
+
+state 0
+	$accept: .start $end 
+
+	error  shift 3
+	START_STMTS  shift 2
+	.  error
+
+	start  goto 1
+
+state 1
+	$accept:  start.$end 
+	start:  start.EOF 
+
+	$end  accept
+	EOF  shift 4
+	.  error
+
+
+state 2
+	start:  START_STMTS.stmts 
+
+	SEMICOLON  shift 15
+	DOT  shift 45
+	ID  shift 54
+	NUMBER  shift 52
+	LEFT_PAREN  shift 57
+	LEFT_BRACKET  shift 37
+	LEFT_BRACE  shift 56
+	STRING  shift 48
+	QUOTED_STRING  shift 55
+	MULTILINE_STRING  shift 49
+	FOR  shift 18
+	BREAK  shift 20
+	CONTINUE  shift 19
+	EOL  shift 16
+	ADD  shift 58
+	SUB  shift 59
+	TRUE  shift 46
+	FALSE  shift 47
+	NIL  shift 50
+	NULL  shift 51
+	IF  shift 22
+	.  error
+
+	unary_op  goto 53
+	identifier  goto 35
+	stmts  goto 5
+	stmts_list  goto 6
+	empty_block  goto 39
+	stmt  goto 7
+	assignment_expr  goto 43
+	for_in_stmt  goto 10
+	for_stmt  goto 11
+	continue_stmt  goto 12
+	break_stmt  goto 13
+	ifelse_stmt  goto 9
+	ifelse_stmt_start  goto 17
+	call_expr  goto 27
+	call_expr_start  goto 41
+	binary_expr  goto 28
+	conditional_expr  goto 42
+	arithmeticExpr  goto 44
+	paren_expr  goto 26
+	paren_expr_start  goto 40
+	index_expr  goto 30
+	attr_expr  goto 29
+	expr  goto 21
+	map_init  goto 25
+	map_init_start  goto 38
+	array_list  goto 24
+	array_list_start  goto 36
+	array_elem  goto 23
+	bool_literal  goto 31
+	string_literal  goto 32
+	nil_literal  goto 33
+	number_literal  goto 34
+	value_stmt  goto 14
+	sep  goto 8
+
+state 3
+	start:  error.    (7)
+
+	.  reduce 7 (src line 125)
+
+
+state 4
+	start:  start EOF.    (6)
+
+	.  reduce 6 (src line 124)
+
+
+state 5
+	start:  START_STMTS stmts.    (5)
+
+	.  reduce 5 (src line 122)
+
+
+state 6
+	stmts:  stmts_list.stmt 
+	stmts:  stmts_list.    (9)
+	stmts_list:  stmts_list.stmt sep 
+
+	DOT  shift 45
+	ID  shift 54
+	NUMBER  shift 52
+	LEFT_PAREN  shift 57
+	LEFT_BRACKET  shift 37
+	LEFT_BRACE  shift 56
+	STRING  shift 48
+	QUOTED_STRING  shift 55
+	MULTILINE_STRING  shift 49
+	FOR  shift 18
+	BREAK  shift 20
+	CONTINUE  shift 19
+	ADD  shift 58
+	SUB  shift 59
+	TRUE  shift 46
+	FALSE  shift 47
+	NIL  shift 50
+	NULL  shift 51
+	IF  shift 22
+	.  reduce 9 (src line 136)
+
+	unary_op  goto 53
+	identifier  goto 35
+	empty_block  goto 39
+	stmt  goto 60
+	assignment_expr  goto 43
+	for_in_stmt  goto 10
+	for_stmt  goto 11
+	continue_stmt  goto 12
+	break_stmt  goto 13
+	ifelse_stmt  goto 9
+	ifelse_stmt_start  goto 17
+	call_expr  goto 27
+	call_expr_start  goto 41
+	binary_expr  goto 28
+	conditional_expr  goto 42
+	arithmeticExpr  goto 44
+	paren_expr  goto 26
+	paren_expr_start  goto 40
+	index_expr  goto 30
+	attr_expr  goto 29
+	expr  goto 21
+	map_init  goto 25
+	map_init_start  goto 38
+	array_list  goto 24
+	array_list_start  goto 36
+	array_elem  goto 23
+	bool_literal  goto 31
+	string_literal  goto 32
+	nil_literal  goto 33
+	number_literal  goto 34
+	value_stmt  goto 14
+
+state 7
+	stmts:  stmt.    (10)
+	stmts_list:  stmt.sep 
+
+	SEMICOLON  shift 15
+	EOL  shift 16
+	.  reduce 10 (src line 137)
+
+	sep  goto 61
+
+state 8
+	sep:  sep.SEMICOLON 
+	sep:  sep.EOL 
+	stmts_list:  sep.    (12)
+
+	SEMICOLON  shift 62
+	EOL  shift 63
+	.  reduce 12 (src line 143)
+
+
+state 9
+	stmt:  ifelse_stmt.    (14)
+
+	.  reduce 14 (src line 153)
+
+
+state 10
+	stmt:  for_in_stmt.    (15)
+
+	.  reduce 15 (src line 154)
+
+
+state 11
+	stmt:  for_stmt.    (16)
+
+	.  reduce 16 (src line 155)
+
+
+state 12
+	stmt:  continue_stmt.    (17)
+
+	.  reduce 17 (src line 156)
+
+
+state 13
+	stmt:  break_stmt.    (18)
+
+	.  reduce 18 (src line 157)
+
+
+state 14
+	stmt:  value_stmt.    (19)
+
+	.  reduce 19 (src line 158)
+
+
+state 15
+	sep:  SEMICOLON.    (1)
+
+	.  reduce 1 (src line 117)
+
+
+state 16
+	sep:  EOL.    (2)
+
+	.  reduce 2 (src line 118)
+
+
+state 17
+	ifelse_stmt:  ifelse_stmt_start.    (40)
+	ifelse_stmt:  ifelse_stmt_start.ELSE stmt_block 
+	ifelse_stmt_start:  ifelse_stmt_start.ELIF if_expr_cond_block 
+
+	ELIF  shift 65
+	ELSE  shift 64
+	.  reduce 40 (src line 212)
+
+
+state 18
+	for_in_stmt:  FOR.identifier IN expr stmt_block 
+	for_stmt:  FOR.expr SEMICOLON expr SEMICOLON expr stmt_block 
+	for_stmt:  FOR.expr SEMICOLON expr SEMICOLON stmt_block 
+	for_stmt:  FOR.SEMICOLON expr SEMICOLON expr stmt_block 
+	for_stmt:  FOR.SEMICOLON expr SEMICOLON stmt_block 
+	for_stmt:  FOR.expr SEMICOLON SEMICOLON expr stmt_block 
+	for_stmt:  FOR.expr SEMICOLON SEMICOLON stmt_block 
+	for_stmt:  FOR.SEMICOLON SEMICOLON expr stmt_block 
+	for_stmt:  FOR.SEMICOLON SEMICOLON stmt_block 
+
+	SEMICOLON  shift 68
+	DOT  shift 45
+	ID  shift 54
+	NUMBER  shift 52
+	LEFT_PAREN  shift 57
+	LEFT_BRACKET  shift 37
+	LEFT_BRACE  shift 56
+	STRING  shift 48
+	QUOTED_STRING  shift 55
+	MULTILINE_STRING  shift 49
+	ADD  shift 58
+	SUB  shift 59
+	TRUE  shift 46
+	FALSE  shift 47
+	NIL  shift 50
+	NULL  shift 51
+	.  error
+
+	unary_op  goto 53
+	identifier  goto 66
+	empty_block  goto 39
+	assignment_expr  goto 43
+	call_expr  goto 27
+	call_expr_start  goto 41
+	binary_expr  goto 28
+	conditional_expr  goto 42
+	arithmeticExpr  goto 44
+	paren_expr  goto 26
+	paren_expr_start  goto 40
+	index_expr  goto 30
+	attr_expr  goto 29
+	expr  goto 67
+	map_init  goto 25
+	map_init_start  goto 38
+	array_list  goto 24
+	array_list_start  goto 36
+	array_elem  goto 23
+	bool_literal  goto 31
+	string_literal  goto 32
+	nil_literal  goto 33
+	number_literal  goto 34
+
+state 19
+	continue_stmt:  CONTINUE.    (30)
+
+	.  reduce 30 (src line 173)
+
+
+state 20
+	break_stmt:  BREAK.    (29)
+
+	.  reduce 29 (src line 169)
+
+
+state 21
+	value_stmt:  expr.    (20)
+	assignment_expr:  expr.EQ expr 
+	conditional_expr:  expr.GTE expr 
+	conditional_expr:  expr.GT expr 
+	conditional_expr:  expr.OR expr 
+	conditional_expr:  expr.AND expr 
+	conditional_expr:  expr.LT expr 
+	conditional_expr:  expr.LTE expr 
+	conditional_expr:  expr.NEQ expr 
+	conditional_expr:  expr.EQEQ expr 
+	arithmeticExpr:  expr.ADD expr 
+	arithmeticExpr:  expr.SUB expr 
+	arithmeticExpr:  expr.MUL expr 
+	arithmeticExpr:  expr.DIV expr 
+	arithmeticExpr:  expr.MOD expr 
+
+	ADD  shift 78
+	DIV  shift 81
+	GTE  shift 70
+	GT  shift 71
+	LT  shift 74
+	LTE  shift 75
+	MOD  shift 82
+	MUL  shift 80
+	NEQ  shift 76
+	EQ  shift 69
+	EQEQ  shift 77
+	SUB  shift 79
+	AND  shift 73
+	OR  shift 72
+	.  reduce 20 (src line 162)
+
+
+state 22
+	ifelse_stmt_start:  IF.if_expr_cond_block 
+
+	DOT  shift 45
+	ID  shift 54
+	NUMBER  shift 52
+	LEFT_PAREN  shift 57
+	LEFT_BRACKET  shift 37
+	LEFT_BRACE  shift 87
+	STRING  shift 48
+	QUOTED_STRING  shift 55
+	MULTILINE_STRING  shift 49
+	ADD  shift 58
+	SUB  shift 59
+	TRUE  shift 46
+	FALSE  shift 47
+	NIL  shift 50
+	NULL  shift 51
+	.  error
+
+	unary_op  goto 53
+	identifier  goto 35
+	stmt_block  goto 85
+	empty_block  goto 86
+	if_expr_cond_block  goto 83
+	assignment_expr  goto 43
+	call_expr  goto 27
+	call_expr_start  goto 41
+	binary_expr  goto 28
+	conditional_expr  goto 42
+	arithmeticExpr  goto 44
+	paren_expr  goto 26
+	paren_expr_start  goto 40
+	index_expr  goto 30
+	attr_expr  goto 29
+	expr  goto 84
+	map_init  goto 25
+	map_init_start  goto 38
+	array_list  goto 24
+	array_list_start  goto 36
+	array_elem  goto 23
+	bool_literal  goto 31
+	string_literal  goto 32
+	nil_literal  goto 33
+	number_literal  goto 34
+
+state 23
+	expr:  array_elem.    (21)
+
+	.  reduce 21 (src line 166)
+
+
+state 24
+	expr:  array_list.    (22)
+
+	.  reduce 22 (src line 166)
+
+
+state 25
+	expr:  map_init.    (23)
+
+	.  reduce 23 (src line 166)
+
+
+state 26
+	expr:  paren_expr.    (24)
+
+	.  reduce 24 (src line 166)
+
+
+state 27
+	expr:  call_expr.    (25)
+
+	.  reduce 25 (src line 166)
+
+
+state 28
+	expr:  binary_expr.    (26)
+
+	.  reduce 26 (src line 166)
+
+
+state 29
+	expr:  attr_expr.    (27)
+	attr_expr:  attr_expr.DOT index_expr 
+	attr_expr:  attr_expr.DOT identifier 
+
+	DOT  shift 88
+	.  reduce 27 (src line 166)
+
+
+state 30
+	expr:  index_expr.    (28)
+	index_expr:  index_expr.LEFT_BRACKET expr RIGHT_BRACKET 
+	attr_expr:  index_expr.DOT index_expr 
+	attr_expr:  index_expr.DOT identifier 
+
+	DOT  shift 90
+	LEFT_BRACKET  shift 89
+	.  reduce 28 (src line 166)
+
+
+state 31
+	array_elem:  bool_literal.    (97)
+
+	.  reduce 97 (src line 411)
+
+
+state 32
+	array_elem:  string_literal.    (98)
+
+	.  reduce 98 (src line 412)
+
+
+state 33
+	array_elem:  nil_literal.    (99)
+
+	.  reduce 99 (src line 413)
+
+
+state 34
+	array_elem:  number_literal.    (100)
+
+	.  reduce 100 (src line 414)
+
+
+state 35
+	call_expr_start:  identifier.LEFT_PAREN function_args 
+	call_expr_start:  identifier.LEFT_PAREN 
+	index_expr:  identifier.LEFT_BRACKET expr RIGHT_BRACKET 
+	attr_expr:  identifier.DOT index_expr 
+	attr_expr:  identifier.DOT identifier 
+	array_elem:  identifier.    (101)
+
+	DOT  shift 93
+	LEFT_PAREN  shift 91
+	LEFT_BRACKET  shift 92
+	.  reduce 101 (src line 415)
+
+
+state 36
+	array_list:  array_list_start.RIGHT_BRACKET 
+	array_list:  array_list_start.COMMA RIGHT_BRACKET 
+	array_list_start:  array_list_start.COMMA array_elem 
+	array_list_start:  array_list_start.EOL 
+
+	COMMA  shift 95
+	RIGHT_BRACKET  shift 94
+	EOL  shift 96
+	.  error
+
+
+state 37
+	array_list:  LEFT_BRACKET.RIGHT_BRACKET 
+	array_list_start:  LEFT_BRACKET.array_elem 
+
+	ID  shift 54
+	NUMBER  shift 52
+	RIGHT_BRACKET  shift 97
+	STRING  shift 48
+	QUOTED_STRING  shift 55
+	MULTILINE_STRING  shift 49
+	ADD  shift 58
+	SUB  shift 59
+	TRUE  shift 46
+	FALSE  shift 47
+	NIL  shift 50
+	NULL  shift 51
+	.  error
+
+	unary_op  goto 53
+	identifier  goto 99
+	array_elem  goto 98
+	bool_literal  goto 31
+	string_literal  goto 32
+	nil_literal  goto 33
+	number_literal  goto 34
+
+state 38
+	map_init:  map_init_start.RIGHT_BRACE 
+	map_init_start:  map_init_start.COMMA expr COLON expr 
+	map_init_start:  map_init_start.EOL 
+
+	COMMA  shift 101
+	RIGHT_BRACE  shift 100
+	EOL  shift 102
+	.  error
+
+
+state 39
+	map_init:  empty_block.    (93)
+
+	.  reduce 93 (src line 390)
+
+
+state 40
+	paren_expr:  paren_expr_start.RIGHT_PAREN 
+	paren_expr_start:  paren_expr_start.EOL 
+
+	RIGHT_PAREN  shift 103
+	EOL  shift 104
+	.  error
+
+
+state 41
+	call_expr:  call_expr_start.RIGHT_PAREN 
+	call_expr_start:  call_expr_start.EOL 
+
+	RIGHT_PAREN  shift 105
+	EOL  shift 106
+	.  error
+
+
+state 42
+	binary_expr:  conditional_expr.    (57)
+
+	.  reduce 57 (src line 283)
+
+
+state 43
+	binary_expr:  assignment_expr.    (58)
+
+	.  reduce 58 (src line 283)
+
+
+state 44
+	binary_expr:  arithmeticExpr.    (59)
+
+	.  reduce 59 (src line 283)
+
+
+state 45
+	index_expr:  DOT.LEFT_BRACKET expr RIGHT_BRACKET 
+
+	LEFT_BRACKET  shift 107
+	.  error
+
+
+state 46
+	bool_literal:  TRUE.    (102)
+
+	.  reduce 102 (src line 420)
+
+
+state 47
+	bool_literal:  FALSE.    (103)
+
+	.  reduce 103 (src line 422)
+
+
+state 48
+	string_literal:  STRING.    (104)
+
+	.  reduce 104 (src line 427)
+
+
+state 49
+	string_literal:  MULTILINE_STRING.    (105)
+
+	.  reduce 105 (src line 430)
+
+
+state 50
+	nil_literal:  NIL.    (106)
+
+	.  reduce 106 (src line 436)
+
+
+state 51
+	nil_literal:  NULL.    (107)
+
+	.  reduce 107 (src line 438)
+
+
+state 52
+	number_literal:  NUMBER.    (108)
+
+	.  reduce 108 (src line 444)
+
+
+state 53
+	number_literal:  unary_op.NUMBER 
+
+	NUMBER  shift 108
+	.  error
+
+
+state 54
+	identifier:  ID.    (110)
+
+	.  reduce 110 (src line 462)
+
+
+state 55
+	identifier:  QUOTED_STRING.    (111)
+
+	.  reduce 111 (src line 463)
+
+
+state 56
+	empty_block:  LEFT_BRACE.RIGHT_BRACE 
+	map_init_start:  LEFT_BRACE.expr COLON expr 
+
+	DOT  shift 45
+	ID  shift 54
+	NUMBER  shift 52
+	LEFT_PAREN  shift 57
+	LEFT_BRACKET  shift 37
+	LEFT_BRACE  shift 56
+	RIGHT_BRACE  shift 109
+	STRING  shift 48
+	QUOTED_STRING  shift 55
+	MULTILINE_STRING  shift 49
+	ADD  shift 58
+	SUB  shift 59
+	TRUE  shift 46
+	FALSE  shift 47
+	NIL  shift 50
+	NULL  shift 51
+	.  error
+
+	unary_op  goto 53
+	identifier  goto 35
+	empty_block  goto 39
+	assignment_expr  goto 43
+	call_expr  goto 27
+	call_expr_start  goto 41
+	binary_expr  goto 28
+	conditional_expr  goto 42
+	arithmeticExpr  goto 44
+	paren_expr  goto 26
+	paren_expr_start  goto 40
+	index_expr  goto 30
+	attr_expr  goto 29
+	expr  goto 110
+	map_init  goto 25
+	map_init_start  goto 38
+	array_list  goto 24
+	array_list_start  goto 36
+	array_elem  goto 23
+	bool_literal  goto 31
+	string_literal  goto 32
+	nil_literal  goto 33
+	number_literal  goto 34
+
+state 57
+	paren_expr_start:  LEFT_PAREN.expr 
+
+	DOT  shift 45
+	ID  shift 54
+	NUMBER  shift 52
+	LEFT_PAREN  shift 57
+	LEFT_BRACKET  shift 37
+	LEFT_BRACE  shift 56
+	STRING  shift 48
+	QUOTED_STRING  shift 55
+	MULTILINE_STRING  shift 49
+	ADD  shift 58
+	SUB  shift 59
+	TRUE  shift 46
+	FALSE  shift 47
+	NIL  shift 50
+	NULL  shift 51
+	.  error
+
+	unary_op  goto 53
+	identifier  goto 35
+	empty_block  goto 39
+	assignment_expr  goto 43
+	call_expr  goto 27
+	call_expr_start  goto 41
+	binary_expr  goto 28
+	conditional_expr  goto 42
+	arithmeticExpr  goto 44
+	paren_expr  goto 26
+	paren_expr_start  goto 40
+	index_expr  goto 30
+	attr_expr  goto 29
+	expr  goto 111
+	map_init  goto 25
+	map_init_start  goto 38
+	array_list  goto 24
+	array_list_start  goto 36
+	array_elem  goto 23
+	bool_literal  goto 31
+	string_literal  goto 32
+	nil_literal  goto 33
+	number_literal  goto 34
+
+state 58
+	unary_op:  ADD.    (112)
+
+	.  reduce 112 (src line 468)
+
+
+state 59
+	unary_op:  SUB.    (113)
+
+	.  reduce 113 (src line 468)
+
+
+state 60
+	stmts:  stmts_list stmt.    (8)
+	stmts_list:  stmts_list stmt.sep 
+
+	SEMICOLON  shift 15
+	EOL  shift 16
+	.  reduce 8 (src line 130)
+
+	sep  goto 112
+
+state 61
+	sep:  sep.SEMICOLON 
+	sep:  sep.EOL 
+	stmts_list:  stmt sep.    (11)
+
+	SEMICOLON  shift 62
+	EOL  shift 63
+	.  reduce 11 (src line 141)
+
+
+state 62
+	sep:  sep SEMICOLON.    (3)
+
+	.  reduce 3 (src line 119)
+
+
+state 63
+	sep:  sep EOL.    (4)
+
+	.  reduce 4 (src line 120)
+
+
+state 64
+	ifelse_stmt:  ifelse_stmt_start ELSE.stmt_block 
+
+	LEFT_BRACE  shift 115
+	.  error
+
+	stmt_block  goto 113
+	empty_block  goto 114
+
+state 65
+	ifelse_stmt_start:  ifelse_stmt_start ELIF.if_expr_cond_block 
+
+	DOT  shift 45
+	ID  shift 54
+	NUMBER  shift 52
+	LEFT_PAREN  shift 57
+	LEFT_BRACKET  shift 37
+	LEFT_BRACE  shift 87
+	STRING  shift 48
+	QUOTED_STRING  shift 55
+	MULTILINE_STRING  shift 49
+	ADD  shift 58
+	SUB  shift 59
+	TRUE  shift 46
+	FALSE  shift 47
+	NIL  shift 50
+	NULL  shift 51
+	.  error
+
+	unary_op  goto 53
+	identifier  goto 35
+	stmt_block  goto 85
+	empty_block  goto 86
+	if_expr_cond_block  goto 116
+	assignment_expr  goto 43
+	call_expr  goto 27
+	call_expr_start  goto 41
+	binary_expr  goto 28
+	conditional_expr  goto 42
+	arithmeticExpr  goto 44
+	paren_expr  goto 26
+	paren_expr_start  goto 40
+	index_expr  goto 30
+	attr_expr  goto 29
+	expr  goto 84
+	map_init  goto 25
+	map_init_start  goto 38
+	array_list  goto 24
+	array_list_start  goto 36
+	array_elem  goto 23
+	bool_literal  goto 31
+	string_literal  goto 32
+	nil_literal  goto 33
+	number_literal  goto 34
+
+state 66
+	for_in_stmt:  FOR identifier.IN expr stmt_block 
+	call_expr_start:  identifier.LEFT_PAREN function_args 
+	call_expr_start:  identifier.LEFT_PAREN 
+	index_expr:  identifier.LEFT_BRACKET expr RIGHT_BRACKET 
+	attr_expr:  identifier.DOT index_expr 
+	attr_expr:  identifier.DOT identifier 
+	array_elem:  identifier.    (101)
+
+	DOT  shift 93
+	LEFT_PAREN  shift 91
+	LEFT_BRACKET  shift 92
+	IN  shift 117
+	.  reduce 101 (src line 415)
+
+
+state 67
+	for_stmt:  FOR expr.SEMICOLON expr SEMICOLON expr stmt_block 
+	for_stmt:  FOR expr.SEMICOLON expr SEMICOLON stmt_block 
+	for_stmt:  FOR expr.SEMICOLON SEMICOLON expr stmt_block 
+	for_stmt:  FOR expr.SEMICOLON SEMICOLON stmt_block 
+	assignment_expr:  expr.EQ expr 
+	conditional_expr:  expr.GTE expr 
+	conditional_expr:  expr.GT expr 
+	conditional_expr:  expr.OR expr 
+	conditional_expr:  expr.AND expr 
+	conditional_expr:  expr.LT expr 
+	conditional_expr:  expr.LTE expr 
+	conditional_expr:  expr.NEQ expr 
+	conditional_expr:  expr.EQEQ expr 
+	arithmeticExpr:  expr.ADD expr 
+	arithmeticExpr:  expr.SUB expr 
+	arithmeticExpr:  expr.MUL expr 
+	arithmeticExpr:  expr.DIV expr 
+	arithmeticExpr:  expr.MOD expr 
+
+	SEMICOLON  shift 118
+	ADD  shift 78
+	DIV  shift 81
+	GTE  shift 70
+	GT  shift 71
+	LT  shift 74
+	LTE  shift 75
+	MOD  shift 82
+	MUL  shift 80
+	NEQ  shift 76
+	EQ  shift 69
+	EQEQ  shift 77
+	SUB  shift 79
+	AND  shift 73
+	OR  shift 72
+	.  error
+
+
+state 68
+	for_stmt:  FOR SEMICOLON.expr SEMICOLON expr stmt_block 
+	for_stmt:  FOR SEMICOLON.expr SEMICOLON stmt_block 
+	for_stmt:  FOR SEMICOLON.SEMICOLON expr stmt_block 
+	for_stmt:  FOR SEMICOLON.SEMICOLON stmt_block 
+
+	SEMICOLON  shift 120
+	DOT  shift 45
+	ID  shift 54
+	NUMBER  shift 52
+	LEFT_PAREN  shift 57
+	LEFT_BRACKET  shift 37
+	LEFT_BRACE  shift 56
+	STRING  shift 48
+	QUOTED_STRING  shift 55
+	MULTILINE_STRING  shift 49
+	ADD  shift 58
+	SUB  shift 59
+	TRUE  shift 46
+	FALSE  shift 47
+	NIL  shift 50
+	NULL  shift 51
+	.  error
+
+	unary_op  goto 53
+	identifier  goto 35
+	empty_block  goto 39
+	assignment_expr  goto 43
+	call_expr  goto 27
+	call_expr_start  goto 41
+	binary_expr  goto 28
+	conditional_expr  goto 42
+	arithmeticExpr  goto 44
+	paren_expr  goto 26
+	paren_expr_start  goto 40
+	index_expr  goto 30
+	attr_expr  goto 29
+	expr  goto 119
+	map_init  goto 25
+	map_init_start  goto 38
+	array_list  goto 24
+	array_list_start  goto 36
+	array_elem  goto 23
+	bool_literal  goto 31
+	string_literal  goto 32
+	nil_literal  goto 33
+	number_literal  goto 34
+
+state 69
+	assignment_expr:  expr EQ.expr 
+
+	DOT  shift 45
+	ID  shift 54
+	NUMBER  shift 52
+	LEFT_PAREN  shift 57
+	LEFT_BRACKET  shift 37
+	LEFT_BRACE  shift 56
+	STRING  shift 48
+	QUOTED_STRING  shift 55
+	MULTILINE_STRING  shift 49
+	ADD  shift 58
+	SUB  shift 59
+	TRUE  shift 46
+	FALSE  shift 47
+	NIL  shift 50
+	NULL  shift 51
+	.  error
+
+	unary_op  goto 53
+	identifier  goto 35
+	empty_block  goto 39
+	assignment_expr  goto 43
+	call_expr  goto 27
+	call_expr_start  goto 41
+	binary_expr  goto 28
+	conditional_expr  goto 42
+	arithmeticExpr  goto 44
+	paren_expr  goto 26
+	paren_expr_start  goto 40
+	index_expr  goto 30
+	attr_expr  goto 29
+	expr  goto 121
+	map_init  goto 25
+	map_init_start  goto 38
+	array_list  goto 24
+	array_list_start  goto 36
+	array_elem  goto 23
+	bool_literal  goto 31
+	string_literal  goto 32
+	nil_literal  goto 33
+	number_literal  goto 34
+
+state 70
+	conditional_expr:  expr GTE.expr 
+
+	DOT  shift 45
+	ID  shift 54
+	NUMBER  shift 52
+	LEFT_PAREN  shift 57
+	LEFT_BRACKET  shift 37
+	LEFT_BRACE  shift 56
+	STRING  shift 48
+	QUOTED_STRING  shift 55
+	MULTILINE_STRING  shift 49
+	ADD  shift 58
+	SUB  shift 59
+	TRUE  shift 46
+	FALSE  shift 47
+	NIL  shift 50
+	NULL  shift 51
+	.  error
+
+	unary_op  goto 53
+	identifier  goto 35
+	empty_block  goto 39
+	assignment_expr  goto 43
+	call_expr  goto 27
+	call_expr_start  goto 41
+	binary_expr  goto 28
+	conditional_expr  goto 42
+	arithmeticExpr  goto 44
+	paren_expr  goto 26
+	paren_expr_start  goto 40
+	index_expr  goto 30
+	attr_expr  goto 29
+	expr  goto 122
+	map_init  goto 25
+	map_init_start  goto 38
+	array_list  goto 24
+	array_list_start  goto 36
+	array_elem  goto 23
+	bool_literal  goto 31
+	string_literal  goto 32
+	nil_literal  goto 33
+	number_literal  goto 34
+
+state 71
+	conditional_expr:  expr GT.expr 
+
+	DOT  shift 45
+	ID  shift 54
+	NUMBER  shift 52
+	LEFT_PAREN  shift 57
+	LEFT_BRACKET  shift 37
+	LEFT_BRACE  shift 56
+	STRING  shift 48
+	QUOTED_STRING  shift 55
+	MULTILINE_STRING  shift 49
+	ADD  shift 58
+	SUB  shift 59
+	TRUE  shift 46
+	FALSE  shift 47
+	NIL  shift 50
+	NULL  shift 51
+	.  error
+
+	unary_op  goto 53
+	identifier  goto 35
+	empty_block  goto 39
+	assignment_expr  goto 43
+	call_expr  goto 27
+	call_expr_start  goto 41
+	binary_expr  goto 28
+	conditional_expr  goto 42
+	arithmeticExpr  goto 44
+	paren_expr  goto 26
+	paren_expr_start  goto 40
+	index_expr  goto 30
+	attr_expr  goto 29
+	expr  goto 123
+	map_init  goto 25
+	map_init_start  goto 38
+	array_list  goto 24
+	array_list_start  goto 36
+	array_elem  goto 23
+	bool_literal  goto 31
+	string_literal  goto 32
+	nil_literal  goto 33
+	number_literal  goto 34
+
+state 72
+	conditional_expr:  expr OR.expr 
+
+	DOT  shift 45
+	ID  shift 54
+	NUMBER  shift 52
+	LEFT_PAREN  shift 57
+	LEFT_BRACKET  shift 37
+	LEFT_BRACE  shift 56
+	STRING  shift 48
+	QUOTED_STRING  shift 55
+	MULTILINE_STRING  shift 49
+	ADD  shift 58
+	SUB  shift 59
+	TRUE  shift 46
+	FALSE  shift 47
+	NIL  shift 50
+	NULL  shift 51
+	.  error
+
+	unary_op  goto 53
+	identifier  goto 35
+	empty_block  goto 39
+	assignment_expr  goto 43
+	call_expr  goto 27
+	call_expr_start  goto 41
+	binary_expr  goto 28
+	conditional_expr  goto 42
+	arithmeticExpr  goto 44
+	paren_expr  goto 26
+	paren_expr_start  goto 40
+	index_expr  goto 30
+	attr_expr  goto 29
+	expr  goto 124
+	map_init  goto 25
+	map_init_start  goto 38
+	array_list  goto 24
+	array_list_start  goto 36
+	array_elem  goto 23
+	bool_literal  goto 31
+	string_literal  goto 32
+	nil_literal  goto 33
+	number_literal  goto 34
+
+state 73
+	conditional_expr:  expr AND.expr 
+
+	DOT  shift 45
+	ID  shift 54
+	NUMBER  shift 52
+	LEFT_PAREN  shift 57
+	LEFT_BRACKET  shift 37
+	LEFT_BRACE  shift 56
+	STRING  shift 48
+	QUOTED_STRING  shift 55
+	MULTILINE_STRING  shift 49
+	ADD  shift 58
+	SUB  shift 59
+	TRUE  shift 46
+	FALSE  shift 47
+	NIL  shift 50
+	NULL  shift 51
+	.  error
+
+	unary_op  goto 53
+	identifier  goto 35
+	empty_block  goto 39
+	assignment_expr  goto 43
+	call_expr  goto 27
+	call_expr_start  goto 41
+	binary_expr  goto 28
+	conditional_expr  goto 42
+	arithmeticExpr  goto 44
+	paren_expr  goto 26
+	paren_expr_start  goto 40
+	index_expr  goto 30
+	attr_expr  goto 29
+	expr  goto 125
+	map_init  goto 25
+	map_init_start  goto 38
+	array_list  goto 24
+	array_list_start  goto 36
+	array_elem  goto 23
+	bool_literal  goto 31
+	string_literal  goto 32
+	nil_literal  goto 33
+	number_literal  goto 34
+
+state 74
+	conditional_expr:  expr LT.expr 
+
+	DOT  shift 45
+	ID  shift 54
+	NUMBER  shift 52
+	LEFT_PAREN  shift 57
+	LEFT_BRACKET  shift 37
+	LEFT_BRACE  shift 56
+	STRING  shift 48
+	QUOTED_STRING  shift 55
+	MULTILINE_STRING  shift 49
+	ADD  shift 58
+	SUB  shift 59
+	TRUE  shift 46
+	FALSE  shift 47
+	NIL  shift 50
+	NULL  shift 51
+	.  error
+
+	unary_op  goto 53
+	identifier  goto 35
+	empty_block  goto 39
+	assignment_expr  goto 43
+	call_expr  goto 27
+	call_expr_start  goto 41
+	binary_expr  goto 28
+	conditional_expr  goto 42
+	arithmeticExpr  goto 44
+	paren_expr  goto 26
+	paren_expr_start  goto 40
+	index_expr  goto 30
+	attr_expr  goto 29
+	expr  goto 126
+	map_init  goto 25
+	map_init_start  goto 38
+	array_list  goto 24
+	array_list_start  goto 36
+	array_elem  goto 23
+	bool_literal  goto 31
+	string_literal  goto 32
+	nil_literal  goto 33
+	number_literal  goto 34
+
+state 75
+	conditional_expr:  expr LTE.expr 
+
+	DOT  shift 45
+	ID  shift 54
+	NUMBER  shift 52
+	LEFT_PAREN  shift 57
+	LEFT_BRACKET  shift 37
+	LEFT_BRACE  shift 56
+	STRING  shift 48
+	QUOTED_STRING  shift 55
+	MULTILINE_STRING  shift 49
+	ADD  shift 58
+	SUB  shift 59
+	TRUE  shift 46
+	FALSE  shift 47
+	NIL  shift 50
+	NULL  shift 51
+	.  error
+
+	unary_op  goto 53
+	identifier  goto 35
+	empty_block  goto 39
+	assignment_expr  goto 43
+	call_expr  goto 27
+	call_expr_start  goto 41
+	binary_expr  goto 28
+	conditional_expr  goto 42
+	arithmeticExpr  goto 44
+	paren_expr  goto 26
+	paren_expr_start  goto 40
+	index_expr  goto 30
+	attr_expr  goto 29
+	expr  goto 127
+	map_init  goto 25
+	map_init_start  goto 38
+	array_list  goto 24
+	array_list_start  goto 36
+	array_elem  goto 23
+	bool_literal  goto 31
+	string_literal  goto 32
+	nil_literal  goto 33
+	number_literal  goto 34
+
+state 76
+	conditional_expr:  expr NEQ.expr 
+
+	DOT  shift 45
+	ID  shift 54
+	NUMBER  shift 52
+	LEFT_PAREN  shift 57
+	LEFT_BRACKET  shift 37
+	LEFT_BRACE  shift 56
+	STRING  shift 48
+	QUOTED_STRING  shift 55
+	MULTILINE_STRING  shift 49
+	ADD  shift 58
+	SUB  shift 59
+	TRUE  shift 46
+	FALSE  shift 47
+	NIL  shift 50
+	NULL  shift 51
+	.  error
+
+	unary_op  goto 53
+	identifier  goto 35
+	empty_block  goto 39
+	assignment_expr  goto 43
+	call_expr  goto 27
+	call_expr_start  goto 41
+	binary_expr  goto 28
+	conditional_expr  goto 42
+	arithmeticExpr  goto 44
+	paren_expr  goto 26
+	paren_expr_start  goto 40
+	index_expr  goto 30
+	attr_expr  goto 29
+	expr  goto 128
+	map_init  goto 25
+	map_init_start  goto 38
+	array_list  goto 24
+	array_list_start  goto 36
+	array_elem  goto 23
+	bool_literal  goto 31
+	string_literal  goto 32
+	nil_literal  goto 33
+	number_literal  goto 34
+
+state 77
+	conditional_expr:  expr EQEQ.expr 
+
+	DOT  shift 45
+	ID  shift 54
+	NUMBER  shift 52
+	LEFT_PAREN  shift 57
+	LEFT_BRACKET  shift 37
+	LEFT_BRACE  shift 56
+	STRING  shift 48
+	QUOTED_STRING  shift 55
+	MULTILINE_STRING  shift 49
+	ADD  shift 58
+	SUB  shift 59
+	TRUE  shift 46
+	FALSE  shift 47
+	NIL  shift 50
+	NULL  shift 51
+	.  error
+
+	unary_op  goto 53
+	identifier  goto 35
+	empty_block  goto 39
+	assignment_expr  goto 43
+	call_expr  goto 27
+	call_expr_start  goto 41
+	binary_expr  goto 28
+	conditional_expr  goto 42
+	arithmeticExpr  goto 44
+	paren_expr  goto 26
+	paren_expr_start  goto 40
+	index_expr  goto 30
+	attr_expr  goto 29
+	expr  goto 129
+	map_init  goto 25
+	map_init_start  goto 38
+	array_list  goto 24
+	array_list_start  goto 36
+	array_elem  goto 23
+	bool_literal  goto 31
+	string_literal  goto 32
+	nil_literal  goto 33
+	number_literal  goto 34
+
+state 78
+	arithmeticExpr:  expr ADD.expr 
+
+	DOT  shift 45
+	ID  shift 54
+	NUMBER  shift 52
+	LEFT_PAREN  shift 57
+	LEFT_BRACKET  shift 37
+	LEFT_BRACE  shift 56
+	STRING  shift 48
+	QUOTED_STRING  shift 55
+	MULTILINE_STRING  shift 49
+	ADD  shift 58
+	SUB  shift 59
+	TRUE  shift 46
+	FALSE  shift 47
+	NIL  shift 50
+	NULL  shift 51
+	.  error
+
+	unary_op  goto 53
+	identifier  goto 35
+	empty_block  goto 39
+	assignment_expr  goto 43
+	call_expr  goto 27
+	call_expr_start  goto 41
+	binary_expr  goto 28
+	conditional_expr  goto 42
+	arithmeticExpr  goto 44
+	paren_expr  goto 26
+	paren_expr_start  goto 40
+	index_expr  goto 30
+	attr_expr  goto 29
+	expr  goto 130
+	map_init  goto 25
+	map_init_start  goto 38
+	array_list  goto 24
+	array_list_start  goto 36
+	array_elem  goto 23
+	bool_literal  goto 31
+	string_literal  goto 32
+	nil_literal  goto 33
+	number_literal  goto 34
+
+state 79
+	arithmeticExpr:  expr SUB.expr 
+
+	DOT  shift 45
+	ID  shift 54
+	NUMBER  shift 52
+	LEFT_PAREN  shift 57
+	LEFT_BRACKET  shift 37
+	LEFT_BRACE  shift 56
+	STRING  shift 48
+	QUOTED_STRING  shift 55
+	MULTILINE_STRING  shift 49
+	ADD  shift 58
+	SUB  shift 59
+	TRUE  shift 46
+	FALSE  shift 47
+	NIL  shift 50
+	NULL  shift 51
+	.  error
+
+	unary_op  goto 53
+	identifier  goto 35
+	empty_block  goto 39
+	assignment_expr  goto 43
+	call_expr  goto 27
+	call_expr_start  goto 41
+	binary_expr  goto 28
+	conditional_expr  goto 42
+	arithmeticExpr  goto 44
+	paren_expr  goto 26
+	paren_expr_start  goto 40
+	index_expr  goto 30
+	attr_expr  goto 29
+	expr  goto 131
+	map_init  goto 25
+	map_init_start  goto 38
+	array_list  goto 24
+	array_list_start  goto 36
+	array_elem  goto 23
+	bool_literal  goto 31
+	string_literal  goto 32
+	nil_literal  goto 33
+	number_literal  goto 34
+
+state 80
+	arithmeticExpr:  expr MUL.expr 
+
+	DOT  shift 45
+	ID  shift 54
+	NUMBER  shift 52
+	LEFT_PAREN  shift 57
+	LEFT_BRACKET  shift 37
+	LEFT_BRACE  shift 56
+	STRING  shift 48
+	QUOTED_STRING  shift 55
+	MULTILINE_STRING  shift 49
+	ADD  shift 58
+	SUB  shift 59
+	TRUE  shift 46
+	FALSE  shift 47
+	NIL  shift 50
+	NULL  shift 51
+	.  error
+
+	unary_op  goto 53
+	identifier  goto 35
+	empty_block  goto 39
+	assignment_expr  goto 43
+	call_expr  goto 27
+	call_expr_start  goto 41
+	binary_expr  goto 28
+	conditional_expr  goto 42
+	arithmeticExpr  goto 44
+	paren_expr  goto 26
+	paren_expr_start  goto 40
+	index_expr  goto 30
+	attr_expr  goto 29
+	expr  goto 132
+	map_init  goto 25
+	map_init_start  goto 38
+	array_list  goto 24
+	array_list_start  goto 36
+	array_elem  goto 23
+	bool_literal  goto 31
+	string_literal  goto 32
+	nil_literal  goto 33
+	number_literal  goto 34
+
+state 81
+	arithmeticExpr:  expr DIV.expr 
+
+	DOT  shift 45
+	ID  shift 54
+	NUMBER  shift 52
+	LEFT_PAREN  shift 57
+	LEFT_BRACKET  shift 37
+	LEFT_BRACE  shift 56
+	STRING  shift 48
+	QUOTED_STRING  shift 55
+	MULTILINE_STRING  shift 49
+	ADD  shift 58
+	SUB  shift 59
+	TRUE  shift 46
+	FALSE  shift 47
+	NIL  shift 50
+	NULL  shift 51
+	.  error
+
+	unary_op  goto 53
+	identifier  goto 35
+	empty_block  goto 39
+	assignment_expr  goto 43
+	call_expr  goto 27
+	call_expr_start  goto 41
+	binary_expr  goto 28
+	conditional_expr  goto 42
+	arithmeticExpr  goto 44
+	paren_expr  goto 26
+	paren_expr_start  goto 40
+	index_expr  goto 30
+	attr_expr  goto 29
+	expr  goto 133
+	map_init  goto 25
+	map_init_start  goto 38
+	array_list  goto 24
+	array_list_start  goto 36
+	array_elem  goto 23
+	bool_literal  goto 31
+	string_literal  goto 32
+	nil_literal  goto 33
+	number_literal  goto 34
+
+state 82
+	arithmeticExpr:  expr MOD.expr 
+
+	DOT  shift 45
+	ID  shift 54
+	NUMBER  shift 52
+	LEFT_PAREN  shift 57
+	LEFT_BRACKET  shift 37
+	LEFT_BRACE  shift 56
+	STRING  shift 48
+	QUOTED_STRING  shift 55
+	MULTILINE_STRING  shift 49
+	ADD  shift 58
+	SUB  shift 59
+	TRUE  shift 46
+	FALSE  shift 47
+	NIL  shift 50
+	NULL  shift 51
+	.  error
+
+	unary_op  goto 53
+	identifier  goto 35
+	empty_block  goto 39
+	assignment_expr  goto 43
+	call_expr  goto 27
+	call_expr_start  goto 41
+	binary_expr  goto 28
+	conditional_expr  goto 42
+	arithmeticExpr  goto 44
+	paren_expr  goto 26
+	paren_expr_start  goto 40
+	index_expr  goto 30
+	attr_expr  goto 29
+	expr  goto 134
+	map_init  goto 25
+	map_init_start  goto 38
+	array_list  goto 24
+	array_list_start  goto 36
+	array_elem  goto 23
+	bool_literal  goto 31
+	string_literal  goto 32
+	nil_literal  goto 33
+	number_literal  goto 34
+
+state 83
+	ifelse_stmt_start:  IF if_expr_cond_block.    (42)
+
+	.  reduce 42 (src line 218)
+
+
+state 84
+	if_expr_cond_block:  expr.stmt_block 
+	assignment_expr:  expr.EQ expr 
+	conditional_expr:  expr.GTE expr 
+	conditional_expr:  expr.GT expr 
+	conditional_expr:  expr.OR expr 
+	conditional_expr:  expr.AND expr 
+	conditional_expr:  expr.LT expr 
+	conditional_expr:  expr.LTE expr 
+	conditional_expr:  expr.NEQ expr 
+	conditional_expr:  expr.EQEQ expr 
+	arithmeticExpr:  expr.ADD expr 
+	arithmeticExpr:  expr.SUB expr 
+	arithmeticExpr:  expr.MUL expr 
+	arithmeticExpr:  expr.DIV expr 
+	arithmeticExpr:  expr.MOD expr 
+
+	LEFT_BRACE  shift 115
+	ADD  shift 78
+	DIV  shift 81
+	GTE  shift 70
+	GT  shift 71
+	LT  shift 74
+	LTE  shift 75
+	MOD  shift 82
+	MUL  shift 80
+	NEQ  shift 76
+	EQ  shift 69
+	EQEQ  shift 77
+	SUB  shift 79
+	AND  shift 73
+	OR  shift 72
+	.  error
+
+	stmt_block  goto 135
+	empty_block  goto 114
+
+state 85
+	if_expr_cond_block:  stmt_block.    (45)
+
+	.  reduce 45 (src line 226)
+
+
+state 86
+	stmt_block:  empty_block.    (46)
+	map_init:  empty_block.    (93)
+
+	$end  reduce 46 (src line 235)
+	SEMICOLON  reduce 46 (src line 235)
+	EOF  reduce 46 (src line 235)
+	RIGHT_BRACE  reduce 46 (src line 235)
+	EOL  reduce 46 (src line 235)
+	ELIF  reduce 46 (src line 235)
+	ELSE  reduce 46 (src line 235)
+	.  reduce 93 (src line 390)
+
+
+state 87
+	stmt_block:  LEFT_BRACE.stmts RIGHT_BRACE 
+	empty_block:  LEFT_BRACE.RIGHT_BRACE 
+	map_init_start:  LEFT_BRACE.expr COLON expr 
+
+	SEMICOLON  shift 15
+	DOT  shift 45
+	ID  shift 54
+	NUMBER  shift 52
+	LEFT_PAREN  shift 57
+	LEFT_BRACKET  shift 37
+	LEFT_BRACE  shift 56
+	RIGHT_BRACE  shift 109
+	STRING  shift 48
+	QUOTED_STRING  shift 55
+	MULTILINE_STRING  shift 49
+	FOR  shift 18
+	BREAK  shift 20
+	CONTINUE  shift 19
+	EOL  shift 16
+	ADD  shift 58
+	SUB  shift 59
+	TRUE  shift 46
+	FALSE  shift 47
+	NIL  shift 50
+	NULL  shift 51
+	IF  shift 22
+	.  error
+
+	unary_op  goto 53
+	identifier  goto 35
+	stmts  goto 136
+	stmts_list  goto 6
+	empty_block  goto 39
+	stmt  goto 7
+	assignment_expr  goto 43
+	for_in_stmt  goto 10
+	for_stmt  goto 11
+	continue_stmt  goto 12
+	break_stmt  goto 13
+	ifelse_stmt  goto 9
+	ifelse_stmt_start  goto 17
+	call_expr  goto 27
+	call_expr_start  goto 41
+	binary_expr  goto 28
+	conditional_expr  goto 42
+	arithmeticExpr  goto 44
+	paren_expr  goto 26
+	paren_expr_start  goto 40
+	index_expr  goto 30
+	attr_expr  goto 29
+	expr  goto 137
+	map_init  goto 25
+	map_init_start  goto 38
+	array_list  goto 24
+	array_list_start  goto 36
+	array_elem  goto 23
+	bool_literal  goto 31
+	string_literal  goto 32
+	nil_literal  goto 33
+	number_literal  goto 34
+	value_stmt  goto 14
+	sep  goto 8
+
+state 88
+	attr_expr:  attr_expr DOT.index_expr 
+	attr_expr:  attr_expr DOT.identifier 
+
+	DOT  shift 45
+	ID  shift 54
+	QUOTED_STRING  shift 55
+	.  error
+
+	identifier  goto 139
+	index_expr  goto 138
+
+state 89
+	index_expr:  index_expr LEFT_BRACKET.expr RIGHT_BRACKET 
+
+	DOT  shift 45
+	ID  shift 54
+	NUMBER  shift 52
+	LEFT_PAREN  shift 57
+	LEFT_BRACKET  shift 37
+	LEFT_BRACE  shift 56
+	STRING  shift 48
+	QUOTED_STRING  shift 55
+	MULTILINE_STRING  shift 49
+	ADD  shift 58
+	SUB  shift 59
+	TRUE  shift 46
+	FALSE  shift 47
+	NIL  shift 50
+	NULL  shift 51
+	.  error
+
+	unary_op  goto 53
+	identifier  goto 35
+	empty_block  goto 39
+	assignment_expr  goto 43
+	call_expr  goto 27
+	call_expr_start  goto 41
+	binary_expr  goto 28
+	conditional_expr  goto 42
+	arithmeticExpr  goto 44
+	paren_expr  goto 26
+	paren_expr_start  goto 40
+	index_expr  goto 30
+	attr_expr  goto 29
+	expr  goto 140
+	map_init  goto 25
+	map_init_start  goto 38
+	array_list  goto 24
+	array_list_start  goto 36
+	array_elem  goto 23
+	bool_literal  goto 31
+	string_literal  goto 32
+	nil_literal  goto 33
+	number_literal  goto 34
+
+state 90
+	attr_expr:  index_expr DOT.index_expr 
+	attr_expr:  index_expr DOT.identifier 
+
+	DOT  shift 45
+	ID  shift 54
+	QUOTED_STRING  shift 55
+	.  error
+
+	identifier  goto 142
+	index_expr  goto 141
+
+state 91
+	call_expr_start:  identifier LEFT_PAREN.function_args 
+	call_expr_start:  identifier LEFT_PAREN.    (51)
+
+	DOT  shift 45
+	ID  shift 54
+	NUMBER  shift 52
+	LEFT_PAREN  shift 57
+	LEFT_BRACKET  shift 37
+	LEFT_BRACE  shift 56
+	STRING  shift 48
+	QUOTED_STRING  shift 55
+	MULTILINE_STRING  shift 49
+	ADD  shift 58
+	SUB  shift 59
+	TRUE  shift 46
+	FALSE  shift 47
+	NIL  shift 50
+	NULL  shift 51
+	.  reduce 51 (src line 256)
+
+	unary_op  goto 53
+	identifier  goto 35
+	empty_block  goto 39
+	function_args  goto 143
+	assignment_expr  goto 43
+	call_expr  goto 27
+	call_expr_start  goto 41
+	function_arg  goto 144
+	binary_expr  goto 28
+	conditional_expr  goto 42
+	arithmeticExpr  goto 44
+	paren_expr  goto 26
+	paren_expr_start  goto 40
+	index_expr  goto 30
+	attr_expr  goto 29
+	expr  goto 145
+	map_init  goto 25
+	map_init_start  goto 38
+	array_list  goto 24
+	array_list_start  goto 36
+	array_elem  goto 23
+	bool_literal  goto 31
+	string_literal  goto 32
+	nil_literal  goto 33
+	number_literal  goto 34
+
+state 92
+	index_expr:  identifier LEFT_BRACKET.expr RIGHT_BRACKET 
+
+	DOT  shift 45
+	ID  shift 54
+	NUMBER  shift 52
+	LEFT_PAREN  shift 57
+	LEFT_BRACKET  shift 37
+	LEFT_BRACE  shift 56
+	STRING  shift 48
+	QUOTED_STRING  shift 55
+	MULTILINE_STRING  shift 49
+	ADD  shift 58
+	SUB  shift 59
+	TRUE  shift 46
+	FALSE  shift 47
+	NIL  shift 50
+	NULL  shift 51
+	.  error
+
+	unary_op  goto 53
+	identifier  goto 35
+	empty_block  goto 39
+	assignment_expr  goto 43
+	call_expr  goto 27
+	call_expr_start  goto 41
+	binary_expr  goto 28
+	conditional_expr  goto 42
+	arithmeticExpr  goto 44
+	paren_expr  goto 26
+	paren_expr_start  goto 40
+	index_expr  goto 30
+	attr_expr  goto 29
+	expr  goto 146
+	map_init  goto 25
+	map_init_start  goto 38
+	array_list  goto 24
+	array_list_start  goto 36
+	array_elem  goto 23
+	bool_literal  goto 31
+	string_literal  goto 32
+	nil_literal  goto 33
+	number_literal  goto 34
+
+state 93
+	attr_expr:  identifier DOT.index_expr 
+	attr_expr:  identifier DOT.identifier 
+
+	DOT  shift 45
+	ID  shift 54
+	QUOTED_STRING  shift 55
+	.  error
+
+	identifier  goto 148
+	index_expr  goto 147
+
+state 94
+	array_list:  array_list_start RIGHT_BRACKET.    (86)
+
+	.  reduce 86 (src line 376)
+
+
+state 95
+	array_list:  array_list_start COMMA.RIGHT_BRACKET 
+	array_list_start:  array_list_start COMMA.array_elem 
+
+	ID  shift 54
+	NUMBER  shift 52
+	RIGHT_BRACKET  shift 149
+	STRING  shift 48
+	QUOTED_STRING  shift 55
+	MULTILINE_STRING  shift 49
+	ADD  shift 58
+	SUB  shift 59
+	TRUE  shift 46
+	FALSE  shift 47
+	NIL  shift 50
+	NULL  shift 51
+	.  error
+
+	unary_op  goto 53
+	identifier  goto 99
+	array_elem  goto 150
+	bool_literal  goto 31
+	string_literal  goto 32
+	nil_literal  goto 33
+	number_literal  goto 34
+
+state 96
+	array_list_start:  array_list_start EOL.    (91)
+
+	.  reduce 91 (src line 386)
+
+
+state 97
+	array_list:  LEFT_BRACKET RIGHT_BRACKET.    (88)
+
+	.  reduce 88 (src line 378)
+
+
+state 98
+	array_list_start:  LEFT_BRACKET array_elem.    (89)
+
+	.  reduce 89 (src line 382)
+
+
+state 99
+	array_elem:  identifier.    (101)
+
+	.  reduce 101 (src line 415)
+
+
+state 100
+	map_init:  map_init_start RIGHT_BRACE.    (92)
+
+	.  reduce 92 (src line 389)
+
+
+state 101
+	map_init_start:  map_init_start COMMA.expr COLON expr 
+
+	DOT  shift 45
+	ID  shift 54
+	NUMBER  shift 52
+	LEFT_PAREN  shift 57
+	LEFT_BRACKET  shift 37
+	LEFT_BRACE  shift 56
+	STRING  shift 48
+	QUOTED_STRING  shift 55
+	MULTILINE_STRING  shift 49
+	ADD  shift 58
+	SUB  shift 59
+	TRUE  shift 46
+	FALSE  shift 47
+	NIL  shift 50
+	NULL  shift 51
+	.  error
+
+	unary_op  goto 53
+	identifier  goto 35
+	empty_block  goto 39
+	assignment_expr  goto 43
+	call_expr  goto 27
+	call_expr_start  goto 41
+	binary_expr  goto 28
+	conditional_expr  goto 42
+	arithmeticExpr  goto 44
+	paren_expr  goto 26
+	paren_expr_start  goto 40
+	index_expr  goto 30
+	attr_expr  goto 29
+	expr  goto 151
+	map_init  goto 25
+	map_init_start  goto 38
+	array_list  goto 24
+	array_list_start  goto 36
+	array_elem  goto 23
+	bool_literal  goto 31
+	string_literal  goto 32
+	nil_literal  goto 33
+	number_literal  goto 34
+
+state 102
+	map_init_start:  map_init_start EOL.    (96)
+
+	.  reduce 96 (src line 406)
+
+
+state 103
+	paren_expr:  paren_expr_start RIGHT_PAREN.    (74)
+
+	.  reduce 74 (src line 322)
+
+
+state 104
+	paren_expr_start:  paren_expr_start EOL.    (76)
+
+	.  reduce 76 (src line 326)
+
+
+state 105
+	call_expr:  call_expr_start RIGHT_PAREN.    (49)
+
+	.  reduce 49 (src line 244)
+
+
+state 106
+	call_expr_start:  call_expr_start EOL.    (52)
+
+	.  reduce 52 (src line 266)
+
+
+state 107
+	index_expr:  DOT LEFT_BRACKET.expr RIGHT_BRACKET 
+
+	DOT  shift 45
+	ID  shift 54
+	NUMBER  shift 52
+	LEFT_PAREN  shift 57
+	LEFT_BRACKET  shift 37
+	LEFT_BRACE  shift 56
+	STRING  shift 48
+	QUOTED_STRING  shift 55
+	MULTILINE_STRING  shift 49
+	ADD  shift 58
+	SUB  shift 59
+	TRUE  shift 46
+	FALSE  shift 47
+	NIL  shift 50
+	NULL  shift 51
+	.  error
+
+	unary_op  goto 53
+	identifier  goto 35
+	empty_block  goto 39
+	assignment_expr  goto 43
+	call_expr  goto 27
+	call_expr_start  goto 41
+	binary_expr  goto 28
+	conditional_expr  goto 42
+	arithmeticExpr  goto 44
+	paren_expr  goto 26
+	paren_expr_start  goto 40
+	index_expr  goto 30
+	attr_expr  goto 29
+	expr  goto 152
+	map_init  goto 25
+	map_init_start  goto 38
+	array_list  goto 24
+	array_list_start  goto 36
+	array_elem  goto 23
+	bool_literal  goto 31
+	string_literal  goto 32
+	nil_literal  goto 33
+	number_literal  goto 34
+
+state 108
+	number_literal:  unary_op NUMBER.    (109)
+
+	.  reduce 109 (src line 446)
+
+
+state 109
+	empty_block:  LEFT_BRACE RIGHT_BRACE.    (48)
+
+	.  reduce 48 (src line 240)
+
+
+state 110
+	assignment_expr:  expr.EQ expr 
+	conditional_expr:  expr.GTE expr 
+	conditional_expr:  expr.GT expr 
+	conditional_expr:  expr.OR expr 
+	conditional_expr:  expr.AND expr 
+	conditional_expr:  expr.LT expr 
+	conditional_expr:  expr.LTE expr 
+	conditional_expr:  expr.NEQ expr 
+	conditional_expr:  expr.EQEQ expr 
+	arithmeticExpr:  expr.ADD expr 
+	arithmeticExpr:  expr.SUB expr 
+	arithmeticExpr:  expr.MUL expr 
+	arithmeticExpr:  expr.DIV expr 
+	arithmeticExpr:  expr.MOD expr 
+	map_init_start:  LEFT_BRACE expr.COLON expr 
+
+	COLON  shift 153
+	ADD  shift 78
+	DIV  shift 81
+	GTE  shift 70
+	GT  shift 71
+	LT  shift 74
+	LTE  shift 75
+	MOD  shift 82
+	MUL  shift 80
+	NEQ  shift 76
+	EQ  shift 69
+	EQEQ  shift 77
+	SUB  shift 79
+	AND  shift 73
+	OR  shift 72
+	.  error
+
+
+state 111
+	assignment_expr:  expr.EQ expr 
+	conditional_expr:  expr.GTE expr 
+	conditional_expr:  expr.GT expr 
+	conditional_expr:  expr.OR expr 
+	conditional_expr:  expr.AND expr 
+	conditional_expr:  expr.LT expr 
+	conditional_expr:  expr.LTE expr 
+	conditional_expr:  expr.NEQ expr 
+	conditional_expr:  expr.EQEQ expr 
+	arithmeticExpr:  expr.ADD expr 
+	arithmeticExpr:  expr.SUB expr 
+	arithmeticExpr:  expr.MUL expr 
+	arithmeticExpr:  expr.DIV expr 
+	arithmeticExpr:  expr.MOD expr 
+	paren_expr_start:  LEFT_PAREN expr.    (75)
+
+	ADD  shift 78
+	DIV  shift 81
+	GTE  shift 70
+	GT  shift 71
+	LT  shift 74
+	LTE  shift 75
+	MOD  shift 82
+	MUL  shift 80
+	NEQ  shift 76
+	EQ  shift 69
+	EQEQ  shift 77
+	SUB  shift 79
+	AND  shift 73
+	OR  shift 72
+	.  reduce 75 (src line 324)
+
+
+state 112
+	sep:  sep.SEMICOLON 
+	sep:  sep.EOL 
+	stmts_list:  stmts_list stmt sep.    (13)
+
+	SEMICOLON  shift 62
+	EOL  shift 63
+	.  reduce 13 (src line 145)
+
+
+state 113
+	ifelse_stmt:  ifelse_stmt_start ELSE stmt_block.    (41)
+
+	.  reduce 41 (src line 213)
+
+
+state 114
+	stmt_block:  empty_block.    (46)
+
+	.  reduce 46 (src line 235)
+
+
+state 115
+	stmt_block:  LEFT_BRACE.stmts RIGHT_BRACE 
+	empty_block:  LEFT_BRACE.RIGHT_BRACE 
+
+	SEMICOLON  shift 15
+	DOT  shift 45
+	ID  shift 54
+	NUMBER  shift 52
+	LEFT_PAREN  shift 57
+	LEFT_BRACKET  shift 37
+	LEFT_BRACE  shift 56
+	RIGHT_BRACE  shift 109
+	STRING  shift 48
+	QUOTED_STRING  shift 55
+	MULTILINE_STRING  shift 49
+	FOR  shift 18
+	BREAK  shift 20
+	CONTINUE  shift 19
+	EOL  shift 16
+	ADD  shift 58
+	SUB  shift 59
+	TRUE  shift 46
+	FALSE  shift 47
+	NIL  shift 50
+	NULL  shift 51
+	IF  shift 22
+	.  error
+
+	unary_op  goto 53
+	identifier  goto 35
+	stmts  goto 136
+	stmts_list  goto 6
+	empty_block  goto 39
+	stmt  goto 7
+	assignment_expr  goto 43
+	for_in_stmt  goto 10
+	for_stmt  goto 11
+	continue_stmt  goto 12
+	break_stmt  goto 13
+	ifelse_stmt  goto 9
+	ifelse_stmt_start  goto 17
+	call_expr  goto 27
+	call_expr_start  goto 41
+	binary_expr  goto 28
+	conditional_expr  goto 42
+	arithmeticExpr  goto 44
+	paren_expr  goto 26
+	paren_expr_start  goto 40
+	index_expr  goto 30
+	attr_expr  goto 29
+	expr  goto 21
+	map_init  goto 25
+	map_init_start  goto 38
+	array_list  goto 24
+	array_list_start  goto 36
+	array_elem  goto 23
+	bool_literal  goto 31
+	string_literal  goto 32
+	nil_literal  goto 33
+	number_literal  goto 34
+	value_stmt  goto 14
+	sep  goto 8
+
+state 116
+	ifelse_stmt_start:  ifelse_stmt_start ELIF if_expr_cond_block.    (43)
+
+	.  reduce 43 (src line 220)
+
+
+state 117
+	for_in_stmt:  FOR identifier IN.expr stmt_block 
+
+	DOT  shift 45
+	ID  shift 54
+	NUMBER  shift 52
+	LEFT_PAREN  shift 57
+	LEFT_BRACKET  shift 37
+	LEFT_BRACE  shift 56
+	STRING  shift 48
+	QUOTED_STRING  shift 55
+	MULTILINE_STRING  shift 49
+	ADD  shift 58
+	SUB  shift 59
+	TRUE  shift 46
+	FALSE  shift 47
+	NIL  shift 50
+	NULL  shift 51
+	.  error
+
+	unary_op  goto 53
+	identifier  goto 35
+	empty_block  goto 39
+	assignment_expr  goto 43
+	call_expr  goto 27
+	call_expr_start  goto 41
+	binary_expr  goto 28
+	conditional_expr  goto 42
+	arithmeticExpr  goto 44
+	paren_expr  goto 26
+	paren_expr_start  goto 40
+	index_expr  goto 30
+	attr_expr  goto 29
+	expr  goto 154
+	map_init  goto 25
+	map_init_start  goto 38
+	array_list  goto 24
+	array_list_start  goto 36
+	array_elem  goto 23
+	bool_literal  goto 31
+	string_literal  goto 32
+	nil_literal  goto 33
+	number_literal  goto 34
+
+state 118
+	for_stmt:  FOR expr SEMICOLON.expr SEMICOLON expr stmt_block 
+	for_stmt:  FOR expr SEMICOLON.expr SEMICOLON stmt_block 
+	for_stmt:  FOR expr SEMICOLON.SEMICOLON expr stmt_block 
+	for_stmt:  FOR expr SEMICOLON.SEMICOLON stmt_block 
+
+	SEMICOLON  shift 156
+	DOT  shift 45
+	ID  shift 54
+	NUMBER  shift 52
+	LEFT_PAREN  shift 57
+	LEFT_BRACKET  shift 37
+	LEFT_BRACE  shift 56
+	STRING  shift 48
+	QUOTED_STRING  shift 55
+	MULTILINE_STRING  shift 49
+	ADD  shift 58
+	SUB  shift 59
+	TRUE  shift 46
+	FALSE  shift 47
+	NIL  shift 50
+	NULL  shift 51
+	.  error
+
+	unary_op  goto 53
+	identifier  goto 35
+	empty_block  goto 39
+	assignment_expr  goto 43
+	call_expr  goto 27
+	call_expr_start  goto 41
+	binary_expr  goto 28
+	conditional_expr  goto 42
+	arithmeticExpr  goto 44
+	paren_expr  goto 26
+	paren_expr_start  goto 40
+	index_expr  goto 30
+	attr_expr  goto 29
+	expr  goto 155
+	map_init  goto 25
+	map_init_start  goto 38
+	array_list  goto 24
+	array_list_start  goto 36
+	array_elem  goto 23
+	bool_literal  goto 31
+	string_literal  goto 32
+	nil_literal  goto 33
+	number_literal  goto 34
+
+state 119
+	for_stmt:  FOR SEMICOLON expr.SEMICOLON expr stmt_block 
+	for_stmt:  FOR SEMICOLON expr.SEMICOLON stmt_block 
+	assignment_expr:  expr.EQ expr 
+	conditional_expr:  expr.GTE expr 
+	conditional_expr:  expr.GT expr 
+	conditional_expr:  expr.OR expr 
+	conditional_expr:  expr.AND expr 
+	conditional_expr:  expr.LT expr 
+	conditional_expr:  expr.LTE expr 
+	conditional_expr:  expr.NEQ expr 
+	conditional_expr:  expr.EQEQ expr 
+	arithmeticExpr:  expr.ADD expr 
+	arithmeticExpr:  expr.SUB expr 
+	arithmeticExpr:  expr.MUL expr 
+	arithmeticExpr:  expr.DIV expr 
+	arithmeticExpr:  expr.MOD expr 
+
+	SEMICOLON  shift 157
+	ADD  shift 78
+	DIV  shift 81
+	GTE  shift 70
+	GT  shift 71
+	LT  shift 74
+	LTE  shift 75
+	MOD  shift 82
+	MUL  shift 80
+	NEQ  shift 76
+	EQ  shift 69
+	EQEQ  shift 77
+	SUB  shift 79
+	AND  shift 73
+	OR  shift 72
+	.  error
+
+
+state 120
+	for_stmt:  FOR SEMICOLON SEMICOLON.expr stmt_block 
+	for_stmt:  FOR SEMICOLON SEMICOLON.stmt_block 
+
+	DOT  shift 45
+	ID  shift 54
+	NUMBER  shift 52
+	LEFT_PAREN  shift 57
+	LEFT_BRACKET  shift 37
+	LEFT_BRACE  shift 87
+	STRING  shift 48
+	QUOTED_STRING  shift 55
+	MULTILINE_STRING  shift 49
+	ADD  shift 58
+	SUB  shift 59
+	TRUE  shift 46
+	FALSE  shift 47
+	NIL  shift 50
+	NULL  shift 51
+	.  error
+
+	unary_op  goto 53
+	identifier  goto 35
+	stmt_block  goto 159
+	empty_block  goto 86
+	assignment_expr  goto 43
+	call_expr  goto 27
+	call_expr_start  goto 41
+	binary_expr  goto 28
+	conditional_expr  goto 42
+	arithmeticExpr  goto 44
+	paren_expr  goto 26
+	paren_expr_start  goto 40
+	index_expr  goto 30
+	attr_expr  goto 29
+	expr  goto 158
+	map_init  goto 25
+	map_init_start  goto 38
+	array_list  goto 24
+	array_list_start  goto 36
+	array_elem  goto 23
+	bool_literal  goto 31
+	string_literal  goto 32
+	nil_literal  goto 33
+	number_literal  goto 34
+
+state 121
+	assignment_expr:  expr.EQ expr 
+	assignment_expr:  expr EQ expr.    (60)
+	conditional_expr:  expr.GTE expr 
+	conditional_expr:  expr.GT expr 
+	conditional_expr:  expr.OR expr 
+	conditional_expr:  expr.AND expr 
+	conditional_expr:  expr.LT expr 
+	conditional_expr:  expr.LTE expr 
+	conditional_expr:  expr.NEQ expr 
+	conditional_expr:  expr.EQEQ expr 
+	arithmeticExpr:  expr.ADD expr 
+	arithmeticExpr:  expr.SUB expr 
+	arithmeticExpr:  expr.MUL expr 
+	arithmeticExpr:  expr.DIV expr 
+	arithmeticExpr:  expr.MOD expr 
+
+	ADD  shift 78
+	DIV  shift 81
+	GTE  shift 70
+	GT  shift 71
+	LT  shift 74
+	LTE  shift 75
+	MOD  shift 82
+	MUL  shift 80
+	NEQ  shift 76
+	EQ  shift 69
+	EQEQ  shift 77
+	SUB  shift 79
+	AND  shift 73
+	OR  shift 72
+	.  reduce 60 (src line 285)
+
+
+state 122
+	assignment_expr:  expr.EQ expr 
+	conditional_expr:  expr.GTE expr 
+	conditional_expr:  expr GTE expr.    (61)
+	conditional_expr:  expr.GT expr 
+	conditional_expr:  expr.OR expr 
+	conditional_expr:  expr.AND expr 
+	conditional_expr:  expr.LT expr 
+	conditional_expr:  expr.LTE expr 
+	conditional_expr:  expr.NEQ expr 
+	conditional_expr:  expr.EQEQ expr 
+	arithmeticExpr:  expr.ADD expr 
+	arithmeticExpr:  expr.SUB expr 
+	arithmeticExpr:  expr.MUL expr 
+	arithmeticExpr:  expr.DIV expr 
+	arithmeticExpr:  expr.MOD expr 
+
+	ADD  shift 78
+	DIV  shift 81
+	MOD  shift 82
+	MUL  shift 80
+	SUB  shift 79
+	.  reduce 61 (src line 289)
+
+
+state 123
+	assignment_expr:  expr.EQ expr 
+	conditional_expr:  expr.GTE expr 
+	conditional_expr:  expr.GT expr 
+	conditional_expr:  expr GT expr.    (62)
+	conditional_expr:  expr.OR expr 
+	conditional_expr:  expr.AND expr 
+	conditional_expr:  expr.LT expr 
+	conditional_expr:  expr.LTE expr 
+	conditional_expr:  expr.NEQ expr 
+	conditional_expr:  expr.EQEQ expr 
+	arithmeticExpr:  expr.ADD expr 
+	arithmeticExpr:  expr.SUB expr 
+	arithmeticExpr:  expr.MUL expr 
+	arithmeticExpr:  expr.DIV expr 
+	arithmeticExpr:  expr.MOD expr 
+
+	ADD  shift 78
+	DIV  shift 81
+	MOD  shift 82
+	MUL  shift 80
+	SUB  shift 79
+	.  reduce 62 (src line 291)
+
+
+state 124
+	assignment_expr:  expr.EQ expr 
+	conditional_expr:  expr.GTE expr 
+	conditional_expr:  expr.GT expr 
+	conditional_expr:  expr.OR expr 
+	conditional_expr:  expr OR expr.    (63)
+	conditional_expr:  expr.AND expr 
+	conditional_expr:  expr.LT expr 
+	conditional_expr:  expr.LTE expr 
+	conditional_expr:  expr.NEQ expr 
+	conditional_expr:  expr.EQEQ expr 
+	arithmeticExpr:  expr.ADD expr 
+	arithmeticExpr:  expr.SUB expr 
+	arithmeticExpr:  expr.MUL expr 
+	arithmeticExpr:  expr.DIV expr 
+	arithmeticExpr:  expr.MOD expr 
+
+	ADD  shift 78
+	DIV  shift 81
+	GTE  shift 70
+	GT  shift 71
+	LT  shift 74
+	LTE  shift 75
+	MOD  shift 82
+	MUL  shift 80
+	NEQ  shift 76
+	EQEQ  shift 77
+	SUB  shift 79
+	AND  shift 73
+	.  reduce 63 (src line 293)
+
+
+state 125
+	assignment_expr:  expr.EQ expr 
+	conditional_expr:  expr.GTE expr 
+	conditional_expr:  expr.GT expr 
+	conditional_expr:  expr.OR expr 
+	conditional_expr:  expr.AND expr 
+	conditional_expr:  expr AND expr.    (64)
+	conditional_expr:  expr.LT expr 
+	conditional_expr:  expr.LTE expr 
+	conditional_expr:  expr.NEQ expr 
+	conditional_expr:  expr.EQEQ expr 
+	arithmeticExpr:  expr.ADD expr 
+	arithmeticExpr:  expr.SUB expr 
+	arithmeticExpr:  expr.MUL expr 
+	arithmeticExpr:  expr.DIV expr 
+	arithmeticExpr:  expr.MOD expr 
+
+	ADD  shift 78
+	DIV  shift 81
+	GTE  shift 70
+	GT  shift 71
+	LT  shift 74
+	LTE  shift 75
+	MOD  shift 82
+	MUL  shift 80
+	NEQ  shift 76
+	EQEQ  shift 77
+	SUB  shift 79
+	.  reduce 64 (src line 295)
+
+
+state 126
+	assignment_expr:  expr.EQ expr 
+	conditional_expr:  expr.GTE expr 
+	conditional_expr:  expr.GT expr 
+	conditional_expr:  expr.OR expr 
+	conditional_expr:  expr.AND expr 
+	conditional_expr:  expr.LT expr 
+	conditional_expr:  expr LT expr.    (65)
+	conditional_expr:  expr.LTE expr 
+	conditional_expr:  expr.NEQ expr 
+	conditional_expr:  expr.EQEQ expr 
+	arithmeticExpr:  expr.ADD expr 
+	arithmeticExpr:  expr.SUB expr 
+	arithmeticExpr:  expr.MUL expr 
+	arithmeticExpr:  expr.DIV expr 
+	arithmeticExpr:  expr.MOD expr 
+
+	ADD  shift 78
+	DIV  shift 81
+	MOD  shift 82
+	MUL  shift 80
+	SUB  shift 79
+	.  reduce 65 (src line 297)
+
+
+state 127
+	assignment_expr:  expr.EQ expr 
+	conditional_expr:  expr.GTE expr 
+	conditional_expr:  expr.GT expr 
+	conditional_expr:  expr.OR expr 
+	conditional_expr:  expr.AND expr 
+	conditional_expr:  expr.LT expr 
+	conditional_expr:  expr.LTE expr 
+	conditional_expr:  expr LTE expr.    (66)
+	conditional_expr:  expr.NEQ expr 
+	conditional_expr:  expr.EQEQ expr 
+	arithmeticExpr:  expr.ADD expr 
+	arithmeticExpr:  expr.SUB expr 
+	arithmeticExpr:  expr.MUL expr 
+	arithmeticExpr:  expr.DIV expr 
+	arithmeticExpr:  expr.MOD expr 
+
+	ADD  shift 78
+	DIV  shift 81
+	MOD  shift 82
+	MUL  shift 80
+	SUB  shift 79
+	.  reduce 66 (src line 299)
+
+
+state 128
+	assignment_expr:  expr.EQ expr 
+	conditional_expr:  expr.GTE expr 
+	conditional_expr:  expr.GT expr 
+	conditional_expr:  expr.OR expr 
+	conditional_expr:  expr.AND expr 
+	conditional_expr:  expr.LT expr 
+	conditional_expr:  expr.LTE expr 
+	conditional_expr:  expr.NEQ expr 
+	conditional_expr:  expr NEQ expr.    (67)
+	conditional_expr:  expr.EQEQ expr 
+	arithmeticExpr:  expr.ADD expr 
+	arithmeticExpr:  expr.SUB expr 
+	arithmeticExpr:  expr.MUL expr 
+	arithmeticExpr:  expr.DIV expr 
+	arithmeticExpr:  expr.MOD expr 
+
+	ADD  shift 78
+	DIV  shift 81
+	MOD  shift 82
+	MUL  shift 80
+	SUB  shift 79
+	.  reduce 67 (src line 301)
+
+
+state 129
+	assignment_expr:  expr.EQ expr 
+	conditional_expr:  expr.GTE expr 
+	conditional_expr:  expr.GT expr 
+	conditional_expr:  expr.OR expr 
+	conditional_expr:  expr.AND expr 
+	conditional_expr:  expr.LT expr 
+	conditional_expr:  expr.LTE expr 
+	conditional_expr:  expr.NEQ expr 
+	conditional_expr:  expr.EQEQ expr 
+	conditional_expr:  expr EQEQ expr.    (68)
+	arithmeticExpr:  expr.ADD expr 
+	arithmeticExpr:  expr.SUB expr 
+	arithmeticExpr:  expr.MUL expr 
+	arithmeticExpr:  expr.DIV expr 
+	arithmeticExpr:  expr.MOD expr 
+
+	ADD  shift 78
+	DIV  shift 81
+	MOD  shift 82
+	MUL  shift 80
+	SUB  shift 79
+	.  reduce 68 (src line 303)
+
+
+state 130
+	assignment_expr:  expr.EQ expr 
+	conditional_expr:  expr.GTE expr 
+	conditional_expr:  expr.GT expr 
+	conditional_expr:  expr.OR expr 
+	conditional_expr:  expr.AND expr 
+	conditional_expr:  expr.LT expr 
+	conditional_expr:  expr.LTE expr 
+	conditional_expr:  expr.NEQ expr 
+	conditional_expr:  expr.EQEQ expr 
+	arithmeticExpr:  expr.ADD expr 
+	arithmeticExpr:  expr ADD expr.    (69)
+	arithmeticExpr:  expr.SUB expr 
+	arithmeticExpr:  expr.MUL expr 
+	arithmeticExpr:  expr.DIV expr 
+	arithmeticExpr:  expr.MOD expr 
+
+	DIV  shift 81
+	MOD  shift 82
+	MUL  shift 80
+	.  reduce 69 (src line 308)
+
+
+state 131
+	assignment_expr:  expr.EQ expr 
+	conditional_expr:  expr.GTE expr 
+	conditional_expr:  expr.GT expr 
+	conditional_expr:  expr.OR expr 
+	conditional_expr:  expr.AND expr 
+	conditional_expr:  expr.LT expr 
+	conditional_expr:  expr.LTE expr 
+	conditional_expr:  expr.NEQ expr 
+	conditional_expr:  expr.EQEQ expr 
+	arithmeticExpr:  expr.ADD expr 
+	arithmeticExpr:  expr.SUB expr 
+	arithmeticExpr:  expr SUB expr.    (70)
+	arithmeticExpr:  expr.MUL expr 
+	arithmeticExpr:  expr.DIV expr 
+	arithmeticExpr:  expr.MOD expr 
+
+	DIV  shift 81
+	MOD  shift 82
+	MUL  shift 80
+	.  reduce 70 (src line 310)
+
+
+state 132
+	assignment_expr:  expr.EQ expr 
+	conditional_expr:  expr.GTE expr 
+	conditional_expr:  expr.GT expr 
+	conditional_expr:  expr.OR expr 
+	conditional_expr:  expr.AND expr 
+	conditional_expr:  expr.LT expr 
+	conditional_expr:  expr.LTE expr 
+	conditional_expr:  expr.NEQ expr 
+	conditional_expr:  expr.EQEQ expr 
+	arithmeticExpr:  expr.ADD expr 
+	arithmeticExpr:  expr.SUB expr 
+	arithmeticExpr:  expr.MUL expr 
+	arithmeticExpr:  expr MUL expr.    (71)
+	arithmeticExpr:  expr.DIV expr 
+	arithmeticExpr:  expr.MOD expr 
+
+	.  reduce 71 (src line 312)
+
+
+state 133
+	assignment_expr:  expr.EQ expr 
+	conditional_expr:  expr.GTE expr 
+	conditional_expr:  expr.GT expr 
+	conditional_expr:  expr.OR expr 
+	conditional_expr:  expr.AND expr 
+	conditional_expr:  expr.LT expr 
+	conditional_expr:  expr.LTE expr 
+	conditional_expr:  expr.NEQ expr 
+	conditional_expr:  expr.EQEQ expr 
+	arithmeticExpr:  expr.ADD expr 
+	arithmeticExpr:  expr.SUB expr 
+	arithmeticExpr:  expr.MUL expr 
+	arithmeticExpr:  expr.DIV expr 
+	arithmeticExpr:  expr DIV expr.    (72)
+	arithmeticExpr:  expr.MOD expr 
+
+	.  reduce 72 (src line 314)
+
+
+state 134
+	assignment_expr:  expr.EQ expr 
+	conditional_expr:  expr.GTE expr 
+	conditional_expr:  expr.GT expr 
+	conditional_expr:  expr.OR expr 
+	conditional_expr:  expr.AND expr 
+	conditional_expr:  expr.LT expr 
+	conditional_expr:  expr.LTE expr 
+	conditional_expr:  expr.NEQ expr 
+	conditional_expr:  expr.EQEQ expr 
+	arithmeticExpr:  expr.ADD expr 
+	arithmeticExpr:  expr.SUB expr 
+	arithmeticExpr:  expr.MUL expr 
+	arithmeticExpr:  expr.DIV expr 
+	arithmeticExpr:  expr.MOD expr 
+	arithmeticExpr:  expr MOD expr.    (73)
+
+	.  reduce 73 (src line 316)
+
+
+state 135
+	if_expr_cond_block:  expr stmt_block.    (44)
+
+	.  reduce 44 (src line 224)
+
+
+state 136
+	stmt_block:  LEFT_BRACE stmts.RIGHT_BRACE 
+
+	RIGHT_BRACE  shift 160
+	.  error
+
+
+state 137
+	value_stmt:  expr.    (20)
+	assignment_expr:  expr.EQ expr 
+	conditional_expr:  expr.GTE expr 
+	conditional_expr:  expr.GT expr 
+	conditional_expr:  expr.OR expr 
+	conditional_expr:  expr.AND expr 
+	conditional_expr:  expr.LT expr 
+	conditional_expr:  expr.LTE expr 
+	conditional_expr:  expr.NEQ expr 
+	conditional_expr:  expr.EQEQ expr 
+	arithmeticExpr:  expr.ADD expr 
+	arithmeticExpr:  expr.SUB expr 
+	arithmeticExpr:  expr.MUL expr 
+	arithmeticExpr:  expr.DIV expr 
+	arithmeticExpr:  expr.MOD expr 
+	map_init_start:  LEFT_BRACE expr.COLON expr 
+
+	COLON  shift 153
+	ADD  shift 78
+	DIV  shift 81
+	GTE  shift 70
+	GT  shift 71
+	LT  shift 74
+	LTE  shift 75
+	MOD  shift 82
+	MUL  shift 80
+	NEQ  shift 76
+	EQ  shift 69
+	EQEQ  shift 77
+	SUB  shift 79
+	AND  shift 73
+	OR  shift 72
+	.  reduce 20 (src line 162)
+
+
+state 138
+	index_expr:  index_expr.LEFT_BRACKET expr RIGHT_BRACKET 
+	attr_expr:  attr_expr DOT index_expr.    (84)
+
+	LEFT_BRACKET  shift 89
+	.  reduce 84 (src line 364)
+
+
+state 139
+	index_expr:  identifier.LEFT_BRACKET expr RIGHT_BRACKET 
+	attr_expr:  attr_expr DOT identifier.    (85)
+
+	LEFT_BRACKET  shift 92
+	.  reduce 85 (src line 368)
+
+
+state 140
+	assignment_expr:  expr.EQ expr 
+	conditional_expr:  expr.GTE expr 
+	conditional_expr:  expr.GT expr 
+	conditional_expr:  expr.OR expr 
+	conditional_expr:  expr.AND expr 
+	conditional_expr:  expr.LT expr 
+	conditional_expr:  expr.LTE expr 
+	conditional_expr:  expr.NEQ expr 
+	conditional_expr:  expr.EQEQ expr 
+	arithmeticExpr:  expr.ADD expr 
+	arithmeticExpr:  expr.SUB expr 
+	arithmeticExpr:  expr.MUL expr 
+	arithmeticExpr:  expr.DIV expr 
+	arithmeticExpr:  expr.MOD expr 
+	index_expr:  index_expr LEFT_BRACKET expr.RIGHT_BRACKET 
+
+	RIGHT_BRACKET  shift 161
+	ADD  shift 78
+	DIV  shift 81
+	GTE  shift 70
+	GT  shift 71
+	LT  shift 74
+	LTE  shift 75
+	MOD  shift 82
+	MUL  shift 80
+	NEQ  shift 76
+	EQ  shift 69
+	EQEQ  shift 77
+	SUB  shift 79
+	AND  shift 73
+	OR  shift 72
+	.  error
+
+
+state 141
+	index_expr:  index_expr.LEFT_BRACKET expr RIGHT_BRACKET 
+	attr_expr:  index_expr DOT index_expr.    (82)
+
+	LEFT_BRACKET  shift 89
+	.  reduce 82 (src line 355)
+
+
+state 142
+	index_expr:  identifier.LEFT_BRACKET expr RIGHT_BRACKET 
+	attr_expr:  index_expr DOT identifier.    (83)
+
+	LEFT_BRACKET  shift 92
+	.  reduce 83 (src line 359)
+
+
+state 143
+	call_expr_start:  identifier LEFT_PAREN function_args.    (50)
+	function_args:  function_args.COMMA function_arg 
+	function_args:  function_args.COMMA 
+
+	COMMA  shift 162
+	.  reduce 50 (src line 246)
+
+
+state 144
+	function_args:  function_arg.    (55)
+
+	.  reduce 55 (src line 275)
+
+
+state 145
+	function_arg:  expr.    (56)
+	assignment_expr:  expr.EQ expr 
+	conditional_expr:  expr.GTE expr 
+	conditional_expr:  expr.GT expr 
+	conditional_expr:  expr.OR expr 
+	conditional_expr:  expr.AND expr 
+	conditional_expr:  expr.LT expr 
+	conditional_expr:  expr.LTE expr 
+	conditional_expr:  expr.NEQ expr 
+	conditional_expr:  expr.EQEQ expr 
+	arithmeticExpr:  expr.ADD expr 
+	arithmeticExpr:  expr.SUB expr 
+	arithmeticExpr:  expr.MUL expr 
+	arithmeticExpr:  expr.DIV expr 
+	arithmeticExpr:  expr.MOD expr 
+
+	ADD  shift 78
+	DIV  shift 81
+	GTE  shift 70
+	GT  shift 71
+	LT  shift 74
+	LTE  shift 75
+	MOD  shift 82
+	MUL  shift 80
+	NEQ  shift 76
+	EQ  shift 69
+	EQEQ  shift 77
+	SUB  shift 79
+	AND  shift 73
+	OR  shift 72
+	.  reduce 56 (src line 279)
+
+
+state 146
+	assignment_expr:  expr.EQ expr 
+	conditional_expr:  expr.GTE expr 
+	conditional_expr:  expr.GT expr 
+	conditional_expr:  expr.OR expr 
+	conditional_expr:  expr.AND expr 
+	conditional_expr:  expr.LT expr 
+	conditional_expr:  expr.LTE expr 
+	conditional_expr:  expr.NEQ expr 
+	conditional_expr:  expr.EQEQ expr 
+	arithmeticExpr:  expr.ADD expr 
+	arithmeticExpr:  expr.SUB expr 
+	arithmeticExpr:  expr.MUL expr 
+	arithmeticExpr:  expr.DIV expr 
+	arithmeticExpr:  expr.MOD expr 
+	index_expr:  identifier LEFT_BRACKET expr.RIGHT_BRACKET 
+
+	RIGHT_BRACKET  shift 163
+	ADD  shift 78
+	DIV  shift 81
+	GTE  shift 70
+	GT  shift 71
+	LT  shift 74
+	LTE  shift 75
+	MOD  shift 82
+	MUL  shift 80
+	NEQ  shift 76
+	EQ  shift 69
+	EQEQ  shift 77
+	SUB  shift 79
+	AND  shift 73
+	OR  shift 72
+	.  error
+
+
+state 147
+	index_expr:  index_expr.LEFT_BRACKET expr RIGHT_BRACKET 
+	attr_expr:  identifier DOT index_expr.    (80)
+
+	LEFT_BRACKET  shift 89
+	.  reduce 80 (src line 343)
+
+
+state 148
+	index_expr:  identifier.LEFT_BRACKET expr RIGHT_BRACKET 
+	attr_expr:  identifier DOT identifier.    (81)
+
+	LEFT_BRACKET  shift 92
+	.  reduce 81 (src line 348)
+
+
+state 149
+	array_list:  array_list_start COMMA RIGHT_BRACKET.    (87)
+
+	.  reduce 87 (src line 377)
+
+
+state 150
+	array_list_start:  array_list_start COMMA array_elem.    (90)
+
+	.  reduce 90 (src line 384)
+
+
+state 151
+	assignment_expr:  expr.EQ expr 
+	conditional_expr:  expr.GTE expr 
+	conditional_expr:  expr.GT expr 
+	conditional_expr:  expr.OR expr 
+	conditional_expr:  expr.AND expr 
+	conditional_expr:  expr.LT expr 
+	conditional_expr:  expr.LTE expr 
+	conditional_expr:  expr.NEQ expr 
+	conditional_expr:  expr.EQEQ expr 
+	arithmeticExpr:  expr.ADD expr 
+	arithmeticExpr:  expr.SUB expr 
+	arithmeticExpr:  expr.MUL expr 
+	arithmeticExpr:  expr.DIV expr 
+	arithmeticExpr:  expr.MOD expr 
+	map_init_start:  map_init_start COMMA expr.COLON expr 
+
+	COLON  shift 164
+	ADD  shift 78
+	DIV  shift 81
+	GTE  shift 70
+	GT  shift 71
+	LT  shift 74
+	LTE  shift 75
+	MOD  shift 82
+	MUL  shift 80
+	NEQ  shift 76
+	EQ  shift 69
+	EQEQ  shift 77
+	SUB  shift 79
+	AND  shift 73
+	OR  shift 72
+	.  error
+
+
+state 152
+	assignment_expr:  expr.EQ expr 
+	conditional_expr:  expr.GTE expr 
+	conditional_expr:  expr.GT expr 
+	conditional_expr:  expr.OR expr 
+	conditional_expr:  expr.AND expr 
+	conditional_expr:  expr.LT expr 
+	conditional_expr:  expr.LTE expr 
+	conditional_expr:  expr.NEQ expr 
+	conditional_expr:  expr.EQEQ expr 
+	arithmeticExpr:  expr.ADD expr 
+	arithmeticExpr:  expr.SUB expr 
+	arithmeticExpr:  expr.MUL expr 
+	arithmeticExpr:  expr.DIV expr 
+	arithmeticExpr:  expr.MOD expr 
+	index_expr:  DOT LEFT_BRACKET expr.RIGHT_BRACKET 
+
+	RIGHT_BRACKET  shift 165
+	ADD  shift 78
+	DIV  shift 81
+	GTE  shift 70
+	GT  shift 71
+	LT  shift 74
+	LTE  shift 75
+	MOD  shift 82
+	MUL  shift 80
+	NEQ  shift 76
+	EQ  shift 69
+	EQEQ  shift 77
+	SUB  shift 79
+	AND  shift 73
+	OR  shift 72
+	.  error
+
+
+state 153
+	map_init_start:  LEFT_BRACE expr COLON.expr 
+
+	DOT  shift 45
+	ID  shift 54
+	NUMBER  shift 52
+	LEFT_PAREN  shift 57
+	LEFT_BRACKET  shift 37
+	LEFT_BRACE  shift 56
+	STRING  shift 48
+	QUOTED_STRING  shift 55
+	MULTILINE_STRING  shift 49
+	ADD  shift 58
+	SUB  shift 59
+	TRUE  shift 46
+	FALSE  shift 47
+	NIL  shift 50
+	NULL  shift 51
+	.  error
+
+	unary_op  goto 53
+	identifier  goto 35
+	empty_block  goto 39
+	assignment_expr  goto 43
+	call_expr  goto 27
+	call_expr_start  goto 41
+	binary_expr  goto 28
+	conditional_expr  goto 42
+	arithmeticExpr  goto 44
+	paren_expr  goto 26
+	paren_expr_start  goto 40
+	index_expr  goto 30
+	attr_expr  goto 29
+	expr  goto 166
+	map_init  goto 25
+	map_init_start  goto 38
+	array_list  goto 24
+	array_list_start  goto 36
+	array_elem  goto 23
+	bool_literal  goto 31
+	string_literal  goto 32
+	nil_literal  goto 33
+	number_literal  goto 34
+
+state 154
+	for_in_stmt:  FOR identifier IN expr.stmt_block 
+	assignment_expr:  expr.EQ expr 
+	conditional_expr:  expr.GTE expr 
+	conditional_expr:  expr.GT expr 
+	conditional_expr:  expr.OR expr 
+	conditional_expr:  expr.AND expr 
+	conditional_expr:  expr.LT expr 
+	conditional_expr:  expr.LTE expr 
+	conditional_expr:  expr.NEQ expr 
+	conditional_expr:  expr.EQEQ expr 
+	arithmeticExpr:  expr.ADD expr 
+	arithmeticExpr:  expr.SUB expr 
+	arithmeticExpr:  expr.MUL expr 
+	arithmeticExpr:  expr.DIV expr 
+	arithmeticExpr:  expr.MOD expr 
+
+	LEFT_BRACE  shift 115
+	ADD  shift 78
+	DIV  shift 81
+	GTE  shift 70
+	GT  shift 71
+	LT  shift 74
+	LTE  shift 75
+	MOD  shift 82
+	MUL  shift 80
+	NEQ  shift 76
+	EQ  shift 69
+	EQEQ  shift 77
+	SUB  shift 79
+	AND  shift 73
+	OR  shift 72
+	.  error
+
+	stmt_block  goto 167
+	empty_block  goto 114
+
+state 155
+	for_stmt:  FOR expr SEMICOLON expr.SEMICOLON expr stmt_block 
+	for_stmt:  FOR expr SEMICOLON expr.SEMICOLON stmt_block 
+	assignment_expr:  expr.EQ expr 
+	conditional_expr:  expr.GTE expr 
+	conditional_expr:  expr.GT expr 
+	conditional_expr:  expr.OR expr 
+	conditional_expr:  expr.AND expr 
+	conditional_expr:  expr.LT expr 
+	conditional_expr:  expr.LTE expr 
+	conditional_expr:  expr.NEQ expr 
+	conditional_expr:  expr.EQEQ expr 
+	arithmeticExpr:  expr.ADD expr 
+	arithmeticExpr:  expr.SUB expr 
+	arithmeticExpr:  expr.MUL expr 
+	arithmeticExpr:  expr.DIV expr 
+	arithmeticExpr:  expr.MOD expr 
+
+	SEMICOLON  shift 168
+	ADD  shift 78
+	DIV  shift 81
+	GTE  shift 70
+	GT  shift 71
+	LT  shift 74
+	LTE  shift 75
+	MOD  shift 82
+	MUL  shift 80
+	NEQ  shift 76
+	EQ  shift 69
+	EQEQ  shift 77
+	SUB  shift 79
+	AND  shift 73
+	OR  shift 72
+	.  error
+
+
+state 156
+	for_stmt:  FOR expr SEMICOLON SEMICOLON.expr stmt_block 
+	for_stmt:  FOR expr SEMICOLON SEMICOLON.stmt_block 
+
+	DOT  shift 45
+	ID  shift 54
+	NUMBER  shift 52
+	LEFT_PAREN  shift 57
+	LEFT_BRACKET  shift 37
+	LEFT_BRACE  shift 87
+	STRING  shift 48
+	QUOTED_STRING  shift 55
+	MULTILINE_STRING  shift 49
+	ADD  shift 58
+	SUB  shift 59
+	TRUE  shift 46
+	FALSE  shift 47
+	NIL  shift 50
+	NULL  shift 51
+	.  error
+
+	unary_op  goto 53
+	identifier  goto 35
+	stmt_block  goto 170
+	empty_block  goto 86
+	assignment_expr  goto 43
+	call_expr  goto 27
+	call_expr_start  goto 41
+	binary_expr  goto 28
+	conditional_expr  goto 42
+	arithmeticExpr  goto 44
+	paren_expr  goto 26
+	paren_expr_start  goto 40
+	index_expr  goto 30
+	attr_expr  goto 29
+	expr  goto 169
+	map_init  goto 25
+	map_init_start  goto 38
+	array_list  goto 24
+	array_list_start  goto 36
+	array_elem  goto 23
+	bool_literal  goto 31
+	string_literal  goto 32
+	nil_literal  goto 33
+	number_literal  goto 34
+
+state 157
+	for_stmt:  FOR SEMICOLON expr SEMICOLON.expr stmt_block 
+	for_stmt:  FOR SEMICOLON expr SEMICOLON.stmt_block 
+
+	DOT  shift 45
+	ID  shift 54
+	NUMBER  shift 52
+	LEFT_PAREN  shift 57
+	LEFT_BRACKET  shift 37
+	LEFT_BRACE  shift 87
+	STRING  shift 48
+	QUOTED_STRING  shift 55
+	MULTILINE_STRING  shift 49
+	ADD  shift 58
+	SUB  shift 59
+	TRUE  shift 46
+	FALSE  shift 47
+	NIL  shift 50
+	NULL  shift 51
+	.  error
+
+	unary_op  goto 53
+	identifier  goto 35
+	stmt_block  goto 172
+	empty_block  goto 86
+	assignment_expr  goto 43
+	call_expr  goto 27
+	call_expr_start  goto 41
+	binary_expr  goto 28
+	conditional_expr  goto 42
+	arithmeticExpr  goto 44
+	paren_expr  goto 26
+	paren_expr_start  goto 40
+	index_expr  goto 30
+	attr_expr  goto 29
+	expr  goto 171
+	map_init  goto 25
+	map_init_start  goto 38
+	array_list  goto 24
+	array_list_start  goto 36
+	array_elem  goto 23
+	bool_literal  goto 31
+	string_literal  goto 32
+	nil_literal  goto 33
+	number_literal  goto 34
+
+state 158
+	for_stmt:  FOR SEMICOLON SEMICOLON expr.stmt_block 
+	assignment_expr:  expr.EQ expr 
+	conditional_expr:  expr.GTE expr 
+	conditional_expr:  expr.GT expr 
+	conditional_expr:  expr.OR expr 
+	conditional_expr:  expr.AND expr 
+	conditional_expr:  expr.LT expr 
+	conditional_expr:  expr.LTE expr 
+	conditional_expr:  expr.NEQ expr 
+	conditional_expr:  expr.EQEQ expr 
+	arithmeticExpr:  expr.ADD expr 
+	arithmeticExpr:  expr.SUB expr 
+	arithmeticExpr:  expr.MUL expr 
+	arithmeticExpr:  expr.DIV expr 
+	arithmeticExpr:  expr.MOD expr 
+
+	LEFT_BRACE  shift 115
+	ADD  shift 78
+	DIV  shift 81
+	GTE  shift 70
+	GT  shift 71
+	LT  shift 74
+	LTE  shift 75
+	MOD  shift 82
+	MUL  shift 80
+	NEQ  shift 76
+	EQ  shift 69
+	EQEQ  shift 77
+	SUB  shift 79
+	AND  shift 73
+	OR  shift 72
+	.  error
+
+	stmt_block  goto 173
+	empty_block  goto 114
+
+state 159
+	for_stmt:  FOR SEMICOLON SEMICOLON stmt_block.    (39)
+
+	.  reduce 39 (src line 208)
+
+
+state 160
+	stmt_block:  LEFT_BRACE stmts RIGHT_BRACE.    (47)
+
+	.  reduce 47 (src line 236)
+
+
+state 161
+	index_expr:  index_expr LEFT_BRACKET expr RIGHT_BRACKET.    (79)
+
+	.  reduce 79 (src line 336)
+
+
+state 162
+	function_args:  function_args COMMA.function_arg 
+	function_args:  function_args COMMA.    (54)
+
+	DOT  shift 45
+	ID  shift 54
+	NUMBER  shift 52
+	LEFT_PAREN  shift 57
+	LEFT_BRACKET  shift 37
+	LEFT_BRACE  shift 56
+	STRING  shift 48
+	QUOTED_STRING  shift 55
+	MULTILINE_STRING  shift 49
+	ADD  shift 58
+	SUB  shift 59
+	TRUE  shift 46
+	FALSE  shift 47
+	NIL  shift 50
+	NULL  shift 51
+	.  reduce 54 (src line 274)
+
+	unary_op  goto 53
+	identifier  goto 35
+	empty_block  goto 39
+	assignment_expr  goto 43
+	call_expr  goto 27
+	call_expr_start  goto 41
+	function_arg  goto 174
+	binary_expr  goto 28
+	conditional_expr  goto 42
+	arithmeticExpr  goto 44
+	paren_expr  goto 26
+	paren_expr_start  goto 40
+	index_expr  goto 30
+	attr_expr  goto 29
+	expr  goto 145
+	map_init  goto 25
+	map_init_start  goto 38
+	array_list  goto 24
+	array_list_start  goto 36
+	array_elem  goto 23
+	bool_literal  goto 31
+	string_literal  goto 32
+	nil_literal  goto 33
+	number_literal  goto 34
+
+state 163
+	index_expr:  identifier LEFT_BRACKET expr RIGHT_BRACKET.    (77)
+
+	.  reduce 77 (src line 330)
+
+
+state 164
+	map_init_start:  map_init_start COMMA expr COLON.expr 
+
+	DOT  shift 45
+	ID  shift 54
+	NUMBER  shift 52
+	LEFT_PAREN  shift 57
+	LEFT_BRACKET  shift 37
+	LEFT_BRACE  shift 56
+	STRING  shift 48
+	QUOTED_STRING  shift 55
+	MULTILINE_STRING  shift 49
+	ADD  shift 58
+	SUB  shift 59
+	TRUE  shift 46
+	FALSE  shift 47
+	NIL  shift 50
+	NULL  shift 51
+	.  error
+
+	unary_op  goto 53
+	identifier  goto 35
+	empty_block  goto 39
+	assignment_expr  goto 43
+	call_expr  goto 27
+	call_expr_start  goto 41
+	binary_expr  goto 28
+	conditional_expr  goto 42
+	arithmeticExpr  goto 44
+	paren_expr  goto 26
+	paren_expr_start  goto 40
+	index_expr  goto 30
+	attr_expr  goto 29
+	expr  goto 175
+	map_init  goto 25
+	map_init_start  goto 38
+	array_list  goto 24
+	array_list_start  goto 36
+	array_elem  goto 23
+	bool_literal  goto 31
+	string_literal  goto 32
+	nil_literal  goto 33
+	number_literal  goto 34
+
+state 165
+	index_expr:  DOT LEFT_BRACKET expr RIGHT_BRACKET.    (78)
+
+	.  reduce 78 (src line 333)
+
+
+state 166
+	assignment_expr:  expr.EQ expr 
+	conditional_expr:  expr.GTE expr 
+	conditional_expr:  expr.GT expr 
+	conditional_expr:  expr.OR expr 
+	conditional_expr:  expr.AND expr 
+	conditional_expr:  expr.LT expr 
+	conditional_expr:  expr.LTE expr 
+	conditional_expr:  expr.NEQ expr 
+	conditional_expr:  expr.EQEQ expr 
+	arithmeticExpr:  expr.ADD expr 
+	arithmeticExpr:  expr.SUB expr 
+	arithmeticExpr:  expr.MUL expr 
+	arithmeticExpr:  expr.DIV expr 
+	arithmeticExpr:  expr.MOD expr 
+	map_init_start:  LEFT_BRACE expr COLON expr.    (94)
+
+	ADD  shift 78
+	DIV  shift 81
+	GTE  shift 70
+	GT  shift 71
+	LT  shift 74
+	LTE  shift 75
+	MOD  shift 82
+	MUL  shift 80
+	NEQ  shift 76
+	EQ  shift 69
+	EQEQ  shift 77
+	SUB  shift 79
+	AND  shift 73
+	OR  shift 72
+	.  reduce 94 (src line 394)
+
+
+state 167
+	for_in_stmt:  FOR identifier IN expr stmt_block.    (31)
+
+	.  reduce 31 (src line 182)
+
+
+state 168
+	for_stmt:  FOR expr SEMICOLON expr SEMICOLON.expr stmt_block 
+	for_stmt:  FOR expr SEMICOLON expr SEMICOLON.stmt_block 
+
+	DOT  shift 45
+	ID  shift 54
+	NUMBER  shift 52
+	LEFT_PAREN  shift 57
+	LEFT_BRACKET  shift 37
+	LEFT_BRACE  shift 87
+	STRING  shift 48
+	QUOTED_STRING  shift 55
+	MULTILINE_STRING  shift 49
+	ADD  shift 58
+	SUB  shift 59
+	TRUE  shift 46
+	FALSE  shift 47
+	NIL  shift 50
+	NULL  shift 51
+	.  error
+
+	unary_op  goto 53
+	identifier  goto 35
+	stmt_block  goto 177
+	empty_block  goto 86
+	assignment_expr  goto 43
+	call_expr  goto 27
+	call_expr_start  goto 41
+	binary_expr  goto 28
+	conditional_expr  goto 42
+	arithmeticExpr  goto 44
+	paren_expr  goto 26
+	paren_expr_start  goto 40
+	index_expr  goto 30
+	attr_expr  goto 29
+	expr  goto 176
+	map_init  goto 25
+	map_init_start  goto 38
+	array_list  goto 24
+	array_list_start  goto 36
+	array_elem  goto 23
+	bool_literal  goto 31
+	string_literal  goto 32
+	nil_literal  goto 33
+	number_literal  goto 34
+
+state 169
+	for_stmt:  FOR expr SEMICOLON SEMICOLON expr.stmt_block 
+	assignment_expr:  expr.EQ expr 
+	conditional_expr:  expr.GTE expr 
+	conditional_expr:  expr.GT expr 
+	conditional_expr:  expr.OR expr 
+	conditional_expr:  expr.AND expr 
+	conditional_expr:  expr.LT expr 
+	conditional_expr:  expr.LTE expr 
+	conditional_expr:  expr.NEQ expr 
+	conditional_expr:  expr.EQEQ expr 
+	arithmeticExpr:  expr.ADD expr 
+	arithmeticExpr:  expr.SUB expr 
+	arithmeticExpr:  expr.MUL expr 
+	arithmeticExpr:  expr.DIV expr 
+	arithmeticExpr:  expr.MOD expr 
+
+	LEFT_BRACE  shift 115
+	ADD  shift 78
+	DIV  shift 81
+	GTE  shift 70
+	GT  shift 71
+	LT  shift 74
+	LTE  shift 75
+	MOD  shift 82
+	MUL  shift 80
+	NEQ  shift 76
+	EQ  shift 69
+	EQEQ  shift 77
+	SUB  shift 79
+	AND  shift 73
+	OR  shift 72
+	.  error
+
+	stmt_block  goto 178
+	empty_block  goto 114
+
+state 170
+	for_stmt:  FOR expr SEMICOLON SEMICOLON stmt_block.    (37)
+
+	.  reduce 37 (src line 204)
+
+
+state 171
+	for_stmt:  FOR SEMICOLON expr SEMICOLON expr.stmt_block 
+	assignment_expr:  expr.EQ expr 
+	conditional_expr:  expr.GTE expr 
+	conditional_expr:  expr.GT expr 
+	conditional_expr:  expr.OR expr 
+	conditional_expr:  expr.AND expr 
+	conditional_expr:  expr.LT expr 
+	conditional_expr:  expr.LTE expr 
+	conditional_expr:  expr.NEQ expr 
+	conditional_expr:  expr.EQEQ expr 
+	arithmeticExpr:  expr.ADD expr 
+	arithmeticExpr:  expr.SUB expr 
+	arithmeticExpr:  expr.MUL expr 
+	arithmeticExpr:  expr.DIV expr 
+	arithmeticExpr:  expr.MOD expr 
+
+	LEFT_BRACE  shift 115
+	ADD  shift 78
+	DIV  shift 81
+	GTE  shift 70
+	GT  shift 71
+	LT  shift 74
+	LTE  shift 75
+	MOD  shift 82
+	MUL  shift 80
+	NEQ  shift 76
+	EQ  shift 69
+	EQEQ  shift 77
+	SUB  shift 79
+	AND  shift 73
+	OR  shift 72
+	.  error
+
+	stmt_block  goto 179
+	empty_block  goto 114
+
+state 172
+	for_stmt:  FOR SEMICOLON expr SEMICOLON stmt_block.    (35)
+
+	.  reduce 35 (src line 199)
+
+
+state 173
+	for_stmt:  FOR SEMICOLON SEMICOLON expr stmt_block.    (38)
+
+	.  reduce 38 (src line 206)
+
+
+state 174
+	function_args:  function_args COMMA function_arg.    (53)
+
+	.  reduce 53 (src line 270)
+
+
+state 175
+	assignment_expr:  expr.EQ expr 
+	conditional_expr:  expr.GTE expr 
+	conditional_expr:  expr.GT expr 
+	conditional_expr:  expr.OR expr 
+	conditional_expr:  expr.AND expr 
+	conditional_expr:  expr.LT expr 
+	conditional_expr:  expr.LTE expr 
+	conditional_expr:  expr.NEQ expr 
+	conditional_expr:  expr.EQEQ expr 
+	arithmeticExpr:  expr.ADD expr 
+	arithmeticExpr:  expr.SUB expr 
+	arithmeticExpr:  expr.MUL expr 
+	arithmeticExpr:  expr.DIV expr 
+	arithmeticExpr:  expr.MOD expr 
+	map_init_start:  map_init_start COMMA expr COLON expr.    (95)
+
+	ADD  shift 78
+	DIV  shift 81
+	GTE  shift 70
+	GT  shift 71
+	LT  shift 74
+	LTE  shift 75
+	MOD  shift 82
+	MUL  shift 80
+	NEQ  shift 76
+	EQ  shift 69
+	EQEQ  shift 77
+	SUB  shift 79
+	AND  shift 73
+	OR  shift 72
+	.  reduce 95 (src line 400)
+
+
+state 176
+	for_stmt:  FOR expr SEMICOLON expr SEMICOLON expr.stmt_block 
+	assignment_expr:  expr.EQ expr 
+	conditional_expr:  expr.GTE expr 
+	conditional_expr:  expr.GT expr 
+	conditional_expr:  expr.OR expr 
+	conditional_expr:  expr.AND expr 
+	conditional_expr:  expr.LT expr 
+	conditional_expr:  expr.LTE expr 
+	conditional_expr:  expr.NEQ expr 
+	conditional_expr:  expr.EQEQ expr 
+	arithmeticExpr:  expr.ADD expr 
+	arithmeticExpr:  expr.SUB expr 
+	arithmeticExpr:  expr.MUL expr 
+	arithmeticExpr:  expr.DIV expr 
+	arithmeticExpr:  expr.MOD expr 
+
+	LEFT_BRACE  shift 115
+	ADD  shift 78
+	DIV  shift 81
+	GTE  shift 70
+	GT  shift 71
+	LT  shift 74
+	LTE  shift 75
+	MOD  shift 82
+	MUL  shift 80
+	NEQ  shift 76
+	EQ  shift 69
+	EQEQ  shift 77
+	SUB  shift 79
+	AND  shift 73
+	OR  shift 72
+	.  error
+
+	stmt_block  goto 180
+	empty_block  goto 114
+
+state 177
+	for_stmt:  FOR expr SEMICOLON expr SEMICOLON stmt_block.    (33)
+
+	.  reduce 33 (src line 195)
+
+
+state 178
+	for_stmt:  FOR expr SEMICOLON SEMICOLON expr stmt_block.    (36)
+
+	.  reduce 36 (src line 202)
+
+
+state 179
+	for_stmt:  FOR SEMICOLON expr SEMICOLON expr stmt_block.    (34)
+
+	.  reduce 34 (src line 197)
+
+
+state 180
+	for_stmt:  FOR expr SEMICOLON expr SEMICOLON expr stmt_block.    (32)
+
+	.  reduce 32 (src line 193)
+
+
+57 terminals, 40 nonterminals
+114 grammar rules, 181/16000 states
+0 shift/reduce, 0 reduce/reduce conflicts reported
+139 working sets used
+memory: parser 1391/240000
+150 extra closures
+1045 shift entries, 8 exceptions
+115 goto entries
+848 entries saved by goto default
+Optimizer space used: output 789/240000
+789 table entries, 275 zero
+maximum spread: 56, maximum offset: 176
