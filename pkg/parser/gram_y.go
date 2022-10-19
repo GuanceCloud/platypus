@@ -143,7 +143,7 @@ const yyEofCode = 1
 const yyErrCode = 2
 const yyInitialStackSize = 16
 
-//line gram.y:471
+//line gram.y:470
 
 //line yacctab:1
 var yyExca = [...]int8{
@@ -706,19 +706,19 @@ yydefault:
 
 	case 5:
 		yyDollar = yyS[yypt-2 : yypt+1]
-//line gram.y:123
+//line gram.y:122
 		{
 			yylex.(*parser).parseResult = yyDollar[2].aststmts
 		}
 	case 7:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line gram.y:126
+//line gram.y:125
 		{
 			yylex.(*parser).unexpected("", "")
 		}
 	case 8:
 		yyDollar = yyS[yypt-2 : yypt+1]
-//line gram.y:131
+//line gram.y:130
 		{
 			s := yyDollar[1].aststmts
 			s = append(s, yyDollar[2].node)
@@ -726,25 +726,25 @@ yydefault:
 		}
 	case 10:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line gram.y:138
+//line gram.y:137
 		{
 			yyVAL.aststmts = ast.Stmts{yyDollar[1].node}
 		}
 	case 11:
 		yyDollar = yyS[yypt-2 : yypt+1]
-//line gram.y:142
+//line gram.y:141
 		{
 			yyVAL.aststmts = ast.Stmts{yyDollar[1].node}
 		}
 	case 12:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line gram.y:144
+//line gram.y:143
 		{
 			yyVAL.aststmts = ast.Stmts{}
 		}
 	case 13:
 		yyDollar = yyS[yypt-3 : yypt+1]
-//line gram.y:146
+//line gram.y:145
 		{
 			s := yyDollar[1].aststmts
 			s = append(s, yyDollar[2].node)
@@ -752,116 +752,116 @@ yydefault:
 		}
 	case 29:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line gram.y:170
+//line gram.y:169
 		{
 			yyVAL.node = yylex.(*parser).newBreakStmt()
 		}
 	case 30:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line gram.y:174
+//line gram.y:173
 		{
 			yyVAL.node = yylex.(*parser).newContinueStmt()
 		}
 	case 31:
 		yyDollar = yyS[yypt-5 : yypt+1]
-//line gram.y:183
+//line gram.y:182
 		{
 			yyVAL.node = yylex.(*parser).newForInStmt(yyDollar[2].item.Val, yyDollar[4].node, yyDollar[5].aststmts)
 		}
 	case 32:
 		yyDollar = yyS[yypt-7 : yypt+1]
-//line gram.y:194
+//line gram.y:193
 		{
 			yyVAL.node = yylex.(*parser).newForStmt(yyDollar[2].node, yyDollar[4].node, yyDollar[6].node, yyDollar[7].aststmts)
 		}
 	case 33:
 		yyDollar = yyS[yypt-6 : yypt+1]
-//line gram.y:196
+//line gram.y:195
 		{
 			yyVAL.node = yylex.(*parser).newForStmt(yyDollar[2].node, yyDollar[4].node, nil, yyDollar[6].aststmts)
 		}
 	case 34:
 		yyDollar = yyS[yypt-6 : yypt+1]
-//line gram.y:198
+//line gram.y:197
 		{
 			yyVAL.node = yylex.(*parser).newForStmt(nil, yyDollar[3].node, yyDollar[5].node, yyDollar[6].aststmts)
 		}
 	case 35:
 		yyDollar = yyS[yypt-5 : yypt+1]
-//line gram.y:200
+//line gram.y:199
 		{
 			yyVAL.node = yylex.(*parser).newForStmt(nil, yyDollar[3].node, nil, yyDollar[5].aststmts)
 		}
 	case 36:
 		yyDollar = yyS[yypt-6 : yypt+1]
-//line gram.y:203
+//line gram.y:202
 		{
 			yyVAL.node = yylex.(*parser).newForStmt(yyDollar[2].node, nil, yyDollar[5].node, yyDollar[6].aststmts)
 		}
 	case 37:
 		yyDollar = yyS[yypt-5 : yypt+1]
-//line gram.y:205
+//line gram.y:204
 		{
 			yyVAL.node = yylex.(*parser).newForStmt(yyDollar[2].node, nil, nil, yyDollar[5].aststmts)
 		}
 	case 38:
 		yyDollar = yyS[yypt-5 : yypt+1]
-//line gram.y:207
+//line gram.y:206
 		{
 			yyVAL.node = yylex.(*parser).newForStmt(nil, nil, yyDollar[4].node, yyDollar[5].aststmts)
 		}
 	case 39:
 		yyDollar = yyS[yypt-4 : yypt+1]
-//line gram.y:209
+//line gram.y:208
 		{
 			yyVAL.node = yylex.(*parser).newForStmt(nil, nil, nil, yyDollar[4].aststmts)
 		}
 	case 41:
 		yyDollar = yyS[yypt-3 : yypt+1]
-//line gram.y:214
+//line gram.y:213
 		{
 			yyVAL.node = yylex.(*parser).newIfelseStmt(yyDollar[1].node, nil, nil, yyDollar[3].aststmts)
 		}
 	case 42:
 		yyDollar = yyS[yypt-2 : yypt+1]
-//line gram.y:219
+//line gram.y:218
 		{
 			yyVAL.node = yylex.(*parser).newIfelseStmt(nil, yyDollar[2].ifitem, nil, nil)
 		}
 	case 43:
 		yyDollar = yyS[yypt-3 : yypt+1]
-//line gram.y:221
+//line gram.y:220
 		{
 			yyVAL.node = yylex.(*parser).newIfelseStmt(yyDollar[1].node, nil, yyDollar[3].ifitem, nil)
 		}
 	case 44:
 		yyDollar = yyS[yypt-2 : yypt+1]
-//line gram.y:225
+//line gram.y:224
 		{
 			yyVAL.ifitem = yylex.(*parser).newIfExpr(yyDollar[1].node, yyDollar[2].aststmts)
 		}
 	case 45:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line gram.y:227
+//line gram.y:226
 		{
 			yylex.(*parser).addParseErr(nil, fmt.Errorf("if/elif expr not found condition"))
 			yyVAL.ifitem = nil
 		}
 	case 47:
 		yyDollar = yyS[yypt-3 : yypt+1]
-//line gram.y:237
+//line gram.y:236
 		{
 			yyVAL.aststmts = yyDollar[2].aststmts
 		}
 	case 48:
 		yyDollar = yyS[yypt-2 : yypt+1]
-//line gram.y:241
+//line gram.y:240
 		{
 			yyVAL.aststmts = nil
 		}
 	case 50:
 		yyDollar = yyS[yypt-3 : yypt+1]
-//line gram.y:247
+//line gram.y:246
 		{
 			f, err := yylex.(*parser).newCallExpr(yyDollar[1].item.Val, yyDollar[3].nodes)
 			if err != nil {
@@ -873,7 +873,7 @@ yydefault:
 		}
 	case 51:
 		yyDollar = yyS[yypt-2 : yypt+1]
-//line gram.y:257
+//line gram.y:256
 		{
 			f, err := yylex.(*parser).newCallExpr(yyDollar[1].item.Val, nil)
 			if err != nil {
@@ -885,135 +885,135 @@ yydefault:
 		}
 	case 53:
 		yyDollar = yyS[yypt-3 : yypt+1]
-//line gram.y:271
+//line gram.y:270
 		{
 			yyVAL.nodes = append(yyVAL.nodes, yyDollar[3].node)
 		}
 	case 55:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line gram.y:276
+//line gram.y:275
 		{
 			yyVAL.nodes = []*ast.Node{yyDollar[1].node}
 		}
 	case 60:
 		yyDollar = yyS[yypt-3 : yypt+1]
-//line gram.y:286
+//line gram.y:285
 		{
 			yyVAL.node = yylex.(*parser).newAssignmentExpr(yyDollar[1].node, yyDollar[3].node)
 		}
 	case 61:
 		yyDollar = yyS[yypt-3 : yypt+1]
-//line gram.y:290
+//line gram.y:289
 		{
 			yyVAL.node = yylex.(*parser).newConditionalExpr(yyDollar[1].node, yyDollar[3].node, yyDollar[2].item)
 		}
 	case 62:
 		yyDollar = yyS[yypt-3 : yypt+1]
-//line gram.y:292
+//line gram.y:291
 		{
 			yyVAL.node = yylex.(*parser).newConditionalExpr(yyDollar[1].node, yyDollar[3].node, yyDollar[2].item)
 		}
 	case 63:
 		yyDollar = yyS[yypt-3 : yypt+1]
-//line gram.y:294
+//line gram.y:293
 		{
 			yyVAL.node = yylex.(*parser).newConditionalExpr(yyDollar[1].node, yyDollar[3].node, yyDollar[2].item)
 		}
 	case 64:
 		yyDollar = yyS[yypt-3 : yypt+1]
-//line gram.y:296
+//line gram.y:295
 		{
 			yyVAL.node = yylex.(*parser).newConditionalExpr(yyDollar[1].node, yyDollar[3].node, yyDollar[2].item)
 		}
 	case 65:
 		yyDollar = yyS[yypt-3 : yypt+1]
-//line gram.y:298
+//line gram.y:297
 		{
 			yyVAL.node = yylex.(*parser).newConditionalExpr(yyDollar[1].node, yyDollar[3].node, yyDollar[2].item)
 		}
 	case 66:
 		yyDollar = yyS[yypt-3 : yypt+1]
-//line gram.y:300
+//line gram.y:299
 		{
 			yyVAL.node = yylex.(*parser).newConditionalExpr(yyDollar[1].node, yyDollar[3].node, yyDollar[2].item)
 		}
 	case 67:
 		yyDollar = yyS[yypt-3 : yypt+1]
-//line gram.y:302
+//line gram.y:301
 		{
 			yyVAL.node = yylex.(*parser).newConditionalExpr(yyDollar[1].node, yyDollar[3].node, yyDollar[2].item)
 		}
 	case 68:
 		yyDollar = yyS[yypt-3 : yypt+1]
-//line gram.y:304
+//line gram.y:303
 		{
 			yyVAL.node = yylex.(*parser).newConditionalExpr(yyDollar[1].node, yyDollar[3].node, yyDollar[2].item)
 		}
 	case 69:
 		yyDollar = yyS[yypt-3 : yypt+1]
-//line gram.y:309
+//line gram.y:308
 		{
 			yyVAL.node = yylex.(*parser).newArithmeticExpr(yyDollar[1].node, yyDollar[3].node, yyDollar[2].item)
 		}
 	case 70:
 		yyDollar = yyS[yypt-3 : yypt+1]
-//line gram.y:311
+//line gram.y:310
 		{
 			yyVAL.node = yylex.(*parser).newArithmeticExpr(yyDollar[1].node, yyDollar[3].node, yyDollar[2].item)
 		}
 	case 71:
 		yyDollar = yyS[yypt-3 : yypt+1]
-//line gram.y:313
+//line gram.y:312
 		{
 			yyVAL.node = yylex.(*parser).newArithmeticExpr(yyDollar[1].node, yyDollar[3].node, yyDollar[2].item)
 		}
 	case 72:
 		yyDollar = yyS[yypt-3 : yypt+1]
-//line gram.y:315
+//line gram.y:314
 		{
 			yyVAL.node = yylex.(*parser).newArithmeticExpr(yyDollar[1].node, yyDollar[3].node, yyDollar[2].item)
 		}
 	case 73:
 		yyDollar = yyS[yypt-3 : yypt+1]
-//line gram.y:317
+//line gram.y:316
 		{
 			yyVAL.node = yylex.(*parser).newArithmeticExpr(yyDollar[1].node, yyDollar[3].node, yyDollar[2].item)
 		}
 	case 75:
 		yyDollar = yyS[yypt-2 : yypt+1]
-//line gram.y:325
+//line gram.y:324
 		{
 			yyVAL.node = ast.WrapParenExpr(&ast.ParenExpr{Param: yyDollar[2].node})
 		}
 	case 77:
 		yyDollar = yyS[yypt-4 : yypt+1]
-//line gram.y:331
+//line gram.y:330
 		{
 			yyVAL.node = yylex.(*parser).newIndexExpr(
 				ast.WrapIdentifier(&ast.Identifier{Name: yyDollar[1].item.Val}), yyDollar[3].node)
 		}
 	case 78:
 		yyDollar = yyS[yypt-4 : yypt+1]
-//line gram.y:335
+//line gram.y:334
 		{
 			yyVAL.node = yylex.(*parser).newIndexExpr(nil, yyDollar[3].node)
 		}
 	case 79:
 		yyDollar = yyS[yypt-4 : yypt+1]
-//line gram.y:337
+//line gram.y:336
 		{
 			yyVAL.node = yylex.(*parser).newIndexExpr(yyDollar[1].node, yyDollar[3].node)
 		}
 	case 80:
 		yyDollar = yyS[yypt-3 : yypt+1]
-//line gram.y:344
+//line gram.y:343
 		{
 			yyVAL.node = yylex.(*parser).newAttrExpr(
 				ast.WrapIdentifier(&ast.Identifier{Name: yyDollar[1].item.Val}), yyDollar[3].node)
 		}
 	case 81:
 		yyDollar = yyS[yypt-3 : yypt+1]
-//line gram.y:349
+//line gram.y:348
 		{
 			yyVAL.node = yylex.(*parser).newAttrExpr(
 				ast.WrapIdentifier(&ast.Identifier{Name: yyDollar[1].item.Val}),
@@ -1022,57 +1022,57 @@ yydefault:
 		}
 	case 82:
 		yyDollar = yyS[yypt-3 : yypt+1]
-//line gram.y:356
+//line gram.y:355
 		{
 			yyVAL.node = yylex.(*parser).newAttrExpr(yyDollar[1].node, yyDollar[3].node)
 		}
 	case 83:
 		yyDollar = yyS[yypt-3 : yypt+1]
-//line gram.y:360
+//line gram.y:359
 		{
 			yyVAL.node = yylex.(*parser).newAttrExpr(yyDollar[1].node,
 				ast.WrapIdentifier(&ast.Identifier{Name: yyDollar[3].item.Val}))
 		}
 	case 84:
 		yyDollar = yyS[yypt-3 : yypt+1]
-//line gram.y:365
+//line gram.y:364
 		{
 			yyVAL.node = yylex.(*parser).newAttrExpr(yyDollar[1].node, yyDollar[3].node)
 		}
 	case 85:
 		yyDollar = yyS[yypt-3 : yypt+1]
-//line gram.y:369
+//line gram.y:368
 		{
 			yyVAL.node = yylex.(*parser).newAttrExpr(yyDollar[1].node,
 				ast.WrapIdentifier(&ast.Identifier{Name: yyDollar[3].item.Val}))
 		}
 	case 88:
 		yyDollar = yyS[yypt-2 : yypt+1]
-//line gram.y:379
+//line gram.y:378
 		{
 			yyVAL.node = ast.WrapListInitExpr(&ast.ListInitExpr{})
 		}
 	case 89:
 		yyDollar = yyS[yypt-2 : yypt+1]
-//line gram.y:383
+//line gram.y:382
 		{
 			yyVAL.node = ast.WrapListInitExpr(&ast.ListInitExpr{List: []*ast.Node{yyDollar[2].node}})
 		}
 	case 90:
 		yyDollar = yyS[yypt-3 : yypt+1]
-//line gram.y:385
+//line gram.y:384
 		{
 			yyVAL.node.ListInitExpr.List = append(yyVAL.node.ListInitExpr.List, yyDollar[3].node)
 		}
 	case 93:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line gram.y:391
+//line gram.y:390
 		{
 			yyVAL.node = ast.WrapMapInitExpr(&ast.MapInitExpr{})
 		}
 	case 94:
 		yyDollar = yyS[yypt-4 : yypt+1]
-//line gram.y:395
+//line gram.y:394
 		{
 			yyVAL.node = ast.WrapMapInitExpr(&ast.MapInitExpr{
 				KeyValeList: [][2]*ast.Node{{yyDollar[2].node, yyDollar[4].node}},
@@ -1080,7 +1080,7 @@ yydefault:
 		}
 	case 95:
 		yyDollar = yyS[yypt-5 : yypt+1]
-//line gram.y:401
+//line gram.y:400
 		{
 
 			mapInit := yyDollar[1].node.MapInitExpr
@@ -1088,57 +1088,57 @@ yydefault:
 		}
 	case 101:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line gram.y:416
+//line gram.y:415
 		{
 			yyVAL.node = ast.WrapIdentifier(&ast.Identifier{Name: yyDollar[1].item.Val})
 		}
 	case 102:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line gram.y:421
+//line gram.y:420
 		{
 			yyVAL.node = ast.WrapBoolLiteral(&ast.BoolLiteral{Val: true})
 		}
 	case 103:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line gram.y:423
+//line gram.y:422
 		{
 			yyVAL.node = ast.WrapBoolLiteral(&ast.BoolLiteral{Val: false})
 		}
 	case 104:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line gram.y:428
+//line gram.y:427
 		{
 			yyVAL.node = ast.WrapStringLiteral(
 				&ast.StringLiteral{Val: yylex.(*parser).unquoteString(yyDollar[1].item.Val)})
 		}
 	case 105:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line gram.y:431
+//line gram.y:430
 		{
 			yyVAL.node = ast.WrapStringLiteral(
 				&ast.StringLiteral{Val: yylex.(*parser).unquoteMultilineString(yyDollar[1].item.Val)})
 		}
 	case 106:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line gram.y:437
+//line gram.y:436
 		{
 			yyVAL.node = ast.WrapNilLiteral(&ast.NilLiteral{})
 		}
 	case 107:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line gram.y:439
+//line gram.y:438
 		{
 			yyVAL.node = ast.WrapNilLiteral(&ast.NilLiteral{})
 		}
 	case 108:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line gram.y:445
+//line gram.y:444
 		{
 			yyVAL.node = ast.WrapNumberLiteral(yylex.(*parser).number(yyDollar[1].item.Val))
 		}
 	case 109:
 		yyDollar = yyS[yypt-2 : yypt+1]
-//line gram.y:447
+//line gram.y:446
 		{
 			num := yylex.(*parser).number(yyDollar[2].item.Val)
 			switch yyDollar[1].item.Typ {
@@ -1154,7 +1154,7 @@ yydefault:
 		}
 	case 111:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line gram.y:464
+//line gram.y:463
 		{
 			yyVAL.item.Val = yylex.(*parser).unquoteString(yyDollar[1].item.Val)
 		}

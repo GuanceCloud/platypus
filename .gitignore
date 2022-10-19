@@ -1,1 +1,4 @@
-parser/y.output
+pkg/parser/y.output
+*.pdf
+ppl
+ppl.exe

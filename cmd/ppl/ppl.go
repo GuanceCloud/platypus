@@ -100,7 +100,7 @@ func runcScript(options *Option) {
 	var script *plruntime.Script
 
 	if s, ok := scripts[options.Script]; !ok {
-		fmt.Println("The specified script was not found in the parsed results")
+		fmt.Printf("The specified script %s was not found in the parsed results\n", options.Script)
 		fmt.Print(scripts)
 		os.Exit(1)
 

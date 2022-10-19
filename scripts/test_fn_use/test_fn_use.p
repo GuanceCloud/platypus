@@ -5,6 +5,8 @@ if a {
     add_key(a)
 }
 
+set_tag(a, "1")
+
 if b {
     add_key(b)
 }
