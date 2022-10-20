@@ -42,25 +42,38 @@ func main() {
 }
 
 func NewRootCmd() *cobra.Command {
-	options := Option{}
 	var rootCmd = &cobra.Command{
 		Use:   "ppl",
 		Short: "PPL is a pipeline processor language.",
 		Long:  "PPL is a pipeline processor language.",
+	}
+
+	newRunCmd(rootCmd)
+	return rootCmd
+}
+
+func newRunCmd(rootCmd *cobra.Command) {
+	options := Option{}
+
+	var runCmd = &cobra.Command{
+		Use:   "run",
+		Short: "Run ppl script",
+		Long:  "Run pipeline processor language script",
 		Run: func(cmd *cobra.Command, args []string) {
 			runcScript(&options)
 		},
 	}
 
 	wd, _ := os.Getwd()
-	rootCmd.Flags().StringVarP(&options.Wksp, "workspace", "w", wd, "ppl workspace directory")
-	rootCmd.Flags().StringVarP(&options.Script, "script", "s", "", "script name")
-	rootCmd.Flags().StringVarP(&options.Input, "input", "i", "", "input data file path")
-	rootCmd.Flags().StringVarP(&options.Type, "type", "t", "text", "data source type: text, lineprotocol")
-	rootCmd.Flags().StringVarP(&options.OutputType, "output-type", "", "json", "result output type: json, lineprotocol")
-	rootCmd.MarkFlagRequired("script")
-	rootCmd.MarkFlagRequired("file")
-	return rootCmd
+	runCmd.Flags().StringVarP(&options.Wksp, "workspace", "w", wd, "ppl workspace directory")
+	runCmd.Flags().StringVarP(&options.Script, "script", "s", "", "script name")
+	runCmd.Flags().StringVarP(&options.Input, "input", "i", "", "input data file path")
+	runCmd.Flags().StringVarP(&options.Type, "type", "t", "text", "data source type: text, lineprotocol")
+	runCmd.Flags().StringVarP(&options.OutputType, "output-type", "", "json", "result output type: json, lineprotocol")
+	_ = runCmd.MarkFlagRequired("script")
+	_ = runCmd.MarkFlagRequired("file")
+
+	rootCmd.AddCommand(runCmd)
 }
 
 func runcScript(options *Option) {

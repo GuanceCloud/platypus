@@ -76,7 +76,7 @@ func ReadPlScriptFromDir(dirPath string) (map[string]string, map[string]string, 
 				continue
 			}
 			sName := v.Name()
-			if filepath.Ext(sName) != ".p" {
+			if filepath.Ext(sName) != ".ppl" {
 				continue
 			}
 			sPath := filepath.Join(dirPath, sName)

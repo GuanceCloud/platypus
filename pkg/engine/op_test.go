@@ -89,13 +89,13 @@ for a = 0; a < 12; a = a + 1 {
 `
 
 	scripts, errs := ParseScript(map[string]string{
-		"abc.p": pl,
+		"abc.ppl": pl,
 	}, funcs.FuncsMap, funcs.FuncsCheckMap)
 	if len(errs) != 0 {
-		t.Fatal(errs["abc.p"])
+		t.Fatal(errs["abc.ppl"])
 	}
 
-	script := scripts["abc.p"]
+	script := scripts["abc.ppl"]
 
 	m, tags, f, tn, drop, err := RunScript(script, "test", nil, nil, time.Now(), nil)
 	t.Log(m, tags, tn, drop)
