@@ -14,9 +14,9 @@ import (
 )
 
 func NewTestingRunner(script string) (*runtime.Script, error) {
-	name := "default.p"
+	name := "default.ppl"
 	ret1, ret2 := engine.ParseScript(map[string]string{
-		"default.p": script,
+		"default.ppl": script,
 	}, FuncsMap, FuncsCheckMap,
 	)
 	if len(ret1) > 0 {

@@ -15,15 +15,15 @@ import (
 
 func TestUse(t *testing.T) {
 	case1 := map[string]string{
-		"a.p": "if true {use(\"b.p\")}",
-		"b.p": "add_key(b,1)",
-		"d.p": "use(\"c.p\")",
-		"c.p": "use(\"a.p\") use(\"d.p\") use(\"fcName.p\")",
+		"a.ppl": "if true {use(\"b.ppl\")}",
+		"b.ppl": "add_key(b,1)",
+		"d.ppl": "use(\"c.ppl\")",
+		"c.ppl": "use(\"a.ppl\") use(\"d.ppl\") use(\"fcName.ppl\")",
 	}
 
 	ret := [2][]string{
-		{"a.p", "b.p"},
-		{"d.p", "c.p"},
+		{"a.ppl", "b.ppl"},
+		{"d.ppl", "c.ppl"},
 	}
 
 	timenow := time.Now()

@@ -4,7 +4,7 @@
 
 参数:
 
-- `name`: 脚本名，如 abp.p
+- `name`: 脚本名，如 abp.ppl
 
 函数说明：调用其他脚本，可在被调用的脚本访问当前的所有数据
 示例：
@@ -12,14 +12,14 @@
 ```python
 # 待处理数据: {"ip":"1.2.3.4"}
 
-# 处理脚本 a.p
-use(\"b.p\")
+# 处理脚本 a.ppl
+use(\"b.ppl\")
 
-# 处理脚本 b.p
+# 处理脚本 b.ppl
 json(_, ip)
 geoip(ip)
 
-# 执行脚本 a.p 的处理结果
+# 执行脚本 a.ppl 的处理结果
 {
   "city"     : "Brisbane",
   "country"  : "AU",

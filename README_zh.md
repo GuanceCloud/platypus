@@ -18,8 +18,8 @@
 
 ## 什么是 PPL
 
-Guance Cloud PPL（Pipeline Processor Language）是一种用于数据处理的领域特定语言，主要用于文本和半结构化数据处理。 PPL 可用于边缘的大规模日志解析和特征提取。 支持 Grok、JSON 和 XML 等多种提取方法。
-PPL作为一种数据处理语言，极大地提高了文本和半结构化处理的可编程性。
+Guance Cloud PPL（Pipeline Processor Language）是一种用于数据处理的领域特定语言，主要用于文本和半结构化数据处理。 PPL 可在边缘节点进行大规模数据解析和特征提取。 支持 Grok、JSON 和 XML 等多种提取方法。
+PPL作为一种数据处理语言，极大地提高了文本和半结构化数据处理的可编程性。
 
 ## 快速开始
 
@@ -50,10 +50,10 @@ ppl 工具支持的输入的数据协议:
 
 ```sh
 Usage:
-  ppl [flags]
+  ppl run [flags]
 
 Flags:
-  -h, --help                 help for ppl
+  -h, --help                 help for run
   -i, --input string         input data file path
       --output-type string   result output type: json, lineprotocol (default "json")
   -s, --script string        script name
@@ -72,7 +72,7 @@ Flags:
 207.46.13.28 - - [19/Oct/2022:02:25:59 +0000] "GET / HTTP/2.0" 200 5 "-" "Mozilla/5.0 (compatible; bingbot/2.0; +http://www.bing.com/bingbot.htm)"
 ```
 
-创建一个 `nginx_access_log.p`，并将以下内容写入脚本中：
+创建一个 `nginx_access_log.ppl`，并将以下内容写入脚本中：
 
 ```txt
 # access log
@@ -97,7 +97,7 @@ default_time(time)
 执行 ppl 工具：
 
 ```sh
-ppl@GuanceCloud:~/go/src/github.com/GuanceCloud/ppl/scripts/test_nginx_access_log# ppl -s nginx_access_log.p -i nginx_access_log.data 
+ppl@GuanceCloud:~/go/src/github.com/GuanceCloud/ppl/scripts/test_nginx_access_log$ ppl run -s nginx_access_log.ppl -i nginx_access_log.data 
 {
   "fields": {
     "agent": "Mozilla/5.0 (compatible; bingbot/2.0; +http://www.bing.com/bingbot.htm)",
