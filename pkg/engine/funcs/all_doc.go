@@ -54,6 +54,7 @@ var PipelineFunctionDocs = map[string]*PLDoc{
 	"trim()":               &trimMarkdown,
 	"uppercase()":          &uppercaseMarkdown,
 	"url_decode()":         &URLDecodeMarkdown,
+	"printf()":             &printfMarkdown,
 	"use()":                &useMarkdown,
 	"user_agent()":         &userAgentMarkdown,
 	"xml()":                &xmlMarkdown,
@@ -81,6 +82,9 @@ var (
 
 	//go:embed md/url_decode.md
 	docURLDecode string
+
+	//go:embed md/printf.md
+	docPrintf string
 
 	//go:embed md/geoip.md
 	docGeoIP string
@@ -181,6 +185,7 @@ var (
 
 var (
 	URLDecodeMarkdown         = PLDoc{Doc: docURLDecode, Deprecated: false}
+	printfMarkdown            = PLDoc{Doc: docPrintf, Deprecated: false}
 	addKeyMarkdown            = PLDoc{Doc: docAddKey, Deprecated: false}
 	addPatternMarkdown        = PLDoc{Doc: docAddPattern, Deprecated: false}
 	adjustTimezoneMarkdown    = PLDoc{Doc: docAdjustTimezone, Deprecated: false}

@@ -191,6 +191,7 @@ func runcScript(options *Option) {
 			println(err)
 			os.Exit(1)
 		}
+		println("PPL Output Data:")
 		fmt.Printf("%s", buf.String())
 	case OutLineProtocol:
 		pt, err := influxdb.NewPoint(measurement, tags, fields, tn)
@@ -198,6 +199,7 @@ func runcScript(options *Option) {
 			println(err)
 			os.Exit(1)
 		}
+		println("PPL Output Data:")
 		println(pt.String())
 	}
 }
