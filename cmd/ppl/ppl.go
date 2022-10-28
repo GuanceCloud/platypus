@@ -8,8 +8,9 @@ import (
 	"time"
 
 	"github.com/GuanceCloud/ppl/pkg/engine"
-	"github.com/GuanceCloud/ppl/pkg/engine/funcs"
 	plruntime "github.com/GuanceCloud/ppl/pkg/engine/runtime"
+	"github.com/GuanceCloud/ppl/pkg/inimpl/guancecloud/funcs"
+	"github.com/GuanceCloud/ppl/pkg/inimpl/guancecloud/input"
 	"github.com/influxdata/influxdb1-client/models"
 	influxdb "github.com/influxdata/influxdb1-client/v2"
 	"github.com/spf13/cobra"
@@ -164,7 +165,18 @@ func runcScript(options *Option) {
 		os.Exit(1)
 	}
 	var dropped bool
-	measurement, tags, fields, tn, dropped, err = engine.RunScript(script, measurement, tags, fields, tn, nil)
+	pt := input.GetPoint()
+	defer input.PutPoint(pt)
+
+	input.InitPt(pt, measurement, tags, fields, tn)
+
+	fields = pt.Fields
+	tags = pt.Tags
+	dropped = pt.Drop
+	tn = pt.Time
+	measurement = pt.Measurement
+
+	err = engine.RunScriptWithRMapIn(script, pt, nil)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)

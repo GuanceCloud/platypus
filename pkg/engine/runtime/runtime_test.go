@@ -6,13 +6,37 @@
 package runtime
 
 import (
+	"encoding/json"
+	"fmt"
 	"testing"
-	"time"
 
 	"github.com/GuanceCloud/ppl/pkg/ast"
 	"github.com/GuanceCloud/ppl/pkg/parser"
 	"github.com/stretchr/testify/assert"
 )
+
+type inputImpl struct {
+	data map[string]any
+}
+
+func (in *inputImpl) Get(key string) (any, ast.DType, error) {
+	if in.data == nil {
+		return nil, ast.Nil, fmt.Errorf("err")
+	}
+	v, ok := in.data[key]
+	if !ok {
+		return nil, ast.Nil, fmt.Errorf("err")
+	}
+
+	v, dtype := ast.DectDataType(v)
+	if dtype == ast.Invalid {
+		return nil, ast.Nil, fmt.Errorf("err")
+	}
+	return v, dtype, nil
+}
+
+func TestRunWithRMapIn(t *testing.T) {
+}
 
 func TestRuntime(t *testing.T) {
 	pl := `
@@ -152,10 +176,13 @@ add_key(len2, len("123"))
 		t.Fatal(err)
 	}
 
-	m, tags, f, tn, drop, err := RunScript(script, "s", nil, nil, time.Now(), nil)
-	t.Log(m, tags, tn, drop)
+	inData := &inputImpl{
+		data: map[string]any{},
+	}
+
+	err = RunScriptWithRMapIn(script, inData, nil)
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 	assert.Equal(t, map[string]any{
 		"aa dw.": `{"1":2,"a":[1,2,5],"d":null}`,
@@ -166,36 +193,7 @@ add_key(len2, len("123"))
 		"len1":   int64(2),
 		"len2":   int64(3),
 		"c":      int64(0),
-	}, f)
-}
-
-func TestInitPoint(t *testing.T) {
-	pt := &Point{
-		Tags: map[string]string{
-			"a1": "1",
-		},
-		Fields: map[string]any{
-			"a": int32(1),
-			"b": int64(2),
-			"c": float32(3),
-			"d": float64(4),
-			"e": "5",
-			"f": true,
-			"g": nil,
-		},
-	}
-	pt2 := &Point{}
-	InitPt(pt2, "", pt.Tags, pt.Fields, time.Now())
-	assert.Equal(t, &TFMeta{DType: ast.Int, PtFlag: PtField}, pt2.Meta["a"])
-	assert.Equal(t, int64(1), pt2.Fields["a"])
-	assert.Equal(t, &TFMeta{DType: ast.Int, PtFlag: PtField}, pt2.Meta["b"])
-	assert.Equal(t, float64(3), pt2.Fields["c"])
-	assert.Equal(t, &TFMeta{DType: ast.Float, PtFlag: PtField}, pt2.Meta["c"])
-	assert.Equal(t, &TFMeta{DType: ast.Float, PtFlag: PtField}, pt2.Meta["d"])
-	assert.Equal(t, &TFMeta{DType: ast.String, PtFlag: PtField}, pt2.Meta["e"])
-	assert.Equal(t, &TFMeta{DType: ast.Bool, PtFlag: PtField}, pt2.Meta["f"])
-	assert.Equal(t, &TFMeta{DType: ast.Nil, PtFlag: PtField}, pt2.Meta["g"])
-	assert.Equal(t, &TFMeta{DType: ast.String, PtFlag: PtTag}, pt2.Meta["a1"])
+	}, inData.data)
 }
 
 func TestCondTrue(t *testing.T) {
@@ -601,9 +599,35 @@ func addkeytest(ctx *Context, callExpr *ast.CallExpr) PlPanic {
 		if err != nil {
 			return err
 		}
-		return ctx.AddKey2PtWithVal(key, val, dtype, KindPtDefault)
+		if ctx.inType == InRMap {
+			if v, ok := ctx.inRMap.(*inputImpl); ok {
+				switch dtype {
+				case ast.Map, ast.List:
+					if res, err := json.Marshal(val); err == nil {
+						v.data[key] = string(res)
+					}
+				default:
+					v.data[key] = val
+				}
+			}
+		}
 	}
-	return ctx.AddKey2Pt(key, KindPtDefault)
+	if varb, err := ctx.GetKey(key); err == nil {
+		if ctx.inType == InRMap {
+			if v, ok := ctx.inRMap.(*inputImpl); ok {
+				switch varb.DType {
+				case ast.Map, ast.List:
+					if res, err := json.Marshal(varb.Value); err == nil {
+						v.data[key] = string(res)
+					}
+				default:
+					v.data[key] = varb.Value
+				}
+			}
+		}
+	}
+
+	return nil
 }
 
 func addkeycheck(ctx *Context, callExpr *ast.CallExpr) error {
@@ -617,13 +641,13 @@ func lentest(ctx *Context, callExpr *ast.CallExpr) PlPanic {
 	}
 	switch dtype { //nolint:exhaustive
 	case ast.String:
-		ctx.Regs.Append(int64(len(val.(string))), ast.Int)
+		ctx.Regs.ReturnAppend(int64(len(val.(string))), ast.Int)
 	case ast.List:
-		ctx.Regs.Append(int64(len(val.([]any))), ast.Int)
+		ctx.Regs.ReturnAppend(int64(len(val.([]any))), ast.Int)
 	case ast.Map:
-		ctx.Regs.Append(int64(len(val.(map[string]any))), ast.Int)
+		ctx.Regs.ReturnAppend(int64(len(val.(map[string]any))), ast.Int)
 	default:
-		ctx.Regs.Append(int64(0), ast.Int)
+		ctx.Regs.ReturnAppend(int64(0), ast.Int)
 	}
 	return nil
 }

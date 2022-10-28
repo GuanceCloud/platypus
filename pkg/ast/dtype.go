@@ -5,8 +5,6 @@
 
 package ast
 
-import "github.com/spf13/cast"
-
 type DType uint
 
 func (t DType) String() string {
@@ -58,16 +56,31 @@ func DectDataType(val any) (any, DType) {
 		return nil, Nil
 	}
 
-	switch val.(type) {
+	switch val := val.(type) {
 	case string:
 		return val, String
-	case int, int16, int32, int8,
-		uint, uint16, uint32, uint64, uint8:
-		return cast.ToInt64(val), Int
+	case int:
+		return int64(val), Int
+	case int16:
+		return int64(val), Int
+	case int32:
+		return int64(val), Int
+	case int8:
+		return int64(val), Int
+	case uint:
+		return int64(val), Int
+	case uint16:
+		return int64(val), Int
+	case uint32:
+		return int64(val), Int
+	case uint64:
+		return int64(val), Int
+	case uint8:
+		return int64(val), Int
 	case int64:
 		return val, Int
 	case float32:
-		return cast.ToFloat64(val), Float
+		return float64(val), Float
 	case float64:
 		return val, Float
 	case bool:

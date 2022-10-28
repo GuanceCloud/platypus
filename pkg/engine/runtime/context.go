@@ -6,30 +6,13 @@
 package runtime
 
 import (
+	"encoding/json"
 	"fmt"
 	"sync"
-	"time"
 
 	"github.com/GuanceCloud/grok"
 	"github.com/GuanceCloud/ppl/pkg/ast"
-)
-
-type (
-	PtFlag  uint
-	KeyKind uint
-)
-
-const (
-	PtMeasurement PtFlag = iota
-	PtTag
-	PtField
-	PtTFDefaulutOrKeep
-	PtTime
-)
-
-const (
-	KindPtDefault KeyKind = iota
-	KindPtTag
+	"github.com/spf13/cast"
 )
 
 const (
@@ -63,7 +46,9 @@ type Context struct {
 	funcCall  map[string]FuncCall
 	funcCheck map[string]FuncCheck
 
-	pt *Point
+	inType       InType
+	inRMap       InputWithRMap
+	inWithoutMap InputWithoutMap
 
 	// for 循环结束后需要清理此标志
 	loopBreak    bool
@@ -79,11 +64,44 @@ type Context struct {
 	// filepath  string
 }
 
-func InitCtx(ctx *Context, pt *Point, funcs map[string]FuncCall,
+func (ctx *Context) InData() any {
+	switch ctx.inType {
+	case InRMap:
+		return ctx.inRMap
+	default:
+		return ctx.inWithoutMap
+	}
+}
+
+func InitCtxWithoutMap(ctx *Context, inWithoutMap InputWithoutMap, funcs map[string]FuncCall,
 	callRef map[string]*Script, signal Signal,
 ) *Context {
 	ctx.Regs.Reset()
-	ctx.pt = pt
+
+	ctx.inType = InWithoutMap
+	ctx.inWithoutMap = inWithoutMap
+
+	ctx.funcCall = funcs
+	ctx.funcCheck = nil
+
+	ctx.callRCef = callRef
+	ctx.loopBreak = false
+	ctx.loopContinue = false
+
+	ctx.signal = signal
+	ctx.procExit = false
+
+	return ctx
+}
+
+func InitCtxWithRMap(ctx *Context, inWithRMap InputWithRMap, funcs map[string]FuncCall,
+	callRef map[string]*Script, signal Signal,
+) *Context {
+	ctx.Regs.Reset()
+
+	ctx.inType = InRMap
+	ctx.inRMap = inWithRMap
+
 	ctx.funcCall = funcs
 	ctx.funcCheck = nil
 
@@ -117,14 +135,6 @@ func InitCtxForCheck(ctx *Context, funcs map[string]FuncCall, funcsCheck map[str
 	return ctx
 }
 
-func (ctx *Context) Point() (*Point, bool) {
-	if ctx.pt != nil {
-		return ctx.pt, true
-	}
-
-	return nil, false
-}
-
 func (ctx *Context) SetVarb(key string, value any, dtype ast.DType) error {
 	if key == "_" {
 		key = ploriginkey
@@ -155,102 +165,6 @@ func (ctx *Context) SetCallRef(name string) {
 	ctx.callRCef[name] = nil
 }
 
-func (ctx *Context) MarkPtDrop() {
-	ctx.pt.Drop = true
-}
-
-func (ctx *Context) PtDropped() bool {
-	return ctx.pt.Drop
-}
-
-func (ctx *Context) SetMeasurement(name string) {
-	ctx.pt.Measurement = name
-}
-
-func (ctx *Context) RenamePtKey(to string, from string) {
-	if to == "_" {
-		to = ploriginkey
-	}
-
-	if from == "_" {
-		from = ploriginkey
-	}
-
-	v, ok := ctx.pt.Meta[from]
-	if !ok {
-		return
-	}
-
-	delete(ctx.pt.Meta, from)
-	ctx.pt.Meta[to] = v
-
-	switch v.PtFlag { //nolint:exhaustive
-	case PtField:
-		if v, ok := ctx.pt.Fields[from]; ok {
-			ctx.pt.Fields[to] = v
-		}
-		delete(ctx.pt.Fields, from)
-	case PtTag:
-		if v, ok := ctx.pt.Tags[from]; ok {
-			ctx.pt.Tags[to] = v
-		}
-		delete(ctx.pt.Tags, from)
-	}
-}
-
-func (ctx *Context) AddKey2PtWithVal(key string, value any, dtype ast.DType, kind KeyKind) error {
-	if key == "_" {
-		key = ploriginkey
-	}
-
-	switch kind { //nolint:exhaustive
-	case KindPtDefault:
-		return ctx.pt.Set(key, value, dtype)
-	default:
-		return ctx.pt.SetTag(key, value, dtype)
-	}
-}
-
-func (ctx *Context) AddKey2Pt(key string, kind KeyKind) error {
-	if key == "_" {
-		key = ploriginkey
-	}
-
-	switch kind { //nolint:exhaustive
-	case KindPtDefault:
-		if v, err := ctx.GetKey(key); err == nil {
-			return ctx.pt.Set(key, v.Value, v.DType)
-		} else {
-			return ctx.pt.Set(key, nil, ast.Nil)
-		}
-	default:
-		if v, err := ctx.GetKey(key); err == nil {
-			return ctx.pt.SetTag(key, v.Value, v.DType)
-		} else {
-			return ctx.pt.SetTag(key, nil, ast.Nil)
-		}
-	}
-}
-
-func (ctx *Context) PointTime() int64 {
-	if ctx.pt.Time.IsZero() {
-		return time.Now().UnixNano()
-	} else {
-		return ctx.pt.Time.UnixNano()
-	}
-}
-
-func (ctx *Context) DeleteKeyPt(key string) {
-	if key == "_" {
-		key = ploriginkey
-	}
-	ctx.pt.Delete(key)
-}
-
-func (ctx *Context) GetKeyFromPt(key string) (any, ast.DType, error) {
-	return ctx.pt.Get(key)
-}
-
 func (ctx *Context) GetKey(key string) (*Varb, error) {
 	if key == "_" {
 		key = ploriginkey
@@ -259,12 +173,15 @@ func (ctx *Context) GetKey(key string) (*Varb, error) {
 		return v, nil
 	}
 
-	if v, t, err := ctx.pt.Get(key); err == nil {
-		return &Varb{
-			Name:  key,
-			Value: v,
-			DType: t,
-		}, nil
+	switch ctx.inType {
+	case InRMap:
+		if v, t, err := ctx.inRMap.Get(key); err == nil {
+			return &Varb{
+				Name:  key,
+				Value: v,
+				DType: t,
+			}, nil
+		}
 	}
 
 	return nil, fmt.Errorf("key not found")
@@ -276,11 +193,14 @@ func (ctx *Context) GetKeyConv2Str(key string) (string, error) {
 	}
 
 	if v, err := ctx.stackCur.Get(key); err == nil {
-		return conv2String(v.Value, v.DType)
+		return Conv2String(v.Value, v.DType)
 	}
 
-	if v, t, err := ctx.pt.Get(key); err == nil {
-		return conv2String(v, t)
+	switch ctx.inType {
+	case InRMap:
+		if v, t, err := ctx.inRMap.Get(key); err == nil {
+			return Conv2String(v, t)
+		}
 	}
 
 	return "", fmt.Errorf("nil")
@@ -379,7 +299,10 @@ func PutContext(ctx *Context) {
 	ctx.funcCall = nil
 	ctx.funcCheck = nil
 
-	ctx.pt = nil
+	ctx.inRMap = nil
+	ctx.inRMap = nil
+	ctx.inWithoutMap = nil
+	ctx.inType = InNoSet
 
 	ctx.loopBreak = false
 	ctx.loopContinue = false
@@ -389,4 +312,18 @@ func PutContext(ctx *Context) {
 	ctx.callRCef = nil
 
 	ctxPool.Put(ctx)
+}
+
+func Conv2String(v any, dtype ast.DType) (string, error) {
+	switch dtype { //nolint:exhaustive
+	case ast.Int, ast.Float, ast.Bool, ast.String:
+		return cast.ToString(v), nil
+	case ast.List, ast.Map:
+		res, err := json.Marshal(v)
+		return string(res), err
+	case ast.Nil:
+		return "", nil
+	default:
+		return "", fmt.Errorf("unsupported data type %d", dtype)
+	}
 }
