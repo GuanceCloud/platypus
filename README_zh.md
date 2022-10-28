@@ -57,7 +57,7 @@ Flags:
 
 ### 编写第一个 PPL 脚本
 
-> 内置函数文档： [pkg/engine/funcs/md](pkg/inimpl/guancecloud/funcs/md/fn.md)
+> 内置函数文档： [pkg/inimpl/guancecloud/funcs/md/fn.md](pkg/inimpl/guancecloud/funcs/md/fn.md)
 > grok 文档： [docs/grok.md](docs/grok.md)
 
 创建一个 `nginx_access_log.data`，并写入以下日志内容：
