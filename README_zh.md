@@ -6,10 +6,6 @@
 # PPL (Pipeline Processor Language)
 
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat&logo=github&color=2370ff&labelColor=454545)](http://makeapullrequest.com)
-![Test](https://github.com/GuanceCloud/ppl/actions/workflows/main.yml/badge.svg)
-[![Go Report Card](https://goreportcard.com/badge/github.com/GuanceCloud/ppl)](https://goreportcard.com/report/github.com/GuanceCloud/ppl)
-[![Downloads](https://img.shields.io/github/downloads/GuanceCloud/ppl/total.svg)](https://github.com/GuanceCloud/ppl/releases)
-[![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/6202/badge)](https://bestpractices.coreinfrastructure.org/projects/6202)
 
 | [English](README.md) | 中文 |
 | --- | --- |
@@ -63,7 +59,7 @@ Flags:
 
 ### 编写第一个 PPL 脚本
 
-> 内置函数文档： [pkg/engine/funcs/md](pkg/engine/funcs/md)
+> 内置函数文档： [pkg/engine/funcs/md](pkg/inimpl/guancecloud/funcs/md/fn.md)
 > grok 文档： [docs/grok.md](docs/grok.md)
 
 创建一个 `nginx_access_log.data`，并写入以下日志内容：

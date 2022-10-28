@@ -9,7 +9,6 @@ package runtime
 import (
 	"fmt"
 	"reflect"
-	"time"
 
 	"github.com/GuanceCloud/ppl/pkg/ast"
 	"github.com/spf13/cast"
@@ -22,35 +21,49 @@ type (
 	FuncCall  func(*Context, *ast.CallExpr) PlPanic
 )
 
-func RunScript(proc *Script, measurement string,
-	tags map[string]string, fields map[string]any, tn time.Time, signal Signal) (
-	string, map[string]string, map[string]any, time.Time, bool, error,
-) {
+func RunScriptWithoutMapIn(proc *Script, data InputWithoutMap, signal Signal) error {
 	if proc == nil {
-		return "", nil, nil, tn, false, fmt.Errorf("vaule of script is nil")
+		return fmt.Errorf("vaule of script is nil")
 	}
+
 	ctx := GetContext()
 	defer PutContext(ctx)
 
-	pt := GetPoint()
-	defer PutPoint(pt)
-
-	pt = InitPt(pt, measurement, tags, fields, tn)
-
-	ctx = InitCtx(ctx, pt, proc.FuncCall, proc.CallRef, signal)
+	ctx = InitCtxWithoutMap(ctx, data, proc.FuncCall, proc.CallRef, signal)
 	RunStmts(ctx, proc.Ast)
-
-	pt.KeyTime2Time()
-	return pt.Measurement, pt.Tags, pt.Fields, pt.Time, ctx.PtDropped(), nil
+	return nil
 }
 
-func RunScriptWithCtx(ctx *Context, proc *Script) error {
-	pt, _ := ctx.Point()
+func RunScriptWithRMapIn(proc *Script, data InputWithRMap, signal Signal) error {
+	if proc == nil {
+		return fmt.Errorf("vaule of script is nil")
+	}
+
+	ctx := GetContext()
+	defer PutContext(ctx)
+
+	ctx = InitCtxWithRMap(ctx, data, proc.FuncCall, proc.CallRef, signal)
+	RunStmts(ctx, proc.Ast)
+	return nil
+}
+
+func RefRunScript(ctx *Context, proc *Script) error {
+	if proc == nil {
+		return fmt.Errorf("vaule of script is nil")
+	}
 
 	newctx := GetContext()
 	defer PutContext(newctx)
 
-	newctx = InitCtx(newctx, pt, proc.FuncCall, proc.CallRef, ctx.signal)
+	switch ctx.inType {
+	case InRMap:
+		InitCtxWithRMap(newctx, ctx.inRMap, proc.FuncCall, proc.CallRef, ctx.signal)
+	case InWithoutMap:
+		InitCtxWithoutMap(newctx, ctx.inWithoutMap, proc.FuncCall, proc.CallRef, ctx.signal)
+	default:
+		return fmt.Errorf("unsupported input type")
+	}
+
 	RunStmts(newctx, proc.Ast)
 	return nil
 }

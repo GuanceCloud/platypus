@@ -9,18 +9,17 @@ package engine
 import (
 	"os"
 	"path/filepath"
-	"time"
 
-	"github.com/GuanceCloud/ppl/pkg/engine/runtime"
+	plruntime "github.com/GuanceCloud/ppl/pkg/engine/runtime"
 	"github.com/GuanceCloud/ppl/pkg/parser"
 )
 
 func ParseScript(scripts map[string]string,
-	call map[string]runtime.FuncCall, check map[string]runtime.FuncCheck) (
-	map[string]*runtime.Script, map[string]error,
+	call map[string]plruntime.FuncCall, check map[string]plruntime.FuncCheck) (
+	map[string]*plruntime.Script, map[string]error,
 ) {
 	retErrMap := map[string]error{}
-	retMap := map[string]*runtime.Script{}
+	retMap := map[string]*plruntime.Script{}
 
 	for name, content := range scripts {
 		stmts, err := parser.ParsePipeline(content)
@@ -28,7 +27,7 @@ func ParseScript(scripts map[string]string,
 			retErrMap[name] = err
 			continue
 		}
-		p := &runtime.Script{
+		p := &plruntime.Script{
 			FuncCall: call,
 			Name:     name,
 			Ast:      stmts,
@@ -49,19 +48,20 @@ func ParseScript(scripts map[string]string,
 	return retMap, retErrMap
 }
 
-func RunScript(proc *runtime.Script, measurement string,
-	tags map[string]string, fields map[string]any, tn time.Time, signal runtime.Signal) (
-	string, map[string]string, map[string]any, time.Time, bool, error,
-) {
-	return runtime.RunScript(proc, measurement, tags, fields, tn, signal)
+func RunScriptWithoutMapIn(proc *plruntime.Script, data plruntime.InputWithoutMap, signal plruntime.Signal) error {
+	return plruntime.RunScriptWithoutMapIn(proc, data, signal)
 }
 
-func RunScriptWithCtx(ctx *runtime.Context, proc *runtime.Script) error {
-	return runtime.RunScriptWithCtx(ctx, proc)
+func RunScriptWithRMapIn(proc *plruntime.Script, data plruntime.InputWithRMap, signal plruntime.Signal) error {
+	return plruntime.RunScriptWithRMapIn(proc, data, signal)
 }
 
-func CheckScript(proc *runtime.Script, funcsCheck map[string]runtime.FuncCheck) error {
-	return runtime.CheckScript(proc, funcsCheck)
+func RunScriptRef(ctx *plruntime.Context, proc *plruntime.Script) error {
+	return plruntime.RefRunScript(ctx, proc)
+}
+
+func CheckScript(proc *plruntime.Script, funcsCheck map[string]plruntime.FuncCheck) error {
+	return plruntime.CheckScript(proc, funcsCheck)
 }
 
 func ReadPlScriptFromDir(dirPath string) (map[string]string, map[string]string, error) {
@@ -76,7 +76,7 @@ func ReadPlScriptFromDir(dirPath string) (map[string]string, map[string]string, 
 				continue
 			}
 			sName := v.Name()
-			if filepath.Ext(sName) != ".ppl" {
+			if filepath.Ext(sName) != ".ppl" && filepath.Ext(sName) != ".p" {
 				continue
 			}
 			sPath := filepath.Join(dirPath, sName)

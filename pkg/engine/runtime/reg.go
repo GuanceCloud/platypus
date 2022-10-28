@@ -40,7 +40,7 @@ func (reg *PlReg) Reset() {
 	reg.count = 0
 }
 
-func (reg *PlReg) Append(val any, dtype ast.DType) bool {
+func (reg *PlReg) ReturnAppend(val any, dtype ast.DType) bool {
 	if reg.count < 6 {
 		reg.regsValDType[reg.count] = dtype
 		reg.r0r5[reg.count] = val
