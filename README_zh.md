@@ -1,8 +1,6 @@
 <div align="center">
 <br/>
 
-<img src="./docs/images/icon-color.svg" width="120">
-
 # PPL (Pipeline Processor Language)
 
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat&logo=github&color=2370ff&labelColor=454545)](http://makeapullrequest.com)
