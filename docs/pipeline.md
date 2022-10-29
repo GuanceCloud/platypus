@@ -139,7 +139,7 @@ The followings are the operators currently supported by PPL. The higher the valu
 |Priority|Symbol|Combinability|Description|
 |-|-|-|-|
 | 1 | `=`  | Right | Assignment; Named parameter; the lowest priority|
-| 2 | `||` | Left | or |
+| 2 | `|\\|` | Left | or |
 | 3 | `&&` | Left | and |
 | 4 | `>=` | Left | greater than or equal |
 | 4 | `>`  | Left | greater than |
