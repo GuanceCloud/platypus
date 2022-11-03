@@ -1,8 +1,5 @@
 # Pipeline 处理器语言
 
-| [English](pipeline.md) | Chinese |
-| --- | --- |
-
 以下是 Pipeline 处理器语言定义。随着不同语法的逐步支持，该文档会做不同程度的调整和增删。
 
 ## 标识符与关键字

@@ -1,0 +1,58 @@
+site_name: PPL Language
+
+theme:
+  name: material
+  palette:
+      primary: white 
+
+  language: en
+  features:
+    - navigation.instant
+    - search.suggest
+    - toc.follow
+    - navigation.tabs
+    - navigation.expand
+
+plugins:
+  - search
+
+  - i18n:
+      languages:
+        en:
+          name: English
+          build: true
+          site_name: PPL language
+        zh:
+          name: 中文
+          build: true
+          site_name: PPL 语言
+
+      default_language: en
+      # material_alternate: false
+      nav_translations:
+        zh:
+          tutorials   : 用户指南
+          how-tos     : 最佳实践
+          explaination: 设计文档
+          references  : 参考文档 
+
+nav:
+- tutorials:
+  - index.md
+- how-tos:
+  - how-tos/index.md
+- explaination:
+  - explaination/index.md
+- references:
+  - references/pipeline.md
+  - references/grok.md
+
+extra:
+  alternate:
+    - name: English
+      link: ./en/
+      lang: en
+
+    - name: 中文
+      link: ./zh/
+      lang: zh
