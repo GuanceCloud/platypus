@@ -1,0 +1,43 @@
+# Release:
+# - Github release
+# - binaries and tarballs
+# - homebrew
+name: "Release"
+
+# Only a single job with this concurrency can run at any given time
+# concurrency: release
+
+on:
+  push:
+    branches:
+      - master 
+      - main
+      - dev
+    tags:
+      - "v*"
+
+jobs:
+  release:
+    name: "Release"
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Fetch all tags
+        run: git fetch --force --tags
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.18
+
+      - name: Run GoReleaser
+        uses: goreleaser/goreleaser-action@v2
+        with:
+          args: release --rm-dist --debug
+        env:
+          GITHUB_TOKEN: ${{ secrets.BOT_GITHUB_TOKEN }}

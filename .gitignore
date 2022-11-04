@@ -2,4 +2,5 @@ pkg/parser/y.output
 *.pdf
 ppl
 ppl.exe
+r.sh
 dist/
