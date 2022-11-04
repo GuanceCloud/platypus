@@ -11,7 +11,7 @@
 ![Test](https://github.com/GuanceCloud/ppl/actions/workflows/main.yml/badge.svg)
 [![Go Report Card](https://goreportcard.com/badge/github.com/GuanceCloud/ppl)](https://goreportcard.com/report/github.com/GuanceCloud/ppl)
 [![Downloads](https://img.shields.io/github/downloads/GuanceCloud/ppl/total.svg)](https://github.com/GuanceCloud/ppl/releases)
-[![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/6202/badge)](https://bestpractices.coreinfrastructure.org/projects/6202)
+[![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/6660/badge)](https://bestpractices.coreinfrastructure.org/projects/6660)
 
 
 ## 什么是 PPL
