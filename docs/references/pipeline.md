@@ -1,7 +1,5 @@
 # Pipeline Processor Language
 
-| English | [Chinese](pipeline_zh.md) |
-| --- | --- |
 
 The following is the definition of Pipeline processor language. Being supported by increasing syntax, the document would be adjusted to varying degrees.
 

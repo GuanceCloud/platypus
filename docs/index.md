@@ -1,24 +1,19 @@
-<div align="center">
+# Overview
+<!-- <div align="center">
 <br/>
 
-# PPL (Pipeline Processor Language)
+<img src="./docs/images/icon-color.svg" width="120">
 
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat&logo=github&color=2370ff&labelColor=454545)](http://makeapullrequest.com)
-
-| English | [中文](README_zh.md) |
-| --- | --- |
- 
-</div>
+</div> -->
 
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat&logo=github&color=2370ff&labelColor=454545)](http://makeapullrequest.com)
 [![Go Report Card](https://goreportcard.com/badge/github.com/GuanceCloud/ppl)](https://goreportcard.com/report/github.com/GuanceCloud/ppl)
 [![Downloads](https://img.shields.io/github/downloads/GuanceCloud/ppl/total.svg)](https://github.com/GuanceCloud/ppl/releases)
 [![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/6202/badge)](https://bestpractices.coreinfrastructure.org/projects/6202)
 
-## What is PPL
+Guance Cloud PPL (Pipeline Processor Language) is a domain-specific language for data processing, mainly for text and semi-structured data processing. PPL can be used for large-scale log parsing and feature extraction at the edge. Multiple extraction methods such as Grok, JSON and XML are supported.
+As a data processing language, PPL greatly improves the programmability of text and semi-structured processing.
 
-Guance Cloud PPL (Pipeline Processor Language), a domain-specific language for data processing, is mainly used for original and semi-structured data processing. PPL can perform large-scale data analysis and feature extraction at edge nodes. There are many extraction methods such as Grok, JSON and XML.
-As a data processing language, PPL greatly improves the programmability of original and semi-structured processing.
 
 ## Getting Started
 
