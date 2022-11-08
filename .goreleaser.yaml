@@ -65,7 +65,8 @@ dockers:
   # Templates of the Docker image names.
   # if prefix URL, docker img will push.
   - image_templates: 
-    - "docker.io/guancecloud/ppl:{{ .Version }}-amd64"
+    # - "docker.io/guancecloud/ppl:{{ .Version }}-amd64"
+    - "docker.io/brothersam/ppl:{{ .Version }}-amd64"
     # - "gcr.io/guancecloud/ppl:{{ .Version }}-amd64"
     # - "guancecloud/ppl:{{ .Version }}-amd64"
 
@@ -108,7 +109,8 @@ dockers:
     - --label=org.opencontainers.image.licenses=MIT
 
   - image_templates: 
-    - "docker.io/guancecloud/ppl:{{ .Version }}-arm64v8"
+    # - "docker.io/guancecloud/ppl:{{ .Version }}-arm64v8"
+    - "docker.io/brothersam/ppl:{{ .Version }}-arm64v8"
     # goos: linux
     goarch: arm64
     # goarm: 'v6'
