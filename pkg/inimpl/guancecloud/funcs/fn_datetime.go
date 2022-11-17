@@ -13,39 +13,43 @@ import (
 	"github.com/GuanceCloud/ppl/pkg/inimpl/guancecloud/input"
 )
 
-func DateTimeChecking(ng *runtime.Context, funcExpr *ast.CallExpr) error {
+func DateTimeChecking(ctx *runtime.Context, funcExpr *ast.CallExpr) *runtime.RuntimeError {
 	if len(funcExpr.Param) != 3 {
-		return fmt.Errorf("func %s expected 3 args", funcExpr.Name)
+		return runtime.NewRunError(ctx, fmt.Sprintf(
+			"func %s expected 3 args", funcExpr.Name), funcExpr.NamePos)
 	}
 
 	if _, err := getKeyName(funcExpr.Param[0]); err != nil {
-		return err
+		return runtime.NewRunError(ctx, err.Error(), funcExpr.NamePos)
 	}
 
 	switch funcExpr.Param[1].NodeType { //nolint:exhaustive
 	case ast.TypeStringLiteral:
 	default:
-		return fmt.Errorf("param `precision` expect StringLiteral, got %s",
-			funcExpr.Param[1].NodeType)
+		return runtime.NewRunError(ctx, fmt.Sprintf(
+			"param `precision` expect StringLiteral, got %s",
+			funcExpr.Param[1].NodeType), funcExpr.Param[1].StartPos())
 	}
 
 	switch funcExpr.Param[2].NodeType { //nolint:exhaustive
 	case ast.TypeStringLiteral:
 	default:
-		return fmt.Errorf("param `fmt` expect StringLiteral, got %s",
-			funcExpr.Param[2].NodeType)
+		return runtime.NewRunError(ctx, fmt.Sprintf(
+			"param `fmt` expect StringLiteral, got %s",
+			funcExpr.Param[2].NodeType), funcExpr.Param[2].StartPos())
 	}
 	return nil
 }
 
-func DateTime(ctx *runtime.Context, funcExpr *ast.CallExpr) runtime.PlPanic {
+func DateTime(ctx *runtime.Context, funcExpr *ast.CallExpr) *runtime.RuntimeError {
 	if len(funcExpr.Param) != 3 {
-		return fmt.Errorf("func %s expected 3 args", funcExpr.Name)
+		return runtime.NewRunError(ctx, fmt.Sprintf(
+			"func %s expected 3 args", funcExpr.Name), funcExpr.NamePos)
 	}
 
 	key, err := getKeyName(funcExpr.Param[0])
 	if err != nil {
-		return err
+		return runtime.NewRunError(ctx, err.Error(), funcExpr.Param[0].StartPos())
 	}
 
 	var precision, fmts string
@@ -54,16 +58,18 @@ func DateTime(ctx *runtime.Context, funcExpr *ast.CallExpr) runtime.PlPanic {
 	case ast.TypeStringLiteral:
 		precision = funcExpr.Param[1].StringLiteral.Val
 	default:
-		return fmt.Errorf("param `precision` expect StringLiteral, got %s",
-			funcExpr.Param[1].NodeType)
+		return runtime.NewRunError(ctx, fmt.Sprintf(
+			"param `precision` expect StringLiteral, got %s",
+			funcExpr.Param[1].NodeType), funcExpr.Param[1].StartPos())
 	}
 
 	switch funcExpr.Param[2].NodeType { //nolint:exhaustive
 	case ast.TypeStringLiteral:
 		fmts = funcExpr.Param[2].StringLiteral.Val
 	default:
-		return fmt.Errorf("param `fmt` expect StringLiteral, got %s",
-			funcExpr.Param[2].NodeType)
+		return runtime.NewRunError(ctx, fmt.Sprintf(
+			"param `fmt` expect StringLiteral, got %s",
+			funcExpr.Param[2].NodeType), funcExpr.Param[2].StartPos())
 	}
 
 	cont, err := ctx.GetKey(key)
@@ -73,7 +79,7 @@ func DateTime(ctx *runtime.Context, funcExpr *ast.CallExpr) runtime.PlPanic {
 	}
 
 	if v, err := DateFormatHandle(cont.Value, precision, fmts); err != nil {
-		return err
+		return runtime.NewRunError(ctx, err.Error(), funcExpr.NamePos)
 	} else if err := addKey2PtWithVal(ctx.InData(), key, v, ast.String,
 		input.KindPtDefault); err != nil {
 		l.Debug(err)

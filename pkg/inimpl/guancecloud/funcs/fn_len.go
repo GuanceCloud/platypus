@@ -12,14 +12,15 @@ import (
 	"github.com/GuanceCloud/ppl/pkg/engine/runtime"
 )
 
-func LenChecking(ctx *runtime.Context, funcExpr *ast.CallExpr) error {
+func LenChecking(ctx *runtime.Context, funcExpr *ast.CallExpr) *runtime.RuntimeError {
 	if len(funcExpr.Param) != 1 {
-		return fmt.Errorf("func %s expected 1", funcExpr.Name)
+		return runtime.NewRunError(ctx, fmt.Sprintf(
+			"func %s expected 1", funcExpr.Name), funcExpr.NamePos)
 	}
 	return nil
 }
 
-func Len(ctx *runtime.Context, funcExpr *ast.CallExpr) runtime.PlPanic {
+func Len(ctx *runtime.Context, funcExpr *ast.CallExpr) *runtime.RuntimeError {
 	val, dtype, err := runtime.RunStmt(ctx, funcExpr.Param[0])
 	if err != nil {
 		return err

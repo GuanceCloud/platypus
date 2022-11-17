@@ -7,7 +7,6 @@
 package parser
 
 import (
-	"fmt"
 	ast "github.com/GuanceCloud/ppl/pkg/ast"
 )
 
@@ -15,16 +14,21 @@ import (
 
 %union {
 	aststmts   ast.Stmts
+	astblock   *ast.BlockStmt
+
 	ifitem     *ast.IfStmtElem
+	iflist	   []*ast.IfStmtElem
 	node       *ast.Node
 	nodes      []*ast.Node
 	item       Item
+
 }
 
 %token <item> SEMICOLON COMMA COMMENT DOT EOF ERROR ID NUMBER 
 	LEFT_PAREN LEFT_BRACKET LEFT_BRACE RIGHT_BRACE
 	RIGHT_PAREN RIGHT_BRACKET SPACE STRING QUOTED_STRING MULTILINE_STRING
 	FOR IN WHILE BREAK CONTINUE	RETURN EOL COLON
+	STR INT FLOAT BOOL LIST MAP
 
 // operator
 %token operatorsStart
@@ -37,7 +41,7 @@ import (
 // keywords
 %token keywordsStart
 %token <item>
-TRUE FALSE AND OR 
+TRUE FALSE IDENTIFIER AND OR 
 NIL NULL IF ELIF ELSE
 %token keywordsEnd
 
@@ -51,17 +55,23 @@ NIL NULL IF ELIF ELSE
 ////////////////////////////////////////////////////
 %type <item>
 	unary_op
-	identifier
+
+
+%type<astblock>
+	stmt_block
+	empty_block
 
 
 %type<aststmts>
-	stmt_block
 	stmts
 	stmts_list
-	empty_block
 
 %type<ifitem>
-	if_expr_cond_block
+	if_elem
+	elif_elem
+
+%type<iflist>
+	if_elif_list
 
 %type<nodes>
 	function_args
@@ -74,24 +84,21 @@ NIL NULL IF ELIF ELSE
 	continue_stmt
 	break_stmt
 	ifelse_stmt
-	ifelse_stmt_start
 	call_expr
-	call_expr_start
 
 %type <node>
-	function_arg
+	identifier
 	binary_expr
 	conditional_expr
 	arithmeticExpr
 	paren_expr
-	paren_expr_start
 	index_expr
 	attr_expr
 	expr
 	map_init
 	map_init_start
-	array_list
-	array_list_start
+	list_init
+	list_init_start
 	array_elem
 	bool_literal
 	string_literal
@@ -162,24 +169,24 @@ value_stmt: expr
 	;
 
 /* expression */
-expr	: array_elem | array_list | map_init | paren_expr | call_expr | binary_expr | attr_expr | index_expr ; // arithmeticExpr
+expr	: array_elem | list_init | map_init | paren_expr | call_expr | binary_expr | attr_expr | index_expr ; // arithmeticExpr
 
 
 break_stmt: BREAK
-			{ $$ = yylex.(*parser).newBreakStmt() }
+			{ $$ = yylex.(*parser).newBreakStmt($1.Pos) }
 		;
 
 continue_stmt: CONTINUE
-			{ $$ = yylex.(*parser).newContinueStmt() }
+			{ $$ = yylex.(*parser).newContinueStmt($1.Pos) }
 		;
 
 /*
 	for identifier IN identifier
-	for identifier IN array_list
+	for identifier IN list_init
 	for identifier IN string
 */
 for_in_stmt : FOR identifier IN expr stmt_block
-			{ $$ = yylex.(*parser).newForInStmt($2.Val, $4, $5) }
+			{ $$ = yylex.(*parser).newForInStmt($2, $4, $5, $1, $3) }
 		;
 
 
@@ -190,99 +197,92 @@ for_in_stmt : FOR identifier IN expr stmt_block
 	for 		 ; cond expr; 		     block_stmt
 */
 for_stmt : FOR expr SEMICOLON expr SEMICOLON expr stmt_block
-			{ $$ = yylex.(*parser).newForStmt($2, $4, $6, $7) }
-		| FOR expr SEMICOLON expr SEMICOLON stmt_block
-			{ $$ = yylex.(*parser).newForStmt($2, $4, nil, $6) }
-		| FOR SEMICOLON expr SEMICOLON expr stmt_block
-			{ $$ = yylex.(*parser).newForStmt(nil, $3, $5, $6) }
-		| FOR SEMICOLON expr SEMICOLON stmt_block
-			{ $$ = yylex.(*parser).newForStmt(nil, $3, nil, $5) }
+		{ $$ = yylex.(*parser).newForStmt($2, $4, $6, $7) }
+	| FOR expr SEMICOLON expr SEMICOLON stmt_block
+		{ $$ = yylex.(*parser).newForStmt($2, $4, nil, $6) }
+	| FOR SEMICOLON expr SEMICOLON expr stmt_block
+		{ $$ = yylex.(*parser).newForStmt(nil, $3, $5, $6) }
+	| FOR SEMICOLON expr SEMICOLON stmt_block
+		{ $$ = yylex.(*parser).newForStmt(nil, $3, nil, $5) }
 
-		| FOR expr SEMICOLON SEMICOLON expr stmt_block
-			{ $$ = yylex.(*parser).newForStmt($2, nil, $5, $6) }
-		| FOR expr SEMICOLON SEMICOLON stmt_block
-			{ $$ = yylex.(*parser).newForStmt($2, nil, nil, $5) }
-		| FOR SEMICOLON SEMICOLON expr stmt_block
-			{ $$ = yylex.(*parser).newForStmt(nil, nil, $4, $5) }
-		| FOR SEMICOLON SEMICOLON stmt_block
-			{ $$ = yylex.(*parser).newForStmt(nil, nil, nil, $4) }
-		;
+	| FOR expr SEMICOLON SEMICOLON expr stmt_block
+		{ $$ = yylex.(*parser).newForStmt($2, nil, $5, $6) }
+	| FOR expr SEMICOLON SEMICOLON stmt_block
+		{ $$ = yylex.(*parser).newForStmt($2, nil, nil, $5) }
+	| FOR SEMICOLON SEMICOLON expr stmt_block
+		{ $$ = yylex.(*parser).newForStmt(nil, nil, $4, $5) }
+	| FOR SEMICOLON SEMICOLON stmt_block
+		{ $$ = yylex.(*parser).newForStmt(nil, nil, nil, $4) }
+	;
 
-ifelse_stmt: ifelse_stmt_start 
-		| ifelse_stmt_start ELSE stmt_block
-			{ $$ = yylex.(*parser).newIfelseStmt($1 , nil, nil, $3) }
-		;
-
-
-ifelse_stmt_start: IF if_expr_cond_block
-				{ $$ = yylex.(*parser).newIfelseStmt(nil ,$2, nil, nil) }
-		| ifelse_stmt_start ELIF if_expr_cond_block
-				{ $$ = yylex.(*parser).newIfelseStmt($1 , nil, $3, nil) }
-		;
-
-if_expr_cond_block	: expr stmt_block
-		{ $$ = yylex.(*parser).newIfExpr($1, $2) }
-	| stmt_block
+ifelse_stmt: if_elif_list
 		{
-		yylex.(*parser).addParseErr(nil, fmt.Errorf("if/elif expr not found condition"))
-		$$ = nil
+			$$ = yylex.(*parser).newIfElifStmt($1)
+		}
+	| if_elif_list ELSE stmt_block
+		{
+			$$ = yylex.(*parser).newIfElifelseStmt($1, $2, $3)
 		}
 	;
 
+if_elem: IF expr stmt_block
+	{ $$ = yylex.(*parser).newIfElem($1, $2, $3) } 
+	;
+
+if_elif_list: if_elem
+		{ $$ = []*ast.IfStmtElem{ $1 } }
+	| if_elif_list elif_elem
+		{ $$ = append($1, $2) }
+	;
+
+elif_elem: ELIF expr stmt_block
+		{ $$ = yylex.(*parser).newIfElem($1, $2, $3) }
+	;
 
 
 stmt_block	: empty_block
-			| LEFT_BRACE stmts RIGHT_BRACE
-				{ $$ = $2 }
-			;
+	| LEFT_BRACE stmts RIGHT_BRACE
+		{ $$ = yylex.(*parser).newBlockStmt($1, $2, $3) }
+	;
 
 empty_block : LEFT_BRACE RIGHT_BRACE
-				{ $$ = nil }
-			;
-
-call_expr : call_expr_start RIGHT_PAREN ;
-
-call_expr_start	: identifier LEFT_PAREN function_args
-		{
-			f, err := yylex.(*parser).newCallExpr($1.Val, $3)
-			if err != nil {
-				yylex.(*parser).addParseErr(nil, err)
-				$$ = nil
-			} else {
-				$$ = f
-			}
-		}
-	| identifier LEFT_PAREN
-		{
-			f, err := yylex.(*parser).newCallExpr($1.Val, nil)
-			if err != nil {
-				yylex.(*parser).addParseErr(nil, err)
-				$$ = nil
-			} else {
-				$$ = f
-			}
-		}
-	| call_expr_start EOL
+		{ $$ = yylex.(*parser).newBlockStmt($1, ast.Stmts{} , $2) }
 	;
 
 
-function_args	: function_args COMMA function_arg
+call_expr : identifier LEFT_PAREN function_args RIGHT_PAREN
+		{
+			$$ = yylex.(*parser).newCallExpr($1, $3, $2, $4)
+		}
+	| identifier LEFT_PAREN RIGHT_PAREN
+		{
+			$$ = yylex.(*parser).newCallExpr($1, nil, $2, $3)
+		}
+	| identifier LEFT_PAREN function_args EOLS RIGHT_PAREN
+		{
+			$$ = yylex.(*parser).newCallExpr($1, $3, $2, $5)
+		}
+	| identifier LEFT_PAREN EOLS RIGHT_PAREN
+		{
+			$$ = yylex.(*parser).newCallExpr($1, nil, $2, $4)
+		}
+	;
+
+
+function_args	: function_args COMMA expr
 			{
 			$$ = append($$, $3)
 			}
 		| function_args COMMA
-		| function_arg
+		| expr
 			{ $$ = []*ast.Node{$1} }
 		;
-
-function_arg: expr
-	;
 
 
 binary_expr: conditional_expr | assignment_expr | arithmeticExpr ;
 
 assignment_expr	: expr EQ expr
-           		{ $$ = yylex.(*parser).newAssignmentExpr($1, $3) }
+           		{ $$ = yylex.(*parser).newAssignmentExpr($1, $3, $2) }
 		;
 
 conditional_expr	: expr GTE expr
@@ -316,24 +316,25 @@ arithmeticExpr	: expr ADD expr
 				{ $$ = yylex.(*parser).newArithmeticExpr($1, $3, $2) }
 			;
 
-
-
-paren_expr: 	paren_expr_start RIGHT_PAREN
-
-paren_expr_start	: LEFT_PAREN expr 
-			{ $$ = ast.WrapParenExpr(&ast.ParenExpr{Param: $2}) }
-		| paren_expr_start EOL
+// TODO: 支持多个表达式构成的括号表达式
+paren_expr: LEFT_PAREN expr RIGHT_PAREN
+			{ $$ = yylex.(*parser).newParenExpr($1, $2, $3) }
+		| LEFT_PAREN expr EOLS RIGHT_PAREN
+			{ $$ = yylex.(*parser).newParenExpr($1, $2, $4) }
 		;
 
 
+EOLS: EOL
+	| EOLS EOL
+	;
+
 index_expr	: identifier LEFT_BRACKET expr RIGHT_BRACKET
-			{ $$ = yylex.(*parser).newIndexExpr(
-				ast.WrapIdentifier(&ast.Identifier{Name: $1.Val}), $3) }
+			{ $$ = yylex.(*parser).newIndexExpr($1, $2 ,$3, $4) }
 		| DOT LEFT_BRACKET expr RIGHT_BRACKET	
 			// 兼容原有语法，仅作为 json 函数的第二个参数
-			{ $$ = yylex.(*parser).newIndexExpr(nil, $3) }
+			{ $$ = yylex.(*parser).newIndexExpr(nil, $2, $3, $4) }
 		| index_expr LEFT_BRACKET expr RIGHT_BRACKET
-			{ $$ = yylex.(*parser).newIndexExpr($1, $3) }
+			{ $$ = yylex.(*parser).newIndexExpr($1, $2, $3, $4) }
 		;
 
 
@@ -341,15 +342,11 @@ index_expr	: identifier LEFT_BRACKET expr RIGHT_BRACKET
 // 仅用于 json 函数
 attr_expr	: identifier DOT index_expr
 			{ 
-				$$ =  yylex.(*parser).newAttrExpr(
-					ast.WrapIdentifier(&ast.Identifier{Name: $1.Val}), $3)
+				$$ =  yylex.(*parser).newAttrExpr($1, $3)
 			}
 		| identifier DOT identifier
 			{ 
-				$$ =  yylex.(*parser).newAttrExpr(
-					ast.WrapIdentifier(&ast.Identifier{Name: $1.Val}), 
-					ast.WrapIdentifier(&ast.Identifier{Name: $3.Val}),
-					)
+				$$ =  yylex.(*parser).newAttrExpr($1, $3)
 			}
 		| index_expr DOT index_expr
 			{ 
@@ -357,8 +354,7 @@ attr_expr	: identifier DOT index_expr
 			}
 	  	| index_expr DOT identifier
 			{ 
-				$$ =  yylex.(*parser).newAttrExpr( $1,
-					ast.WrapIdentifier(&ast.Identifier{Name: $3.Val}))
+				$$ =  yylex.(*parser).newAttrExpr($1, $3)
 			}
 		| attr_expr DOT index_expr
 			{ 
@@ -366,41 +362,63 @@ attr_expr	: identifier DOT index_expr
 			}
 		| attr_expr DOT identifier
 			{ 
-				$$ =  yylex.(*parser).newAttrExpr( $1,
-					ast.WrapIdentifier(&ast.Identifier{Name: $3.Val}))
+				$$ =  yylex.(*parser).newAttrExpr($1, $3)
 			}
 		;
 
 
-array_list : array_list_start RIGHT_BRACKET
-		| array_list_start COMMA RIGHT_BRACKET
+list_init : list_init_start RIGHT_BRACKET
+			{
+				$$ = yylex.(*parser).newListInitEndExpr($$, $2.Pos)
+			}
+		| list_init_start COMMA RIGHT_BRACKET
+			{
+				$$ = yylex.(*parser).newListInitEndExpr($$, $2.Pos)
+			}
 		| LEFT_BRACKET RIGHT_BRACKET
-			{ $$ = ast.WrapListInitExpr(&ast.ListInitExpr{}) }
+			{ 
+				$$ = yylex.(*parser).newListInitStartExpr($1.Pos)
+				$$ = yylex.(*parser).newListInitEndExpr($$, $2.Pos)
+
+			}
 		;
 
-array_list_start : LEFT_BRACKET array_elem
-				{ $$ = ast.WrapListInitExpr(&ast.ListInitExpr{List: []*ast.Node{$2}}) }
-			| array_list_start COMMA array_elem
-					{ $$.ListInitExpr.List = append($$.ListInitExpr.List, $3) }
-			| array_list_start EOL
+list_init_start : LEFT_BRACKET array_elem
+			{ 
+				$$ = yylex.(*parser).newListInitStartExpr($1.Pos)
+				$$ = yylex.(*parser).newListInitAppendExpr($$, $2)
+			}
+		| list_init_start COMMA array_elem
+				{				
+					$$ = yylex.(*parser).newListInitAppendExpr($$, $3)
+				}
+		| list_init_start EOL
 	;
 
+
 map_init : map_init_start RIGHT_BRACE
+			{
+				$$ = yylex.(*parser).newMapInitEndExpr($$, $2.Pos)
+			}
+		|  map_init_start COMMA RIGHT_BRACE
+			{
+				$$ = yylex.(*parser).newMapInitEndExpr($$, $3.Pos)
+			}
 		| empty_block
-			{ $$ = ast.WrapMapInitExpr(&ast.MapInitExpr{}) }
+			{ 
+				$$ = yylex.(*parser).newMapInitStartExpr($1.LBracePos)
+				$$ = yylex.(*parser).newMapInitEndExpr($$, $1.RBracePos)
+			}
 		;
 
 map_init_start: LEFT_BRACE expr COLON expr
 		{ 
-			$$ = ast.WrapMapInitExpr(&ast.MapInitExpr{
-				KeyValeList: [][2]*ast.Node{{$2, $4}},
-			})
+			$$ = yylex.(*parser).newMapInitStartExpr($1.Pos)
+			$$ = yylex.(*parser).newMapInitAppendExpr($$, $2, $4)
 		}
 	| map_init_start COMMA expr COLON expr
 		{
-			
-			mapInit := $1.MapInitExpr
-			mapInit.KeyValeList = append(mapInit.KeyValeList, [2]*ast.Node{$3, $5})
+			$$ = yylex.(*parser).newMapInitAppendExpr($1, $3, $5)
 		}
 	| map_init_start EOL
 	;
@@ -412,55 +430,74 @@ array_elem	: bool_literal
 		| nil_literal
 		| number_literal
 		| identifier
-			{ $$ = ast.WrapIdentifier(&ast.Identifier{Name: $1.Val}) }
 		;
 
 
+
+/*
+	literal:
+		bool
+		number (int float)
+		nil
+*/
 bool_literal	: TRUE
-			{ $$ = ast.WrapBoolLiteral(&ast.BoolLiteral{Val: true}) }
+			{ $$ = yylex.(*parser).newBoolLiteral($1.Pos, true) }
 		| FALSE
-			{ $$ = ast.WrapBoolLiteral(&ast.BoolLiteral{Val: false}) }
+			{ $$ =  yylex.(*parser).newBoolLiteral($1.Pos, false) }
 		;
 
 
 string_literal	: STRING
-			{ $$ = ast.WrapStringLiteral(
-				&ast.StringLiteral{Val: yylex.(*parser).unquoteString($1.Val)}) }
+			{ 
+				$1.Val = yylex.(*parser).unquoteString($1.Val)
+				$$ = yylex.(*parser).newStringLiteral($1) 
+			}
 		| MULTILINE_STRING
-			{ $$ = ast.WrapStringLiteral(
-				&ast.StringLiteral{Val: yylex.(*parser).unquoteMultilineString($1.Val)}) }
+			{
+				$1.Val = yylex.(*parser).unquoteMultilineString($1.Val)
+				$$ = yylex.(*parser).newStringLiteral($1)
+			}
 		;
 
 
 nil_literal	: NIL
-			{ $$ = ast.WrapNilLiteral(&ast.NilLiteral{}) }
+			{ $$ = yylex.(*parser).newNilLiteral($1.Pos) }
 		| NULL
-			{ $$ = ast.WrapNilLiteral(&ast.NilLiteral{}) }
+			{ $$ = yylex.(*parser).newNilLiteral($1.Pos) }
 		;
 
 
 
 number_literal	: NUMBER
-			{ $$ = ast.WrapNumberLiteral(yylex.(*parser).number($1.Val)) }
+			{ $$ =  yylex.(*parser).newNumberLiteral($1) }
 		| unary_op NUMBER
 			{
-			num := yylex.(*parser).number($2.Val)
+			num :=  yylex.(*parser).newNumberLiteral($2) 
 			switch $1.Typ {
 			case ADD: // pass
 			case SUB:
-				if num.IsInt {
-					num.Int = -num.Int
+				if num.NodeType == ast.TypeFloatLiteral {
+					num.FloatLiteral.Val = -num.FloatLiteral.Val
+					num.FloatLiteral.Start = $1.Pos
 				} else {
-					num.Float = -num.Float
+					num.IntegerLiteral.Val = -num.IntegerLiteral.Val
+					num.IntegerLiteral.Start = $1.Pos
+
 				}
 			}
-			$$ = ast.WrapNumberLiteral(num)
+			$$ = num
 			}
 		;
 
 identifier: ID
+			{
+				$$ = yylex.(*parser).newIdentifierLiteral($1)
+			}
 		| QUOTED_STRING
-			{ $$.Val = yylex.(*parser).unquoteString($1.Val) }
+			{
+				$1.Val = yylex.(*parser).unquoteString($1.Val) 
+				$$ = yylex.(*parser).newIdentifierLiteral($1)
+			}
 		;
 
 

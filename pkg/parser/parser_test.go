@@ -38,15 +38,14 @@ func TestExprSeparation(t *testing.T) {
 			name: "test_if_nl",
 			in: `
 
-			# 0 
+			# 0
 			[
-				
-			
+
 			1, 3,
 			"3",
 			true,
 			1.]
-		
+
 			[
 				1, 3,
 				"3",
@@ -56,15 +55,15 @@ func TestExprSeparation(t *testing.T) {
 
 			# 只支持基础数据类型
 			# [1, 3, "3", 1. ,
-			# 	[1, 3, "3", 1. 
+			# 	[1, 3, "3", 1.
 			# 		]
 			# ]
 
 			a = 1; func1()
-			func2(1, 3, 
-				"3", true, 1. 
-			
-			) 
+			func2(1, 3,
+				"3", true, 1.
+
+			)
 			if true {
 				;
 			}
@@ -73,17 +72,17 @@ func TestExprSeparation(t *testing.T) {
 			if true {
 
 			} elif false {
-			} elif x == y {	 a =	
-				a + 1	}  
+			} elif x == y {	 a =
+				a + 1	}
 				a = b; a=c
 					a =d
 
 			#3
 			if true {
 			} elif false {
-			} elif x == y {	 
-				a =	
-				a + 
+			} elif x == y {
+				a =
+				a +
 				1
 			} else {
 
@@ -92,37 +91,37 @@ func TestExprSeparation(t *testing.T) {
 			expected: ast.Stmts{
 				ast.WrapListInitExpr(&ast.ListInitExpr{
 					List: []*ast.Node{
-						ast.WrapNumberLiteral(&ast.NumberLiteral{Int: 1, IsInt: true}),
-						ast.WrapNumberLiteral(&ast.NumberLiteral{Int: 3, IsInt: true}),
+						ast.WrapIntegerLiteral(&ast.IntegerLiteral{Val: 1}),
+						ast.WrapIntegerLiteral(&ast.IntegerLiteral{Val: 3}),
 						ast.WrapStringLiteral(&ast.StringLiteral{Val: "3"}),
 						ast.WrapBoolLiteral(&ast.BoolLiteral{Val: true}),
-						ast.WrapNumberLiteral(&ast.NumberLiteral{Float: 1.}),
+						ast.WrapFloatLiteral(&ast.FloatLiteral{Val: 1.}),
 					},
 				}),
 				ast.WrapListInitExpr(
 					&ast.ListInitExpr{
 						List: []*ast.Node{
-							ast.WrapNumberLiteral(&ast.NumberLiteral{Int: 1, IsInt: true}),
-							ast.WrapNumberLiteral(&ast.NumberLiteral{Int: 3, IsInt: true}),
+							ast.WrapIntegerLiteral(&ast.IntegerLiteral{Val: 1}),
+							ast.WrapIntegerLiteral(&ast.IntegerLiteral{Val: 3}),
 							ast.WrapStringLiteral(&ast.StringLiteral{Val: "3"}),
 							ast.WrapBoolLiteral(&ast.BoolLiteral{Val: true}),
-							ast.WrapNumberLiteral(&ast.NumberLiteral{Float: 1.}),
+							ast.WrapFloatLiteral(&ast.FloatLiteral{Val: 1.}),
 						},
 					}),
 				ast.WrapAssignmentExpr(&ast.AssignmentExpr{
 					LHS: ast.WrapIdentifier(&ast.Identifier{Name: "a"}),
-					RHS: ast.WrapNumberLiteral(&ast.NumberLiteral{Int: 1, IsInt: true}),
+					RHS: ast.WrapIntegerLiteral(&ast.IntegerLiteral{Val: 1}),
 				}),
 				ast.WrapCallExpr(&ast.CallExpr{Name: "func1"}),
 				ast.WrapCallExpr(
 					&ast.CallExpr{
 						Name: "func2",
 						Param: ast.FuncArgList{
-							ast.WrapNumberLiteral(&ast.NumberLiteral{Int: 1, IsInt: true}),
-							ast.WrapNumberLiteral(&ast.NumberLiteral{Int: 3, IsInt: true}),
+							ast.WrapIntegerLiteral(&ast.IntegerLiteral{Val: 1}),
+							ast.WrapIntegerLiteral(&ast.IntegerLiteral{Val: 3}),
 							ast.WrapStringLiteral(&ast.StringLiteral{Val: "3"}),
 							ast.WrapBoolLiteral(&ast.BoolLiteral{Val: true}),
-							ast.WrapNumberLiteral(&ast.NumberLiteral{Float: 1.}),
+							ast.WrapFloatLiteral(&ast.FloatLiteral{Val: 1.}),
 						},
 					},
 				),
@@ -142,16 +141,16 @@ func TestExprSeparation(t *testing.T) {
 								Op:  AstOp(EQEQ),
 								RHS: ast.WrapIdentifier(&ast.Identifier{Name: "y"}),
 							}),
-							Stmts: []*ast.Node{
+							Block: &ast.BlockStmt{Stmts: ast.Stmts{
 								ast.WrapAssignmentExpr(&ast.AssignmentExpr{
 									LHS: ast.WrapIdentifier(&ast.Identifier{Name: "a"}),
 									RHS: ast.WrapArithmeticExpr(&ast.ArithmeticExpr{
 										LHS: ast.WrapIdentifier(&ast.Identifier{Name: "a"}),
-										RHS: ast.WrapNumberLiteral(&ast.NumberLiteral{Int: 1, IsInt: true}),
+										RHS: ast.WrapIntegerLiteral(&ast.IntegerLiteral{Val: 1}),
 										Op:  AstOp(ADD),
 									}),
 								}),
-							},
+							}},
 						},
 					},
 				}),
@@ -180,16 +179,16 @@ func TestExprSeparation(t *testing.T) {
 									Op:  AstOp(EQEQ),
 									RHS: ast.WrapIdentifier(&ast.Identifier{Name: "y"}),
 								}),
-								Stmts: []*ast.Node{
+								Block: &ast.BlockStmt{Stmts: ast.Stmts{
 									ast.WrapAssignmentExpr(&ast.AssignmentExpr{
 										LHS: ast.WrapIdentifier(&ast.Identifier{Name: "a"}),
 										RHS: ast.WrapArithmeticExpr(&ast.ArithmeticExpr{
 											LHS: ast.WrapIdentifier(&ast.Identifier{Name: "a"}),
-											RHS: ast.WrapNumberLiteral(&ast.NumberLiteral{Int: 1, IsInt: true}),
+											RHS: ast.WrapIntegerLiteral(&ast.IntegerLiteral{Val: 1}),
 											Op:  AstOp(ADD),
 										}),
 									}),
-								},
+								}},
 							},
 						},
 						Else: nil,
@@ -211,7 +210,7 @@ func TestExprSeparation(t *testing.T) {
 								LHS: ast.WrapArithmeticExpr(&ast.ArithmeticExpr{
 									Op:  AstOp(MUL),
 									LHS: ast.WrapIdentifier(&ast.Identifier{Name: "a"}),
-									RHS: ast.WrapNumberLiteral(&ast.NumberLiteral{Int: 1, IsInt: true}),
+									RHS: ast.WrapIntegerLiteral(&ast.IntegerLiteral{Val: 1}),
 								}),
 								RHS: ast.WrapIdentifier(&ast.Identifier{Name: "b"}),
 							}),
@@ -220,16 +219,16 @@ func TestExprSeparation(t *testing.T) {
 								LHS: ast.WrapArithmeticExpr(&ast.ArithmeticExpr{
 									Op:  AstOp(ADD),
 									LHS: ast.WrapIdentifier(&ast.Identifier{Name: "x"}),
-									RHS: ast.WrapNumberLiteral(&ast.NumberLiteral{Int: 1, IsInt: true}),
+									RHS: ast.WrapIntegerLiteral(&ast.IntegerLiteral{Val: 1}),
 								}),
 								RHS: ast.WrapArithmeticExpr(&ast.ArithmeticExpr{
 									Op:  AstOp(DIV),
-									LHS: ast.WrapNumberLiteral(&ast.NumberLiteral{Int: 1, IsInt: true}),
-									RHS: ast.WrapNumberLiteral(&ast.NumberLiteral{Int: 2, IsInt: true}),
+									LHS: ast.WrapIntegerLiteral(&ast.IntegerLiteral{Val: 1}),
+									RHS: ast.WrapIntegerLiteral(&ast.IntegerLiteral{Val: 2}),
 								}),
 							}),
 						}),
-						RHS: ast.WrapNumberLiteral(&ast.NumberLiteral{IsInt: true, Int: 1}),
+						RHS: ast.WrapIntegerLiteral(&ast.IntegerLiteral{Val: 1}),
 					},
 				),
 			},
@@ -281,12 +280,12 @@ func TestParserFor(t *testing.T) {
 				ast.WrapForInStmt(&ast.ForInStmt{
 					Varb: ast.WrapIdentifier(&ast.Identifier{Name: "x"}),
 					Iter: ast.WrapIdentifier(&ast.Identifier{Name: "y"}),
-					Body: []*ast.Node{
+					Body: &ast.BlockStmt{Stmts: ast.Stmts{
 						ast.WrapAssignmentExpr(&ast.AssignmentExpr{
 							LHS: ast.WrapIdentifier(&ast.Identifier{Name: "b"}),
-							RHS: ast.WrapNumberLiteral(&ast.NumberLiteral{Int: 1}),
+							RHS: ast.WrapIntegerLiteral(&ast.IntegerLiteral{Val: 1}),
 						}),
-					},
+					}},
 				}),
 			},
 		},
@@ -304,12 +303,12 @@ func TestParserFor(t *testing.T) {
 					Varb: ast.WrapIdentifier(&ast.Identifier{Name: "x"}),
 					Iter: ast.WrapListInitExpr(&ast.ListInitExpr{
 						List: []*ast.Node{
-							ast.WrapNumberLiteral(&ast.NumberLiteral{IsInt: true, Int: 1}),
-							ast.WrapNumberLiteral(&ast.NumberLiteral{Float: 1}),
+							ast.WrapIntegerLiteral(&ast.IntegerLiteral{Val: 1}),
+							ast.WrapFloatLiteral(&ast.FloatLiteral{Val: 2.}),
 							ast.WrapStringLiteral(&ast.StringLiteral{Val: "2"}),
 						},
 					}),
-					Body: []*ast.Node{
+					Body: &ast.BlockStmt{Stmts: ast.Stmts{
 						ast.WrapIfelseStmt(&ast.IfelseStmt{
 							IfList: []*ast.IfStmtElem{
 								{
@@ -318,24 +317,24 @@ func TestParserFor(t *testing.T) {
 										Op:  AstOp(NEQ),
 										RHS: ast.WrapStringLiteral(&ast.StringLiteral{Val: "2"}),
 									}),
-									Stmts: ast.Stmts{
+									Block: &ast.BlockStmt{Stmts: ast.Stmts{
 										ast.WrapContinueStmt(&ast.ContinueStmt{}),
-									},
+									}},
 								},
 							},
-							Else: ast.Stmts{
+							Else: &ast.BlockStmt{Stmts: ast.Stmts{
 								ast.WrapBreakStmt(&ast.BreakStmt{}),
-							},
+							}},
 						}),
 						ast.WrapAssignmentExpr(&ast.AssignmentExpr{
 							LHS: ast.WrapIdentifier(&ast.Identifier{Name: "a"}),
 							RHS: ast.WrapArithmeticExpr(&ast.ArithmeticExpr{
 								LHS: ast.WrapIdentifier(&ast.Identifier{Name: "a"}),
 								Op:  AstOp(ADD),
-								RHS: ast.WrapNumberLiteral(&ast.NumberLiteral{IsInt: true, Int: 1}),
+								RHS: ast.WrapIntegerLiteral(&ast.IntegerLiteral{Val: 1}),
 							}),
 						}),
-					},
+					}},
 				}),
 			},
 		},
@@ -353,12 +352,12 @@ func TestParserFor(t *testing.T) {
 							Name: "func",
 						}),
 					}),
-					Body: []*ast.Node{
+					Body: &ast.BlockStmt{Stmts: ast.Stmts{
 						ast.WrapAssignmentExpr(&ast.AssignmentExpr{
 							LHS: ast.WrapIdentifier(&ast.Identifier{Name: "b"}),
-							RHS: ast.WrapNumberLiteral(&ast.NumberLiteral{Int: 1}),
+							RHS: ast.WrapIntegerLiteral(&ast.IntegerLiteral{Val: 1}),
 						}),
-					},
+					}},
 				}),
 			},
 		},
@@ -379,16 +378,16 @@ func TestParserFor(t *testing.T) {
 					LHS: ast.WrapIdentifier(&ast.Identifier{
 						Name: "x",
 					}),
-					RHS: ast.WrapNumberLiteral(&ast.NumberLiteral{
-						Float: 2.,
+					RHS: ast.WrapFloatLiteral(&ast.FloatLiteral{
+						Val: 2.,
 					}),
 				}),
-				Body: []*ast.Node{
+				Body: &ast.BlockStmt{Stmts: ast.Stmts{
 					ast.WrapAssignmentExpr(&ast.AssignmentExpr{
 						LHS: ast.WrapIdentifier(&ast.Identifier{Name: "b"}),
-						RHS: ast.WrapNumberLiteral(&ast.NumberLiteral{Int: 1}),
+						RHS: ast.WrapIntegerLiteral(&ast.IntegerLiteral{Val: 1}),
 					}),
-				},
+				}},
 			})},
 		},
 	}
@@ -565,13 +564,13 @@ func TestParser(t *testing.T) {
 							LHS: ast.WrapIdentifier(&ast.Identifier{Name: "key"}),
 							RHS: ast.WrapStringLiteral(&ast.StringLiteral{Val: "11"}),
 						}),
-						Stmts: ast.Stmts{
+						Block: &ast.BlockStmt{Stmts: ast.Stmts{
 							ast.WrapCallExpr(&ast.CallExpr{
 								Name: "g1",
 								Param: []*ast.Node{ast.WrapIdentifier(
 									&ast.Identifier{Name: "arg"})},
 							}),
-						},
+						}},
 					},
 					&ast.IfStmtElem{
 						Condition: ast.WrapConditionExpr(&ast.ConditionalExpr{
@@ -579,21 +578,21 @@ func TestParser(t *testing.T) {
 							LHS: ast.WrapIdentifier(&ast.Identifier{Name: "key"}),
 							RHS: ast.WrapStringLiteral(&ast.StringLiteral{Val: "22"}),
 						}),
-						Stmts: ast.Stmts{ast.WrapCallExpr(&ast.CallExpr{
+						Block: &ast.BlockStmt{Stmts: ast.Stmts{ast.WrapCallExpr(&ast.CallExpr{
 							Name: "g2",
 							Param: []*ast.Node{ast.WrapIdentifier(
 								&ast.Identifier{Name: "arg"})},
-						})},
+						})}},
 					},
 				},
-				Else: ast.Stmts{
+				Else: &ast.BlockStmt{Stmts: ast.Stmts{
 					ast.WrapCallExpr(&ast.CallExpr{
 						Name: "g3",
 						Param: []*ast.Node{
 							ast.WrapIdentifier(&ast.Identifier{Name: "arg"}),
 						},
 					}),
-				},
+				}},
 			})},
 		},
 
@@ -614,12 +613,12 @@ func TestParser(t *testing.T) {
 								LHS: ast.WrapIdentifier(&ast.Identifier{Name: "key"}),
 								RHS: ast.WrapStringLiteral(&ast.StringLiteral{Val: "11"}),
 							}),
-							Stmts: ast.Stmts{ast.WrapCallExpr(&ast.CallExpr{
+							Block: &ast.BlockStmt{Stmts: ast.Stmts{ast.WrapCallExpr(&ast.CallExpr{
 								Name: "g1",
 								Param: []*ast.Node{
 									ast.WrapIdentifier(&ast.Identifier{Name: "arg"}),
 								},
-							})},
+							})}},
 						},
 						&ast.IfStmtElem{
 							Condition: ast.WrapConditionExpr(&ast.ConditionalExpr{
@@ -627,13 +626,13 @@ func TestParser(t *testing.T) {
 								LHS: ast.WrapIdentifier(&ast.Identifier{Name: "key"}),
 								RHS: ast.WrapStringLiteral(&ast.StringLiteral{Val: "22"}),
 							}),
-							Stmts: ast.Stmts{
+							Block: &ast.BlockStmt{Stmts: ast.Stmts{
 								ast.WrapCallExpr(&ast.CallExpr{
 									Name: "g2",
 									Param: []*ast.Node{ast.WrapIdentifier(
 										&ast.Identifier{Name: "arg"})},
 								}),
-							},
+							}},
 						},
 					},
 				}),
@@ -665,7 +664,7 @@ func TestParser(t *testing.T) {
 						RHS: ast.WrapStringLiteral(&ast.StringLiteral{Val: "22"}),
 					})},
 				},
-				Else: ast.Stmts{},
+				Else: &ast.BlockStmt{Stmts: ast.Stmts{}},
 			})},
 		},
 
@@ -759,7 +758,7 @@ func TestParser(t *testing.T) {
 								LHS: ast.WrapIdentifier(&ast.Identifier{Name: "key"}),
 								RHS: ast.WrapStringLiteral(&ast.StringLiteral{Val: "11"}),
 							}),
-							Stmts: ast.Stmts{
+							Block: &ast.BlockStmt{Stmts: ast.Stmts{
 								ast.WrapCallExpr(&ast.CallExpr{
 									Name: "g1",
 									Param: []*ast.Node{
@@ -774,10 +773,10 @@ func TestParser(t *testing.T) {
 											&ast.Identifier{Name: "arg"}),
 									},
 								}),
-							},
+							}},
 						},
 					},
-					Else: ast.Stmts{
+					Else: &ast.BlockStmt{Stmts: ast.Stmts{
 						ast.WrapCallExpr(&ast.CallExpr{
 							Name: "h",
 							Param: []*ast.Node{
@@ -785,7 +784,7 @@ func TestParser(t *testing.T) {
 									&ast.Identifier{Name: "arg"}),
 							},
 						}),
-					},
+					}},
 				},
 				),
 			},
@@ -841,21 +840,21 @@ func TestParser(t *testing.T) {
 							LHS: ast.WrapIdentifier(&ast.Identifier{Name: "key"}),
 							RHS: ast.WrapStringLiteral(&ast.StringLiteral{Val: "11"}),
 						}),
-						Stmts: ast.Stmts{
+						Block: &ast.BlockStmt{Stmts: ast.Stmts{
 							ast.WrapCallExpr(&ast.CallExpr{
 								Name: "g",
 								Param: []*ast.Node{
 									ast.WrapIdentifier(&ast.Identifier{Name: "arg"}),
 								},
 							}),
-						},
+						}},
 					}},
-					Else: ast.Stmts{ast.WrapCallExpr(&ast.CallExpr{
+					Else: &ast.BlockStmt{Stmts: ast.Stmts{ast.WrapCallExpr(&ast.CallExpr{
 						Name: "h",
 						Param: []*ast.Node{
 							ast.WrapIdentifier(&ast.Identifier{Name: "arg"}),
 						},
-					})},
+					})}},
 				}),
 			},
 		},
@@ -889,13 +888,15 @@ func TestParser(t *testing.T) {
 							LHS: ast.WrapIdentifier(&ast.Identifier{Name: "key"}),
 							RHS: ast.WrapStringLiteral(&ast.StringLiteral{Val: "11"}),
 						}),
-						Stmts: ast.Stmts{
-							ast.WrapCallExpr(&ast.CallExpr{
-								Name: "g",
-								Param: []*ast.Node{
-									ast.WrapIdentifier(&ast.Identifier{Name: "arg"}),
-								},
-							}),
+						Block: &ast.BlockStmt{
+							Stmts: ast.Stmts{
+								ast.WrapCallExpr(&ast.CallExpr{
+									Name: "g",
+									Param: []*ast.Node{
+										ast.WrapIdentifier(&ast.Identifier{Name: "arg"}),
+									},
+								}),
+							},
 						},
 					},
 				}}),
@@ -916,12 +917,12 @@ func TestParser(t *testing.T) {
 							LHS: ast.WrapIdentifier(&ast.Identifier{Name: "key"}),
 							RHS: ast.WrapStringLiteral(&ast.StringLiteral{Val: "11"}),
 						}),
-						Stmts: ast.Stmts{ast.WrapCallExpr(&ast.CallExpr{
+						Block: &ast.BlockStmt{Stmts: ast.Stmts{ast.WrapCallExpr(&ast.CallExpr{
 							Name: "g",
 							Param: []*ast.Node{
 								ast.WrapIdentifier(&ast.Identifier{Name: "arg"}),
 							},
-						})},
+						})}},
 					}},
 				}),
 			},
@@ -935,8 +936,8 @@ func TestParser(t *testing.T) {
 					Name: "f",
 					Param: []*ast.Node{ast.WrapListInitExpr(&ast.ListInitExpr{
 						List: []*ast.Node{
-							ast.WrapNumberLiteral(&ast.NumberLiteral{IsInt: true, Int: 1}),
-							ast.WrapNumberLiteral(&ast.NumberLiteral{Float: 2.0}),
+							ast.WrapIntegerLiteral(&ast.IntegerLiteral{Val: 1}),
+							ast.WrapFloatLiteral(&ast.FloatLiteral{Val: 2.0}),
 							ast.WrapStringLiteral(&ast.StringLiteral{Val: "3"}),
 							ast.WrapBoolLiteral(&ast.BoolLiteral{Val: true}),
 							ast.WrapBoolLiteral(&ast.BoolLiteral{Val: false}),
@@ -987,7 +988,7 @@ func TestParser(t *testing.T) {
 								RHS: ast.WrapListInitExpr(&ast.ListInitExpr{
 									List: []*ast.Node{
 										ast.WrapStringLiteral(&ast.StringLiteral{Val: "b"}),
-										ast.WrapNumberLiteral(&ast.NumberLiteral{Float: 1.1}),
+										ast.WrapFloatLiteral(&ast.FloatLiteral{Val: 1.1}),
 									},
 								}),
 							}),
@@ -1007,11 +1008,11 @@ func TestParser(t *testing.T) {
 						Param: []*ast.Node{
 							ast.WrapAssignmentExpr(&ast.AssignmentExpr{
 								LHS: ast.WrapIdentifier(&ast.Identifier{Name: "arg1"}),
-								RHS: ast.WrapNumberLiteral(&ast.NumberLiteral{IsInt: true, Int: 1}),
+								RHS: ast.WrapIntegerLiteral(&ast.IntegerLiteral{Val: 1}),
 							}),
 							ast.WrapAssignmentExpr(&ast.AssignmentExpr{
 								LHS: ast.WrapIdentifier(&ast.Identifier{Name: "arg2"}),
-								RHS: ast.WrapNumberLiteral(&ast.NumberLiteral{IsInt: true, Int: 2}),
+								RHS: ast.WrapIntegerLiteral(&ast.IntegerLiteral{Val: 2}),
 							}),
 						},
 					},
@@ -1030,11 +1031,11 @@ func TestParser(t *testing.T) {
 							ast.WrapConditionExpr(&ast.ConditionalExpr{
 								LHS: ast.WrapIdentifier(&ast.Identifier{Name: "arg1"}),
 								Op:  ast.GT,
-								RHS: ast.WrapNumberLiteral(&ast.NumberLiteral{IsInt: true, Int: 1}),
+								RHS: ast.WrapIntegerLiteral(&ast.IntegerLiteral{Val: 1}),
 							}),
 							ast.WrapAssignmentExpr(&ast.AssignmentExpr{
 								LHS: ast.WrapIdentifier(&ast.Identifier{Name: "arg2"}),
-								RHS: ast.WrapNumberLiteral(&ast.NumberLiteral{IsInt: true, Int: 2}),
+								RHS: ast.WrapIntegerLiteral(&ast.IntegerLiteral{Val: 2}),
 							}),
 						},
 					},
@@ -1051,20 +1052,14 @@ func TestParser(t *testing.T) {
 					Param: []*ast.Node{ast.WrapAttrExpr(&ast.AttrExpr{
 						Obj: ast.WrapIndexExpr(
 							&ast.IndexExpr{Index: []*ast.Node{
-								ast.WrapNumberLiteral(&ast.NumberLiteral{
-									IsInt: true,
-									Int:   2,
-								}),
+								ast.WrapIntegerLiteral(&ast.IntegerLiteral{Val: 2}),
 							}},
 						),
 						Attr: ast.WrapIndexExpr(
 							&ast.IndexExpr{
 								Obj: &ast.Identifier{Name: "x"},
 								Index: []*ast.Node{
-									ast.WrapNumberLiteral(&ast.NumberLiteral{
-										IsInt: true,
-										Int:   3,
-									}),
+									ast.WrapIntegerLiteral(&ast.IntegerLiteral{Val: 3}),
 								},
 							},
 						),
@@ -1087,7 +1082,7 @@ func TestParser(t *testing.T) {
 							Obj: ast.WrapIdentifier(&ast.Identifier{Name: "x"}),
 							Attr: ast.WrapIndexExpr(&ast.IndexExpr{
 								Obj:   &ast.Identifier{Name: "y"},
-								Index: []*ast.Node{ast.WrapNumberLiteral(&ast.NumberLiteral{Float: 2.5})},
+								Index: []*ast.Node{ast.WrapFloatLiteral(&ast.FloatLiteral{Val: 2.5})},
 							}),
 						}),
 					},
@@ -1099,11 +1094,11 @@ func TestParser(t *testing.T) {
 						KeyValeList: [][2]*ast.Node{
 							{
 								ast.WrapStringLiteral(&ast.StringLiteral{Val: "1"}),
-								ast.WrapNumberLiteral(&ast.NumberLiteral{IsInt: true, Int: 2}),
+								ast.WrapIntegerLiteral(&ast.IntegerLiteral{Val: 2}),
 							},
 							{
-								ast.WrapNumberLiteral(&ast.NumberLiteral{Float: 3.1}),
-								ast.WrapNumberLiteral(&ast.NumberLiteral{IsInt: true, Int: 1}),
+								ast.WrapFloatLiteral(&ast.FloatLiteral{Val: 3.1}),
+								ast.WrapIntegerLiteral(&ast.IntegerLiteral{Val: 1}),
 							},
 						},
 					}),
@@ -1123,18 +1118,8 @@ func TestParser(t *testing.T) {
 								Obj: ast.WrapIndexExpr(&ast.IndexExpr{
 									Obj: &ast.Identifier{Name: "y"},
 									Index: []*ast.Node{
-										ast.WrapNumberLiteral(
-											&ast.NumberLiteral{
-												IsInt: true,
-												Int:   1,
-											},
-										),
-										ast.WrapNumberLiteral(
-											&ast.NumberLiteral{
-												IsInt: true,
-												Int:   2,
-											},
-										),
+										ast.WrapIntegerLiteral(&ast.IntegerLiteral{Val: 1}),
+										ast.WrapIntegerLiteral(&ast.IntegerLiteral{Val: 2}),
 									},
 								}),
 								Attr: ast.WrapIdentifier(&ast.Identifier{Name: "z"}),
@@ -1182,81 +1167,16 @@ func TestParser(t *testing.T) {
 										},
 									},
 								),
-								ast.WrapNumberLiteral(&ast.NumberLiteral{
-									Float: 123.0,
+								ast.WrapFloatLiteral(&ast.FloatLiteral{
+									Val: 123.0,
 								}),
 							},
 						}),
-						ast.WrapNumberLiteral(&ast.NumberLiteral{
-							IsInt: true,
-							Int:   1,
-						}), ast.WrapNumberLiteral(&ast.NumberLiteral{
-							IsInt: true,
-							Int:   2,
-						}),
+						ast.WrapIntegerLiteral(&ast.IntegerLiteral{Val: 1}),
+						ast.WrapIntegerLiteral(&ast.IntegerLiteral{Val: 2}),
 					},
 				},
 				),
-			},
-		},
-
-		{
-			name: "case: attr syntax in function arg",
-			in:   `avg(x.y.z, 1,2,3, p68, re("cd"), pqa)`,
-			// 函数参数不可以 re()
-			expected: ast.Stmts{ast.WrapCallExpr(&ast.CallExpr{
-				Name: "avg",
-				Param: []*ast.Node{
-					ast.WrapAttrExpr(&ast.AttrExpr{
-						Obj: ast.WrapIdentifier(
-							&ast.Identifier{Name: "x"},
-						),
-						Attr: ast.WrapAttrExpr(&ast.AttrExpr{
-							Obj: ast.WrapIdentifier(&ast.Identifier{
-								Name: "y",
-							},
-							),
-							Attr: ast.WrapIdentifier(&ast.Identifier{Name: "z"}),
-						}),
-					}),
-					ast.WrapNumberLiteral(
-						&ast.NumberLiteral{
-							IsInt: true,
-							Int:   1,
-						},
-					),
-					ast.WrapNumberLiteral(
-						&ast.NumberLiteral{
-							IsInt: true,
-							Int:   2,
-						},
-					),
-					ast.WrapNumberLiteral(
-						&ast.NumberLiteral{
-							IsInt: true,
-							Int:   3,
-						},
-					),
-					ast.WrapIdentifier(
-						&ast.Identifier{Name: "p68"},
-					),
-					ast.WrapCallExpr(
-						&ast.CallExpr{
-							Name: "re",
-							Param: []*ast.Node{
-								ast.WrapStringLiteral(
-									&ast.StringLiteral{
-										Val: "cd",
-									},
-								),
-							},
-						},
-					),
-					ast.WrapIdentifier(
-						&ast.Identifier{Name: "pqa"},
-					),
-				},
-			}),
 			},
 		},
 
@@ -1272,11 +1192,8 @@ func TestParser(t *testing.T) {
 							Obj: ast.WrapIdentifier(&ast.Identifier{Name: "x"}),
 							Attr: ast.WrapAttrExpr(&ast.AttrExpr{
 								Obj: ast.WrapIndexExpr(&ast.IndexExpr{
-									Obj: &ast.Identifier{Name: "y"},
-									Index: []*ast.Node{ast.WrapNumberLiteral(&ast.NumberLiteral{
-										IsInt: true,
-										Int:   1,
-									})},
+									Obj:   &ast.Identifier{Name: "y"},
+									Index: []*ast.Node{ast.WrapIntegerLiteral(&ast.IntegerLiteral{Val: 1})},
 								}),
 								Attr: ast.WrapIdentifier(&ast.Identifier{Name: "z"}),
 							}),
@@ -1329,8 +1246,8 @@ func TestParser(t *testing.T) {
 					Param: []*ast.Node{
 						ast.WrapIdentifier(&ast.Identifier{Name: "a"}),
 						ast.WrapIdentifier(&ast.Identifier{Name: "b"}),
-						ast.WrapNumberLiteral(&ast.NumberLiteral{IsInt: true, Int: 1}),
-						ast.WrapNumberLiteral(&ast.NumberLiteral{IsInt: true, Int: 2}),
+						ast.WrapIntegerLiteral(&ast.IntegerLiteral{Val: 1}),
+						ast.WrapIntegerLiteral(&ast.IntegerLiteral{Val: 2}),
 					},
 				}),
 			},

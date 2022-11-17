@@ -14,24 +14,26 @@ import (
 	"github.com/GuanceCloud/ppl/pkg/inimpl/guancecloud/input"
 )
 
-func UppercaseChecking(ctx *runtime.Context, funcExpr *ast.CallExpr) error {
+func UppercaseChecking(ctx *runtime.Context, funcExpr *ast.CallExpr) *runtime.RuntimeError {
 	if len(funcExpr.Param) != 1 {
-		return fmt.Errorf("func %s expects 1 arg", funcExpr.Name)
+		return runtime.NewRunError(ctx, fmt.Sprintf(
+			"func %s expects 1 arg", funcExpr.Name), funcExpr.NamePos)
 	}
 	if _, err := getKeyName(funcExpr.Param[0]); err != nil {
-		return err
+		return runtime.NewRunError(ctx, err.Error(), funcExpr.Param[0].StartPos())
 	}
 	return nil
 }
 
-func Uppercase(ctx *runtime.Context, funcExpr *ast.CallExpr) runtime.PlPanic {
+func Uppercase(ctx *runtime.Context, funcExpr *ast.CallExpr) *runtime.RuntimeError {
 	if len(funcExpr.Param) != 1 {
-		return fmt.Errorf("func %s expects 1 args", funcExpr.Name)
+		return runtime.NewRunError(ctx, fmt.Sprintf(
+			"func %s expects 1 args", funcExpr.Name), funcExpr.NamePos)
 	}
 
 	key, err := getKeyName(funcExpr.Param[0])
 	if err != nil {
-		return err
+		return runtime.NewRunError(ctx, err.Error(), funcExpr.Param[0].StartPos())
 	}
 
 	cont, err := ctx.GetKeyConv2Str(key)

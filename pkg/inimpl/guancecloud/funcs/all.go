@@ -42,7 +42,6 @@ var FuncsMap = map[string]runtime.FuncCall{
 	"url_decode":      URLDecode,
 
 	"printf":  Printf,
-	"cover":   Cover,
 	"replace": Replace,
 	"xml":     XML,
 	// "match":                 Match,
@@ -74,7 +73,6 @@ var FuncsCheckMap = map[string]runtime.FuncCheck{
 	"url_decode":      URLDecodeChecking,
 
 	"printf":    PrintfChecking,
-	"cover":     CoverChecking,
 	"replace":   ReplaceChecking,
 	"sql_cover": SQLCoverChecking,
 	"xml":       XMLChecking,

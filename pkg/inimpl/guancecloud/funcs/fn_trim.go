@@ -14,28 +14,29 @@ import (
 	"github.com/GuanceCloud/ppl/pkg/inimpl/guancecloud/input"
 )
 
-func TrimChecking(ctx *runtime.Context, funcExpr *ast.CallExpr) error {
+func TrimChecking(ctx *runtime.Context, funcExpr *ast.CallExpr) *runtime.RuntimeError {
 	if len(funcExpr.Param) < 1 || len(funcExpr.Param) > 2 {
-		return fmt.Errorf("func `%s' expected 1 or 2 args", funcExpr.Name)
+		return runtime.NewRunError(ctx, fmt.Sprintf(
+			"func `%s' expected 1 or 2 args", funcExpr.Name), funcExpr.NamePos)
 	}
 	if _, err := getKeyName(funcExpr.Param[0]); err != nil {
-		return err
+		return runtime.NewRunError(ctx, err.Error(), funcExpr.Param[0].StartPos())
 	}
 	if len(funcExpr.Param) == 2 {
 		switch funcExpr.Param[1].NodeType { //nolint:exhaustive
 		case ast.TypeStringLiteral:
 		default:
-			return fmt.Errorf("param type expect StringLiteral, got `%s'",
-				funcExpr.Param[1].NodeType)
+			return runtime.NewRunError(ctx, fmt.Sprintf("param type expect StringLiteral, got `%s'",
+				funcExpr.Param[1].NodeType), funcExpr.Param[1].StartPos())
 		}
 	}
 	return nil
 }
 
-func Trim(ctx *runtime.Context, funcExpr *ast.CallExpr) runtime.PlPanic {
+func Trim(ctx *runtime.Context, funcExpr *ast.CallExpr) *runtime.RuntimeError {
 	key, err := getKeyName(funcExpr.Param[0])
 	if err != nil {
-		return err
+		return runtime.NewRunError(ctx, err.Error(), funcExpr.Param[0].StartPos())
 	}
 
 	cont, err := ctx.GetKeyConv2Str(key)
@@ -50,8 +51,8 @@ func Trim(ctx *runtime.Context, funcExpr *ast.CallExpr) runtime.PlPanic {
 		case ast.TypeStringLiteral:
 			cutset = funcExpr.Param[1].StringLiteral.Val
 		default:
-			return fmt.Errorf("param type expect StringLiteral, got `%s'",
-				funcExpr.Param[1].NodeType)
+			return runtime.NewRunError(ctx, fmt.Sprintf("param type expect StringLiteral, got `%s'",
+				funcExpr.Param[1].NodeType), funcExpr.Param[1].StartPos())
 		}
 	}
 

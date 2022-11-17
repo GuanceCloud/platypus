@@ -14,26 +14,28 @@ import (
 	"github.com/GuanceCloud/ppl/pkg/inimpl/guancecloud/input"
 )
 
-func GrokChecking(ctx *runtime.Context, funcExpr *ast.CallExpr) error {
+func GrokChecking(ctx *runtime.Context, funcExpr *ast.CallExpr) *runtime.RuntimeError {
 	if funcExpr.Grok != nil {
 		return nil
 	}
 
 	if len(funcExpr.Param) < 2 || len(funcExpr.Param) > 3 {
-		return fmt.Errorf("func %s expected 2 or 3 args", funcExpr.Name)
+		return runtime.NewRunError(ctx, fmt.Sprintf(
+			"func %s expected 2 or 3 args", funcExpr.Name), funcExpr.NamePos)
 	}
 
 	if len(funcExpr.Param) == 3 {
 		switch funcExpr.Param[2].NodeType { //nolint:exhaustive
 		case ast.TypeBoolLiteral:
 		default:
-			return fmt.Errorf("param key expect BoolLiteral, got `%s'",
-				funcExpr.Param[2].NodeType)
+			return runtime.NewRunError(ctx, fmt.Sprintf(
+				"param key expect BoolLiteral, got `%s'",
+				funcExpr.Param[2].NodeType), funcExpr.Param[2].StartPos())
 		}
 	}
 
 	if _, err := getKeyName(funcExpr.Param[0]); err != nil {
-		return err
+		return runtime.NewRunError(ctx, err.Error(), funcExpr.Param[0].StartPos())
 	}
 
 	var pattern string
@@ -41,35 +43,36 @@ func GrokChecking(ctx *runtime.Context, funcExpr *ast.CallExpr) error {
 	case ast.TypeStringLiteral:
 		pattern = funcExpr.Param[1].StringLiteral.Val
 	default:
-		return fmt.Errorf("expect StringLiteral, got %s",
-			funcExpr.Param[1].NodeType)
+		return runtime.NewRunError(ctx, fmt.Sprintf(
+			"expect StringLiteral, got %s",
+			funcExpr.Param[1].NodeType), funcExpr.Param[1].StartPos())
 	}
 
 	gRe, err := grok.CompilePattern(pattern, ctx)
 	if err != nil {
-		return err
+		return runtime.NewRunError(ctx, err.Error(), funcExpr.NamePos)
 	}
 	funcExpr.Grok = gRe
 	return nil
 }
 
-func Grok(ng *runtime.Context, funcExpr *ast.CallExpr) runtime.PlPanic {
+func Grok(ctx *runtime.Context, funcExpr *ast.CallExpr) *runtime.RuntimeError {
 	grokRe := funcExpr.Grok
 	if grokRe == nil {
-		ng.Regs.ReturnAppend(false, ast.Bool)
-		return fmt.Errorf("no grok obj")
+		ctx.Regs.ReturnAppend(false, ast.Bool)
+		return runtime.NewRunError(ctx, "no grok obj", funcExpr.NamePos)
 	}
 	var err error
 
 	key, err := getKeyName(funcExpr.Param[0])
 	if err != nil {
-		ng.Regs.ReturnAppend(false, ast.Bool)
-		return err
+		ctx.Regs.ReturnAppend(false, ast.Bool)
+		return runtime.NewRunError(ctx, err.Error(), funcExpr.Param[0].StartPos())
 	}
 
-	val, err := ng.GetKeyConv2Str(key)
+	val, err := ctx.GetKeyConv2Str(key)
 	if err != nil {
-		ng.Regs.ReturnAppend(false, ast.Bool)
+		ctx.Regs.ReturnAppend(false, ast.Bool)
 		return nil
 	}
 
@@ -79,15 +82,15 @@ func Grok(ng *runtime.Context, funcExpr *ast.CallExpr) runtime.PlPanic {
 		case ast.TypeBoolLiteral:
 			trimSpace = funcExpr.Param[2].BoolLiteral.Val
 		default:
-			ng.Regs.ReturnAppend(false, ast.Bool)
-			return fmt.Errorf("param key expect BoolLiteral, got `%s'",
-				funcExpr.Param[2].NodeType)
+			ctx.Regs.ReturnAppend(false, ast.Bool)
+			return runtime.NewRunError(ctx, fmt.Sprintf("param key expect BoolLiteral, got `%s'",
+				funcExpr.Param[2].NodeType), funcExpr.Param[2].StartPos())
 		}
 	}
 
 	m, _, err := grokRe.RunWithTypeInfo(val, trimSpace)
 	if err != nil {
-		ng.Regs.ReturnAppend(false, ast.Bool)
+		ctx.Regs.ReturnAppend(false, ast.Bool)
 		return nil
 	}
 
@@ -109,12 +112,12 @@ func Grok(ng *runtime.Context, funcExpr *ast.CallExpr) runtime.PlPanic {
 				continue
 			}
 		}
-		if err := addKey2PtWithVal(ng.InData(), k, v, dtype, input.KindPtDefault); err != nil {
+		if err := addKey2PtWithVal(ctx.InData(), k, v, dtype, input.KindPtDefault); err != nil {
 			l.Debug(err)
-			ng.Regs.ReturnAppend(false, ast.Bool)
+			ctx.Regs.ReturnAppend(false, ast.Bool)
 			return nil
 		}
 	}
-	ng.Regs.ReturnAppend(true, ast.Bool)
+	ctx.Regs.ReturnAppend(true, ast.Bool)
 	return nil
 }

@@ -10,11 +10,11 @@ import (
 	"github.com/GuanceCloud/ppl/pkg/engine/runtime"
 )
 
-func ExitChecking(ctx *runtime.Context, node *ast.CallExpr) error {
+func ExitChecking(ctx *runtime.Context, node *ast.CallExpr) *runtime.RuntimeError {
 	return nil
 }
 
-func Exit(ctx *runtime.Context, node *ast.CallExpr) runtime.PlPanic {
+func Exit(ctx *runtime.Context, node *ast.CallExpr) *runtime.RuntimeError {
 	ctx.SetExit()
 	return nil
 }

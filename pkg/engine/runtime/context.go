@@ -30,6 +30,8 @@ type Script struct {
 	Category  string
 	FilePath  string
 
+	Content string
+
 	Ast ast.Stmts
 }
 
@@ -59,7 +61,9 @@ type Context struct {
 	procExit bool
 
 	callRCef map[string]*Script
-	// name      string
+
+	name    string
+	content string
 	// namespace string
 	// filepath  string
 }
@@ -74,7 +78,7 @@ func (ctx *Context) InData() any {
 }
 
 func InitCtxWithoutMap(ctx *Context, inWithoutMap InputWithoutMap, funcs map[string]FuncCall,
-	callRef map[string]*Script, signal Signal,
+	callRef map[string]*Script, signal Signal, name, content string,
 ) *Context {
 	ctx.Regs.Reset()
 
@@ -91,11 +95,14 @@ func InitCtxWithoutMap(ctx *Context, inWithoutMap InputWithoutMap, funcs map[str
 	ctx.signal = signal
 	ctx.procExit = false
 
+	ctx.name = name
+	ctx.content = content
+
 	return ctx
 }
 
 func InitCtxWithRMap(ctx *Context, inWithRMap InputWithRMap, funcs map[string]FuncCall,
-	callRef map[string]*Script, signal Signal,
+	callRef map[string]*Script, signal Signal, name, content string,
 ) *Context {
 	ctx.Regs.Reset()
 
@@ -112,10 +119,15 @@ func InitCtxWithRMap(ctx *Context, inWithRMap InputWithRMap, funcs map[string]Fu
 	ctx.signal = signal
 	ctx.procExit = false
 
+	ctx.name = name
+	ctx.content = content
+
 	return ctx
 }
 
-func InitCtxForCheck(ctx *Context, funcs map[string]FuncCall, funcsCheck map[string]FuncCheck) *Context {
+func InitCtxForCheck(ctx *Context, funcs map[string]FuncCall, funcsCheck map[string]FuncCheck,
+	name, content string,
+) *Context {
 	ctx.stackHeader = &PlProcStack{
 		data: map[string]*Varb{},
 	}
@@ -131,6 +143,9 @@ func InitCtxForCheck(ctx *Context, funcs map[string]FuncCall, funcsCheck map[str
 	ctx.loopContinue = false
 
 	ctx.procExit = false
+
+	ctx.name = name
+	ctx.content = content
 
 	return ctx
 }

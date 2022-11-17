@@ -12,29 +12,31 @@ import (
 	"github.com/GuanceCloud/ppl/pkg/engine/runtime"
 )
 
-func GetkeyChecking(_ *runtime.Context, funcExpr *ast.CallExpr) error {
+func GetkeyChecking(ctx *runtime.Context, funcExpr *ast.CallExpr) *runtime.RuntimeError {
 	if len(funcExpr.Param) != 1 {
-		return fmt.Errorf("func %s expected 1 args", funcExpr.Name)
+		return runtime.NewRunError(ctx, fmt.Sprintf(
+			"func %s expected 1 args", funcExpr.Name), funcExpr.NamePos)
 	}
 
 	if _, err := getKeyName(funcExpr.Param[0]); err != nil {
-		return err
+		return runtime.NewRunError(ctx, err.Error(), funcExpr.Param[0].StartPos())
 	}
 
 	return nil
 }
 
-func Getkey(ctx *runtime.Context, funcExpr *ast.CallExpr) runtime.PlPanic {
+func Getkey(ctx *runtime.Context, funcExpr *ast.CallExpr) *runtime.RuntimeError {
 	if funcExpr == nil {
-		return fmt.Errorf("unreachable")
+		return runtime.NewRunError(ctx, "unreachable", funcExpr.NamePos)
 	}
 	if len(funcExpr.Param) != 1 {
-		return fmt.Errorf("func %s expected 1 args", funcExpr.Name)
+		return runtime.NewRunError(ctx, fmt.Sprintf("func %s expected 1 args",
+			funcExpr.Name), funcExpr.NamePos)
 	}
 
 	key, err := getKeyName(funcExpr.Param[0])
 	if err != nil {
-		return err
+		return runtime.NewRunError(ctx, err.Error(), funcExpr.Param[0].StartPos())
 	}
 
 	if val, dtype, err := getPtKey(ctx.InData(), key); err != nil {

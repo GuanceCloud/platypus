@@ -14,42 +14,39 @@ import (
 	"github.com/spf13/cast"
 )
 
-type PlPanic error
-
 type (
-	FuncCheck func(*Context, *ast.CallExpr) error
-	FuncCall  func(*Context, *ast.CallExpr) PlPanic
+	FuncCheck func(*Context, *ast.CallExpr) *RuntimeError
+	FuncCall  func(*Context, *ast.CallExpr) *RuntimeError
 )
 
-func RunScriptWithoutMapIn(proc *Script, data InputWithoutMap, signal Signal) error {
+func RunScriptWithoutMapIn(proc *Script, data InputWithoutMap, signal Signal) *RuntimeError {
 	if proc == nil {
-		return fmt.Errorf("vaule of script is nil")
+		return nil
 	}
 
 	ctx := GetContext()
 	defer PutContext(ctx)
 
-	ctx = InitCtxWithoutMap(ctx, data, proc.FuncCall, proc.CallRef, signal)
+	ctx = InitCtxWithoutMap(ctx, data, proc.FuncCall, proc.CallRef, signal, proc.Name, proc.Content)
 	RunStmts(ctx, proc.Ast)
 	return nil
 }
 
-func RunScriptWithRMapIn(proc *Script, data InputWithRMap, signal Signal) error {
+func RunScriptWithRMapIn(proc *Script, data InputWithRMap, signal Signal) *RuntimeError {
 	if proc == nil {
-		return fmt.Errorf("vaule of script is nil")
+		return nil
 	}
 
 	ctx := GetContext()
 	defer PutContext(ctx)
 
-	ctx = InitCtxWithRMap(ctx, data, proc.FuncCall, proc.CallRef, signal)
-	RunStmts(ctx, proc.Ast)
-	return nil
+	ctx = InitCtxWithRMap(ctx, data, proc.FuncCall, proc.CallRef, signal, proc.Name, proc.Content)
+	return RunStmts(ctx, proc.Ast)
 }
 
-func RefRunScript(ctx *Context, proc *Script) error {
+func RefRunScript(ctx *Context, proc *Script) *RuntimeError {
 	if proc == nil {
-		return fmt.Errorf("vaule of script is nil")
+		return nil
 	}
 
 	newctx := GetContext()
@@ -57,21 +54,21 @@ func RefRunScript(ctx *Context, proc *Script) error {
 
 	switch ctx.inType {
 	case InRMap:
-		InitCtxWithRMap(newctx, ctx.inRMap, proc.FuncCall, proc.CallRef, ctx.signal)
+		InitCtxWithRMap(newctx, ctx.inRMap, proc.FuncCall, proc.CallRef, ctx.signal, proc.Name, proc.Content)
 	case InWithoutMap:
-		InitCtxWithoutMap(newctx, ctx.inWithoutMap, proc.FuncCall, proc.CallRef, ctx.signal)
+		InitCtxWithoutMap(newctx, ctx.inWithoutMap, proc.FuncCall, proc.CallRef, ctx.signal, proc.Name, proc.Content)
 	default:
-		return fmt.Errorf("unsupported input type")
+		// TODO
+		return nil
 	}
 
-	RunStmts(newctx, proc.Ast)
-	return nil
+	return RunStmts(newctx, proc.Ast)
 }
 
-func CheckScript(proc *Script, funcsCheck map[string]FuncCheck) error {
+func CheckScript(proc *Script, funcsCheck map[string]FuncCheck) *RuntimeError {
 	ctx := GetContext()
 	defer PutContext(ctx)
-	InitCtxForCheck(ctx, proc.FuncCall, funcsCheck)
+	InitCtxForCheck(ctx, proc.FuncCall, funcsCheck, proc.Name, proc.Content)
 	if err := RunStmtsCheck(ctx, &ContextCheck{}, proc.Ast); err != nil {
 		return err
 	}
@@ -80,16 +77,21 @@ func CheckScript(proc *Script, funcsCheck map[string]FuncCheck) error {
 	return nil
 }
 
-func RunStmts(ctx *Context, nodes ast.Stmts) {
+func RunStmts(ctx *Context, nodes ast.Stmts) *RuntimeError {
 	for _, node := range nodes {
-		_, _, _ = RunStmt(ctx, node)
+		if _, _, err := RunStmt(ctx, node); err != nil {
+			ctx.procExit = true
+			return err
+		}
+
 		if ctx.StmtRetrun() {
-			return
+			return nil
 		}
 	}
+	return nil
 }
 
-func RunIfElseStmt(ctx *Context, stmt *ast.IfelseStmt) (any, ast.DType, error) {
+func RunIfElseStmt(ctx *Context, stmt *ast.IfelseStmt) (any, ast.DType, *RuntimeError) {
 	ctx.StackEnterNew()
 	defer ctx.StackExitCur()
 
@@ -104,19 +106,28 @@ func RunIfElseStmt(ctx *Context, stmt *ast.IfelseStmt) (any, ast.DType, error) {
 			continue
 		}
 
-		// run if or elif stmt
-		ctx.StackEnterNew()
+		if ifstmt.Block != nil {
+			// run if or elif stmt
+			ctx.StackEnterNew()
 
-		RunStmts(ctx, ifstmt.Stmts)
+			if err := RunStmts(ctx, ifstmt.Block.Stmts); err != nil {
+				return nil, ast.Void, err
+			}
 
-		ctx.StackExitCur()
+			ctx.StackExitCur()
+		}
+
 		return nil, ast.Void, nil
 	}
 
-	// run else stmt
-	ctx.StackEnterNew()
-	RunStmts(ctx, stmt.Else)
-	ctx.StackExitCur()
+	if stmt.Else != nil {
+		// run else stmt
+		ctx.StackEnterNew()
+		if err := RunStmts(ctx, stmt.Else.Stmts); err != nil {
+			return nil, ast.Void, err
+		}
+		ctx.StackExitCur()
+	}
 
 	return nil, ast.Void, nil
 }
@@ -156,7 +167,7 @@ func condTrue(val any, dtype ast.DType) bool {
 	return true
 }
 
-func RunForStmt(ctx *Context, stmt *ast.ForStmt) (any, ast.DType, error) {
+func RunForStmt(ctx *Context, stmt *ast.ForStmt) (any, ast.DType, *RuntimeError) {
 	ctx.StackEnterNew()
 	defer ctx.StackExitCur()
 
@@ -179,10 +190,14 @@ func RunForStmt(ctx *Context, stmt *ast.ForStmt) (any, ast.DType, error) {
 			}
 		}
 
-		// for body
-		ctx.StackEnterNew()
-		RunStmts(ctx, stmt.Body)
-		ctx.StackExitCur()
+		if stmt.Body != nil {
+			// for body
+			ctx.StackEnterNew()
+			if err := RunStmts(ctx, stmt.Body.Stmts); err != nil {
+				return nil, ast.Invalid, err
+			}
+			ctx.StackExitCur()
+		}
 
 		if ctx.loopBreak {
 			ctx.loopBreak = false
@@ -209,7 +224,7 @@ func RunForStmt(ctx *Context, stmt *ast.ForStmt) (any, ast.DType, error) {
 	return nil, ast.Void, nil
 }
 
-func RunForInStmt(ctx *Context, stmt *ast.ForInStmt) (any, ast.DType, error) {
+func RunForInStmt(ctx *Context, stmt *ast.ForInStmt) (any, ast.DType, *RuntimeError) {
 	ctx.StackEnterNew()
 	defer ctx.StackExitCur()
 
@@ -224,7 +239,8 @@ func RunForInStmt(ctx *Context, stmt *ast.ForInStmt) (any, ast.DType, error) {
 	case ast.String:
 		iter, ok := iter.(string)
 		if !ok {
-			return nil, ast.Invalid, fmt.Errorf("inner type error")
+			return nil, ast.Invalid, NewRunError(ctx,
+				"inner type error", stmt.Iter.StartPos())
 		}
 		for _, x := range iter {
 			char := string(x)
@@ -232,7 +248,11 @@ func RunForInStmt(ctx *Context, stmt *ast.ForInStmt) (any, ast.DType, error) {
 				return nil, ast.Invalid, err
 			}
 			_ = ctx.SetVarb(stmt.Varb.Identifier.Name, char, ast.String)
-			RunStmts(ctx, stmt.Body)
+			if stmt.Body != nil {
+				if err := RunStmts(ctx, stmt.Body.Stmts); err != nil {
+					return nil, ast.Invalid, err
+				}
+			}
 			ctx.stackCur.Clear()
 
 			if forbreak(ctx) {
@@ -246,12 +266,17 @@ func RunForInStmt(ctx *Context, stmt *ast.ForInStmt) (any, ast.DType, error) {
 	case ast.Map:
 		iter, ok := iter.(map[string]any)
 		if !ok {
-			return nil, ast.Invalid, fmt.Errorf("inner type error")
+			return nil, ast.Invalid, NewRunError(ctx,
+				"inner type error", stmt.Iter.StartPos())
 		}
 		for x := range iter {
 			ctx.stackCur.Clear()
 			_ = ctx.SetVarb(stmt.Varb.Identifier.Name, x, ast.String)
-			RunStmts(ctx, stmt.Body)
+			if stmt.Body != nil {
+				if err := RunStmts(ctx, stmt.Body.Stmts); err != nil {
+					return nil, ast.Invalid, err
+				}
+			}
 			if forbreak(ctx) {
 				break
 			}
@@ -263,16 +288,22 @@ func RunForInStmt(ctx *Context, stmt *ast.ForInStmt) (any, ast.DType, error) {
 	case ast.List:
 		iter, ok := iter.([]any)
 		if !ok {
-			return nil, ast.Invalid, fmt.Errorf("inner type error")
+			return nil, ast.Invalid, NewRunError(ctx,
+				"inner type error", stmt.Iter.StartPos())
 		}
 		for _, x := range iter {
 			ctx.stackCur.Clear()
 			x, dtype := ast.DectDataType(x)
 			if dtype == ast.Invalid {
-				return nil, ast.Invalid, fmt.Errorf("inner type error")
+				return nil, ast.Invalid, NewRunError(ctx,
+					"inner type error", stmt.Iter.StartPos())
 			}
 			_ = ctx.SetVarb(stmt.Varb.Identifier.Name, x, dtype)
-			RunStmts(ctx, stmt.Body)
+			if stmt.Body != nil {
+				if err := RunStmts(ctx, stmt.Body.Stmts); err != nil {
+					return nil, ast.Invalid, err
+				}
+			}
 			if forbreak(ctx) {
 				break
 			}
@@ -282,7 +313,8 @@ func RunForInStmt(ctx *Context, stmt *ast.ForInStmt) (any, ast.DType, error) {
 			}
 		}
 	default:
-		return nil, ast.Invalid, fmt.Errorf("unsupported type: %s, not iter value", dtype)
+		return nil, ast.Invalid, NewRunError(ctx, fmt.Sprintf(
+			"unsupported type: %s, not iter value", dtype), stmt.Iter.StartPos())
 	}
 
 	return nil, ast.Void, nil
@@ -302,18 +334,18 @@ func forcontinue(ctx *Context) {
 	}
 }
 
-func RunBreakStmt(ctx *Context, stmt *ast.BreakStmt) (any, ast.DType, error) {
+func RunBreakStmt(ctx *Context, stmt *ast.BreakStmt) (any, ast.DType, *RuntimeError) {
 	ctx.loopBreak = true
 	return nil, ast.Void, nil
 }
 
-func RunContinueStmt(ctx *Context, stmt *ast.ContinueStmt) (any, ast.DType, error) {
+func RunContinueStmt(ctx *Context, stmt *ast.ContinueStmt) (any, ast.DType, *RuntimeError) {
 	ctx.loopContinue = true
 	return nil, ast.Void, nil
 }
 
 // RunStmt for all expr.
-func RunStmt(ctx *Context, node *ast.Node) (any, ast.DType, error) {
+func RunStmt(ctx *Context, node *ast.Node) (any, ast.DType, *RuntimeError) {
 	// TODO
 	// 存在个别 node 为 nil 的情况
 	if node == nil {
@@ -350,12 +382,13 @@ func RunStmt(ctx *Context, node *ast.Node) (any, ast.DType, error) {
 
 	case ast.TypeBoolLiteral:
 		return node.BoolLiteral.Val, ast.Bool, nil
-	case ast.TypeNumberLiteral:
-		if node.NumberLiteral.IsInt {
-			return node.NumberLiteral.Int, ast.Int, nil
-		} else {
-			return node.NumberLiteral.Float, ast.Float, nil
-		}
+
+	case ast.TypeIntegerLiteral:
+		return node.IntegerLiteral.Val, ast.Int, nil
+
+	case ast.TypeFloatLiteral:
+		return node.FloatLiteral.Val, ast.Float, nil
+
 	case ast.TypeStringLiteral:
 		return node.StringLiteral.Val, ast.String, nil
 
@@ -373,11 +406,12 @@ func RunStmt(ctx *Context, node *ast.Node) (any, ast.DType, error) {
 	case ast.TypeContinueStmt:
 		return RunContinueStmt(ctx, node.ContinueStmt)
 	default:
-		return nil, ast.Invalid, fmt.Errorf("unsupported ast node: %s", reflect.TypeOf(node).String())
+		return nil, ast.Invalid, NewRunError(ctx, fmt.Sprintf(
+			"unsupported ast node: %s", reflect.TypeOf(node).String()), node.StartPos())
 	}
 }
 
-func RunListInitExpr(ctx *Context, expr *ast.ListInitExpr) (any, ast.DType, error) {
+func RunListInitExpr(ctx *Context, expr *ast.ListInitExpr) (any, ast.DType, *RuntimeError) {
 	ret := []any{}
 	for _, v := range expr.List {
 		v, _, err := RunStmt(ctx, v)
@@ -389,7 +423,7 @@ func RunListInitExpr(ctx *Context, expr *ast.ListInitExpr) (any, ast.DType, erro
 	return ret, ast.List, nil
 }
 
-func RunMapInitExpr(ctx *Context, expr *ast.MapInitExpr) (any, ast.DType, error) {
+func RunMapInitExpr(ctx *Context, expr *ast.MapInitExpr) (any, ast.DType, *RuntimeError) {
 	ret := map[string]any{}
 
 	for _, v := range expr.KeyValeList {
@@ -400,7 +434,8 @@ func RunMapInitExpr(ctx *Context, expr *ast.MapInitExpr) (any, ast.DType, error)
 
 		key, ok := k.(string)
 		if !ok {
-			return nil, ast.Invalid, fmt.Errorf("unsupported data type: %s", keyType)
+			return nil, ast.Invalid, NewRunError(ctx, fmt.Sprintf(
+				"unsupported key data type: %s", keyType), v[0].StartPos())
 		}
 		value, valueType, err := RunStmt(ctx, v[1])
 		if err != nil {
@@ -410,7 +445,8 @@ func RunMapInitExpr(ctx *Context, expr *ast.MapInitExpr) (any, ast.DType, error)
 		case ast.String, ast.Bool, ast.Float, ast.Int,
 			ast.Nil, ast.List, ast.Map:
 		default:
-			return nil, ast.Invalid, fmt.Errorf("unsupported data type: %s", keyType)
+			return nil, ast.Invalid, NewRunError(ctx, fmt.Sprintf(
+				"unsupported value data type: %s", keyType), v[1].StartPos())
 		}
 		ret[key] = value
 	}
@@ -427,34 +463,37 @@ func RunMapInitExpr(ctx *Context, expr *ast.MapInitExpr) (any, ast.DType, error)
 // 	}
 // }
 
-func RunIndexExprGet(ctx *Context, expr *ast.IndexExpr) (any, ast.DType, error) {
+func RunIndexExprGet(ctx *Context, expr *ast.IndexExpr) (any, ast.DType, *RuntimeError) {
 	key := expr.Obj.Name
 
 	varb, err := ctx.GetKey(key)
 	if err != nil {
-		return nil, ast.Invalid, err
+		return nil, ast.Invalid, NewRunError(ctx, err.Error(), expr.Obj.Start)
 	}
 	switch varb.DType { //nolint:exhaustive
 	case ast.List:
 		switch varb.Value.(type) {
 		case []any:
 		default:
-			return nil, ast.Invalid, fmt.Errorf("unsupported type: %v", reflect.TypeOf(varb.Value))
+			return nil, ast.Invalid, NewRunError(ctx, fmt.Sprintf(
+				"unsupported type: %v", reflect.TypeOf(varb.Value)), expr.Obj.Start)
 		}
 	case ast.Map:
 		switch varb.Value.(type) {
 		case map[string]any: // for json map
 		default:
-			return nil, ast.Invalid, fmt.Errorf("unsupported type: %v", reflect.TypeOf(varb.Value))
+			return nil, ast.Invalid, NewRunError(ctx, fmt.Sprintf(
+				"unsupported type: %v", reflect.TypeOf(varb.Value)), expr.Obj.Start)
 		}
 	default:
-		return nil, ast.Invalid, fmt.Errorf("unindexable type: %s", varb.DType)
+		return nil, ast.Invalid, NewRunError(ctx, fmt.Sprintf(
+			"unindexable type: %s", varb.DType), expr.Obj.Start)
 	}
 
 	return searchListAndMap(ctx, varb.Value, expr.Index)
 }
 
-func searchListAndMap(ctx *Context, obj any, index []*ast.Node) (any, ast.DType, error) {
+func searchListAndMap(ctx *Context, obj any, index []*ast.Node) (any, ast.DType, *RuntimeError) {
 	cur := obj
 
 	for _, i := range index {
@@ -465,16 +504,19 @@ func searchListAndMap(ctx *Context, obj any, index []*ast.Node) (any, ast.DType,
 		switch curVal := cur.(type) {
 		case map[string]any:
 			if keyType != ast.String {
-				return nil, ast.Invalid, fmt.Errorf("key type is not string")
+				return nil, ast.Invalid, NewRunError(ctx,
+					"key type is not string", i.StartPos())
 			}
 			var ok bool
 			cur, ok = curVal[key.(string)]
 			if !ok {
-				return nil, ast.Invalid, fmt.Errorf("key not found")
+				return nil, ast.Invalid, NewRunError(ctx,
+					"key not found", i.StartPos())
 			}
 		case []any:
 			if keyType != ast.Int {
-				return nil, ast.Invalid, fmt.Errorf("key type is not int")
+				return nil, ast.Invalid, NewRunError(ctx,
+					"key type is not int", i.StartPos())
 			}
 			keyInt := cast.ToInt(key)
 
@@ -484,11 +526,13 @@ func searchListAndMap(ctx *Context, obj any, index []*ast.Node) (any, ast.DType,
 			}
 
 			if keyInt < 0 || keyInt >= len(curVal) {
-				return nil, ast.Invalid, fmt.Errorf("list index out of range")
+				return nil, ast.Invalid, NewRunError(ctx,
+					"list index out of range", i.StartPos())
 			}
 			cur = curVal[keyInt]
 		default:
-			return nil, ast.Invalid, fmt.Errorf("not found")
+			return nil, ast.Invalid, NewRunError(ctx,
+				"not found", i.StartPos())
 		}
 	}
 	var dtype ast.DType
@@ -496,13 +540,13 @@ func searchListAndMap(ctx *Context, obj any, index []*ast.Node) (any, ast.DType,
 	return cur, dtype, nil
 }
 
-func RunParenExpr(ctx *Context, expr *ast.ParenExpr) (any, ast.DType, error) {
+func RunParenExpr(ctx *Context, expr *ast.ParenExpr) (any, ast.DType, *RuntimeError) {
 	return RunStmt(ctx, expr.Param)
 }
 
 // BinarayExpr
 
-func RunConditionExpr(ctx *Context, expr *ast.ConditionalExpr) (any, ast.DType, error) {
+func RunConditionExpr(ctx *Context, expr *ast.ConditionalExpr) (any, ast.DType, *RuntimeError) {
 	lhs, lhsT, err := RunStmt(ctx, expr.LHS)
 	if err != nil {
 		return nil, ast.Invalid, err
@@ -527,58 +571,70 @@ func RunConditionExpr(ctx *Context, expr *ast.ConditionalExpr) (any, ast.DType, 
 	}
 
 	if val, dtype, err := condOp(lhs, rhs, lhsT, rhsT, expr.Op); err != nil {
-		return nil, ast.Invalid, fmt.Errorf("err %w", err)
+		return nil, ast.Invalid, NewRunError(ctx, err.Error(), expr.OpPos)
 	} else {
 		return val, dtype, nil
 	}
 }
 
-func RunArithmeticExpr(ctx *Context, expr *ast.ArithmeticExpr) (any, ast.DType, error) {
+func RunArithmeticExpr(ctx *Context, expr *ast.ArithmeticExpr) (any, ast.DType, *RuntimeError) {
 	// 允许字符串通过操作符 '+' 进行拼接
 
-	lhsVal, lhsValType, err := RunStmt(ctx, expr.LHS)
-	if err != nil {
-		return nil, ast.Invalid, err
+	lhsVal, lhsValType, errOpInt := RunStmt(ctx, expr.LHS)
+	if errOpInt != nil {
+		return nil, ast.Invalid, errOpInt
 	}
 	if !arithType(lhsValType) {
-		return nil, ast.Invalid, fmt.Errorf("unsupported lhs data type: %s", lhsValType)
+		return nil, ast.Invalid, NewRunError(ctx, fmt.Sprintf(
+			"unsupported lhs data type: %s", lhsValType), expr.OpPos)
 	}
 
-	rhsVal, rhsValType, err := RunStmt(ctx, expr.RHS)
-	if err != nil {
-		return nil, ast.Invalid, err
+	rhsVal, rhsValType, errOpInt := RunStmt(ctx, expr.RHS)
+	if errOpInt != nil {
+		return nil, ast.Invalid, errOpInt
 	}
 
 	if !arithType(lhsValType) {
-		return nil, ast.Invalid, fmt.Errorf("unsupported rhs data type: %s", lhsValType)
+		return nil, ast.Invalid, NewRunError(ctx, fmt.Sprintf(
+			"unsupported rhs data type: %s", lhsValType), expr.OpPos)
 	}
 
 	// string
 	if lhsValType == ast.String || rhsValType == ast.String {
 		if expr.Op != ast.ADD {
-			return nil, ast.Invalid, fmt.Errorf(
+			return nil, ast.Invalid, NewRunError(ctx, fmt.Sprintf(
 				"unsupported operand type(s) for %s: %s and %s",
-				expr.Op, lhsValType, rhsValType)
+				expr.Op, lhsValType, rhsValType), expr.OpPos)
 		}
 		if lhsValType == ast.String && rhsValType == ast.String {
 			return cast.ToString(lhsVal) + cast.ToString(rhsVal), ast.String, nil
 		} else {
-			return nil, ast.Invalid, fmt.Errorf(
+			return nil, ast.Invalid, NewRunError(ctx, fmt.Sprintf(
 				"unsupported operand type(s) for %s: %s and %s",
-				expr.Op, lhsValType, rhsValType)
+				expr.Op, lhsValType, rhsValType), expr.OpPos)
 		}
 	}
 
 	// float
 	if lhsValType == ast.Float || rhsValType == ast.Float {
-		return arithOpFloat(cast.ToFloat64(lhsVal), cast.ToFloat64(rhsVal), expr.Op)
+		v, dtype, err := arithOpFloat(cast.ToFloat64(lhsVal), cast.ToFloat64(rhsVal), expr.Op)
+		if err != nil {
+			return nil, ast.Invalid, NewRunError(ctx, err.Error(), expr.OpPos)
+		}
+		return v, dtype, nil
 	}
 
 	// bool or int
-	return arithOpInt(cast.ToInt64(lhsVal), cast.ToInt64(rhsVal), expr.Op)
+
+	v, dtype, errOp := arithOpInt(cast.ToInt64(lhsVal), cast.ToInt64(rhsVal), expr.Op)
+
+	if errOp != nil {
+		return nil, ast.Invalid, NewRunError(ctx, errOp.Error(), expr.OpPos)
+	}
+	return v, dtype, nil
 }
 
-func RunAssignmentExpr(ctx *Context, expr *ast.AssignmentExpr) (any, ast.DType, error) {
+func RunAssignmentExpr(ctx *Context, expr *ast.AssignmentExpr) (any, ast.DType, *RuntimeError) {
 	v, dtype, err := RunStmt(ctx, expr.RHS)
 	if err != nil {
 		return nil, ast.Invalid, err
@@ -591,7 +647,7 @@ func RunAssignmentExpr(ctx *Context, expr *ast.AssignmentExpr) (any, ast.DType, 
 	case ast.TypeIndexExpr:
 		varb, err := ctx.GetKey(expr.LHS.IndexExpr.Obj.Name)
 		if err != nil {
-			return nil, ast.Invalid, err
+			return nil, ast.Invalid, NewRunError(ctx, err.Error(), expr.LHS.IndexExpr.Obj.Start)
 		}
 		return changeListOrMapValue(ctx, varb.Value, expr.LHS.IndexExpr.Index,
 			v, dtype)
@@ -600,7 +656,7 @@ func RunAssignmentExpr(ctx *Context, expr *ast.AssignmentExpr) (any, ast.DType, 
 	}
 }
 
-func changeListOrMapValue(ctx *Context, obj any, index []*ast.Node, val any, dtype ast.DType) (any, ast.DType, error) {
+func changeListOrMapValue(ctx *Context, obj any, index []*ast.Node, val any, dtype ast.DType) (any, ast.DType, *RuntimeError) {
 	cur := obj
 	lenIdx := len(index)
 
@@ -612,7 +668,8 @@ func changeListOrMapValue(ctx *Context, obj any, index []*ast.Node, val any, dty
 		switch curVal := cur.(type) {
 		case map[string]any:
 			if keyType != ast.String {
-				return nil, ast.Invalid, fmt.Errorf("key type is not string")
+				return nil, ast.Invalid, NewRunError(ctx,
+					"key type is not string", node.StartPos())
 			}
 			if idx+1 == lenIdx {
 				curVal[key.(string)] = val
@@ -622,11 +679,13 @@ func changeListOrMapValue(ctx *Context, obj any, index []*ast.Node, val any, dty
 			var ok bool
 			cur, ok = curVal[key.(string)]
 			if !ok {
-				return nil, ast.Invalid, fmt.Errorf("key not found")
+				return nil, ast.Invalid, NewRunError(ctx,
+					"key not found", node.StartPos())
 			}
 		case []any:
 			if keyType != ast.Int {
-				return nil, ast.Invalid, fmt.Errorf("key type is not int")
+				return nil, ast.Invalid, NewRunError(ctx,
+					"key type is not int", node.StartPos())
 			}
 			keyInt := cast.ToInt(key)
 
@@ -636,7 +695,8 @@ func changeListOrMapValue(ctx *Context, obj any, index []*ast.Node, val any, dty
 			}
 
 			if keyInt < 0 || keyInt >= len(curVal) {
-				return nil, ast.Invalid, fmt.Errorf("list index out of range")
+				return nil, ast.Invalid, NewRunError(ctx,
+					"list index out of range", node.StartPos())
 			}
 
 			if idx+1 == lenIdx {
@@ -646,20 +706,25 @@ func changeListOrMapValue(ctx *Context, obj any, index []*ast.Node, val any, dty
 
 			cur = curVal[keyInt]
 		default:
-			return nil, ast.Invalid, fmt.Errorf("not found")
+			return nil, ast.Invalid, NewRunError(ctx,
+				"obj not map or list", node.StartPos())
 		}
 	}
 	return nil, ast.Nil, nil
 }
 
-func RunCallExpr(ctx *Context, expr *ast.CallExpr) (any, ast.DType, error) {
+func RunCallExpr(ctx *Context, expr *ast.CallExpr) (any, ast.DType, *RuntimeError) {
 	defer ctx.Regs.Reset()
 	if funcCall, ok := ctx.GetFuncCall(expr.Name); ok {
 		if err := funcCall(ctx, expr); err != nil {
 			return nil, ast.Invalid, err
 		}
 		if ctx.Regs.Count() > 0 {
-			return ctx.Regs.Get(RegR0)
+			if v, dtype, err := ctx.Regs.Get(RegR0); err != nil {
+				return v, dtype, NewRunError(ctx, err.Error(), expr.NamePos)
+			} else {
+				return v, dtype, nil
+			}
 		}
 	}
 	return nil, ast.Void, nil

@@ -13,41 +13,46 @@ import (
 	"github.com/GuanceCloud/ppl/pkg/inimpl/guancecloud/input"
 )
 
-func SetTagChecking(ctx *runtime.Context, funcExpr *ast.CallExpr) error {
+func SetTagChecking(ctx *runtime.Context, funcExpr *ast.CallExpr) *runtime.RuntimeError {
 	if len(funcExpr.Param) != 2 && len(funcExpr.Param) != 1 {
-		return fmt.Errorf("func `%s' expected 1 or 2 args", funcExpr.Name)
+		return runtime.NewRunError(ctx, fmt.Sprintf(
+			"func `%s' expected 1 or 2 args", funcExpr.Name), funcExpr.NamePos)
 	}
 	if _, err := getKeyName(funcExpr.Param[0]); err != nil {
-		return err
+		return runtime.NewRunError(ctx, err.Error(), funcExpr.Param[0].StartPos())
 	}
 	if len(funcExpr.Param) == 2 {
 		switch funcExpr.Param[1].NodeType { //nolint:exhaustive
 		case ast.TypeStringLiteral, ast.TypeIdentifier, ast.TypeAttrExpr:
 		default:
-			return fmt.Errorf("param type expect StringLiteral, got `%s'",
-				funcExpr.Param[1].NodeType)
+			return runtime.NewRunError(ctx, fmt.Sprintf(
+				"param type expect StringLiteral, got `%s'",
+				funcExpr.Param[1].NodeType), funcExpr.Param[1].StartPos())
 		}
 	}
 
 	return nil
 }
 
-func SetTag(ctx *runtime.Context, funcExpr *ast.CallExpr) runtime.PlPanic {
+func SetTag(ctx *runtime.Context, funcExpr *ast.CallExpr) *runtime.RuntimeError {
 	if len(funcExpr.Param) != 2 && len(funcExpr.Param) != 1 {
-		return fmt.Errorf("func `%s' expected 1 or 2 args", funcExpr.Name)
+		return runtime.NewRunError(ctx, fmt.Sprintf(
+			"func `%s' expected 1 or 2 args", funcExpr.Name), funcExpr.NamePos)
 	}
 
 	key, err := getKeyName(funcExpr.Param[0])
 	if err != nil {
-		return err
+		return runtime.NewRunError(ctx, err.Error(), funcExpr.Param[0].StartPos())
 	}
+
 	var val any
 	var dtype ast.DType
 	if len(funcExpr.Param) == 2 {
+		var errR *runtime.RuntimeError
 		// 不限制值的数据类型，如果不是 string 类将在设置为 tag 时自动转换为 string
-		val, dtype, err = runtime.RunStmt(ctx, funcExpr.Param[1])
-		if err != nil {
-			return nil
+		val, dtype, errR = runtime.RunStmt(ctx, funcExpr.Param[1])
+		if errR != nil {
+			return errR
 		}
 	} else {
 		v, err := ctx.GetKey(key)

@@ -7,9 +7,11 @@ package ast
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 
 	"github.com/GuanceCloud/grok"
+	"github.com/GuanceCloud/ppl/pkg/token"
 )
 
 type Op string
@@ -22,6 +24,7 @@ const (
 	MOD Op = "%"
 
 	// XOR Op = "^"
+	// ~~~ POW Op = "^" ~~~.
 
 	EQEQ Op = "=="
 	NEQ  Op = "!="
@@ -37,7 +40,8 @@ const (
 )
 
 type Identifier struct {
-	Name string
+	Name  string
+	Start token.Pos
 }
 
 func (e *Identifier) IsExpr() bool {
@@ -48,7 +52,10 @@ func (e *Identifier) String() string {
 	return e.Name
 }
 
-type StringLiteral struct{ Val string }
+type StringLiteral struct {
+	Val   string
+	Start token.Pos
+}
 
 func (e *StringLiteral) IsExpr() bool {
 	return true
@@ -58,39 +65,52 @@ func (e *StringLiteral) String() string {
 	return fmt.Sprintf("'%s'", e.Val)
 }
 
-type NumberLiteral struct {
-	IsInt bool
-	Float float64
-	Int   int64
+// type NumberLiteral struct {
+// 	IsInt bool
+// 	Float float64
+// 	Int   int64
+// 	Start token.Pos
+// 	End   token.Pos
+// }
+
+type IntegerLiteral struct {
+	Val   int64
+	Start token.Pos
 }
 
-func (e *NumberLiteral) IsExpr() bool {
+func (e *IntegerLiteral) String() string {
+	return fmt.Sprintf("%d", e.Val)
+}
+
+func (e *IntegerLiteral) IsExpr() bool {
 	return true
 }
 
-func (e *NumberLiteral) String() string {
-	if e.IsInt {
-		return fmt.Sprintf("%d", e.Int)
-	} else {
-		return fmt.Sprintf("%f", e.Float)
-	}
+type FloatLiteral struct {
+	Val   float64
+	Start token.Pos
 }
 
-func (e *NumberLiteral) Value() any {
-	if e.IsInt {
-		return e.Int
-	} else {
-		return e.Float
-	}
+func (e *FloatLiteral) String() string {
+	return fmt.Sprintf("%f", e.Val)
 }
 
-type BoolLiteral struct{ Val bool }
+func (e *FloatLiteral) IsExpr() bool {
+	return true
+}
+
+type BoolLiteral struct {
+	Val   bool
+	Start token.Pos
+}
 
 func (e *BoolLiteral) String() string {
 	return fmt.Sprintf("%v", e.Val)
 }
 
-type NilLiteral struct{}
+type NilLiteral struct {
+	Start token.Pos
+}
 
 func (e *NilLiteral) IsExpr() bool {
 	return true
@@ -102,6 +122,8 @@ func (e *NilLiteral) String() string {
 
 type MapInitExpr struct {
 	KeyValeList [][2]*Node // key,value list
+	LBrace      token.Pos
+	RBrace      token.Pos
 }
 
 func (e *MapInitExpr) IsExpr() bool {
@@ -121,7 +143,9 @@ func (e *MapInitExpr) String() string {
 }
 
 type ListInitExpr struct {
-	List []*Node
+	List     []*Node
+	LBracket token.Pos
+	RBracket token.Pos
 }
 
 func (e *ListInitExpr) IsExpr() bool {
@@ -139,6 +163,7 @@ func (e *ListInitExpr) String() string {
 type ConditionalExpr struct {
 	Op       Op
 	LHS, RHS *Node
+	OpPos    token.Pos
 }
 
 func (e *ConditionalExpr) IsExpr() bool {
@@ -152,6 +177,7 @@ func (e *ConditionalExpr) String() string {
 type ArithmeticExpr struct {
 	Op       Op
 	LHS, RHS *Node
+	OpPos    token.Pos
 }
 
 func (e *ArithmeticExpr) IsExpr() bool {
@@ -163,8 +189,9 @@ func (e *ArithmeticExpr) String() string {
 }
 
 type AttrExpr struct {
-	Obj  *Node
-	Attr *Node
+	Obj   *Node
+	Attr  *Node
+	Start token.Pos
 }
 
 func (e *AttrExpr) IsExpr() bool {
@@ -183,8 +210,10 @@ func (e *AttrExpr) String() string {
 }
 
 type IndexExpr struct {
-	Obj   *Identifier
-	Index []*Node // int float string bool
+	Obj      *Identifier
+	Index    []*Node // int float string bool
+	LBracket []token.Pos
+	RBracket []token.Pos
 }
 
 func (e *IndexExpr) IsExpr() bool {
@@ -204,7 +233,9 @@ func (e *IndexExpr) String() string {
 }
 
 type ParenExpr struct {
-	Param *Node
+	Param  *Node
+	LParen token.Pos
+	RParen token.Pos
 }
 
 func (e *ParenExpr) IsExpr() bool {
@@ -216,6 +247,15 @@ func (e *ParenExpr) String() string {
 }
 
 type CallExpr struct {
+	// TODO
+	// Name *ast.Node
+
+	// temporary record function name location
+	NamePos token.Pos // as 'Start' (token.Pos)
+
+	LParen token.Pos
+	RParen token.Pos
+
 	Name string
 
 	Param []*Node
@@ -223,6 +263,7 @@ type CallExpr struct {
 	// ParamIndex []int
 
 	Grok *grok.GrokRegexp
+	Re   *regexp.Regexp
 }
 
 func (e *CallExpr) IsExpr() bool {
@@ -239,6 +280,7 @@ func (e *CallExpr) String() string {
 
 type AssignmentExpr struct {
 	LHS, RHS *Node
+	OpPos    token.Pos
 }
 
 func (e *AssignmentExpr) IsExpr() bool {

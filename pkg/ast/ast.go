@@ -10,13 +10,11 @@ import (
 	"fmt"
 	"sort"
 	"strings"
+
+	"github.com/GuanceCloud/ppl/pkg/token"
 )
 
 type NodeType uint
-
-func (NodeType) String() string {
-	return ""
-}
 
 const (
 	// expr.
@@ -24,7 +22,8 @@ const (
 
 	TypeIdentifier
 	TypeStringLiteral
-	TypeNumberLiteral
+	TypeIntegerLiteral
+	TypeFloatLiteral
 	TypeBoolLiteral
 	TypeNilLiteral
 
@@ -43,12 +42,63 @@ const (
 	TypeCallExpr
 
 	// stmt.
+	TypeBlockStmt
 	TypeIfelseStmt
 	TypeForStmt
 	TypeForInStmt
 	TypeContinueStmt
 	TypeBreakStmt
 )
+
+func (t NodeType) String() string {
+	switch t {
+	case TypeInvaild:
+		return "Invaild"
+	case TypeIdentifier:
+		return "Identifier"
+	case TypeStringLiteral:
+		return "StringLiteral"
+	case TypeIntegerLiteral:
+		return "IntLiteral"
+	case TypeFloatLiteral:
+		return "FloatLiteral"
+	case TypeBoolLiteral:
+		return "BoolLiteral"
+	case TypeNilLiteral:
+		return "NilLiteral"
+	case TypeListInitExpr:
+		return "ListInitExpr"
+	case TypeMapInitExpr:
+		return "MapInitExpr"
+	case TypeParenExpr:
+		return "ParenExpr"
+	case TypeAttrExpr:
+		return "AttrExpr"
+	case TypeIndexExpr:
+		return "IndexExpr"
+	case TypeArithmeticExpr:
+		return "ArithmeticExpr"
+	case TypeConditionalExpr:
+		return "ConditionalExpr"
+	case TypeAssignmentExpr:
+		return "AssignmentExpr"
+	case TypeCallExpr:
+		return "CallExpr"
+	case TypeBlockStmt:
+		return "BlockStmt"
+	case TypeIfelseStmt:
+		return "IfelseStmt"
+	case TypeForStmt:
+		return "ForStmt"
+	case TypeForInStmt:
+		return "ForInStmt"
+	case TypeContinueStmt:
+		return "ContinueStmt"
+	case TypeBreakStmt:
+		return "BreakStmt"
+	}
+	return "Undefined"
+}
 
 type Stmts []*Node
 
@@ -85,10 +135,11 @@ type Node struct {
 	// expr
 	Identifier *Identifier
 
-	StringLiteral *StringLiteral
-	NumberLiteral *NumberLiteral
-	BoolLiteral   *BoolLiteral
-	NilLiteral    *NilLiteral
+	StringLiteral  *StringLiteral
+	IntegerLiteral *IntegerLiteral
+	FloatLiteral   *FloatLiteral
+	BoolLiteral    *BoolLiteral
+	NilLiteral     *NilLiteral
 
 	ListInitExpr *ListInitExpr
 	MapInitExpr  *MapInitExpr
@@ -105,8 +156,9 @@ type Node struct {
 	CallExpr *CallExpr
 
 	// stmt
-	IfelseStmt *IfelseStmt
+	BlockStmt *BlockStmt
 
+	IfelseStmt   *IfelseStmt
 	ForStmt      *ForStmt
 	ForInStmt    *ForInStmt
 	ContinueStmt *ContinueStmt
@@ -119,8 +171,10 @@ func (node *Node) String() string {
 		return node.Identifier.String()
 	case TypeStringLiteral:
 		return node.StringLiteral.String()
-	case TypeNumberLiteral:
-		return node.NumberLiteral.String()
+	case TypeIntegerLiteral:
+		return node.IntegerLiteral.String()
+	case TypeFloatLiteral:
+		return node.FloatLiteral.String()
 	case TypeBoolLiteral:
 		return node.BoolLiteral.String()
 	case TypeNilLiteral:
@@ -171,10 +225,17 @@ func WrapStringLiteral(node *StringLiteral) *Node {
 	}
 }
 
-func WrapNumberLiteral(node *NumberLiteral) *Node {
+func WrapIntegerLiteral(node *IntegerLiteral) *Node {
 	return &Node{
-		NodeType:      TypeNumberLiteral,
-		NumberLiteral: node,
+		NodeType:       TypeIntegerLiteral,
+		IntegerLiteral: node,
+	}
+}
+
+func WrapFloatLiteral(node *FloatLiteral) *Node {
+	return &Node{
+		NodeType:     TypeFloatLiteral,
+		FloatLiteral: node,
 	}
 }
 
@@ -288,4 +349,81 @@ func WrapBreakStmt(node *BreakStmt) *Node {
 		NodeType:  TypeBreakStmt,
 		BreakStmt: node,
 	}
+}
+
+func WrapeBlockStmt(node *BlockStmt) *Node {
+	return &Node{
+		NodeType:  TypeBlockStmt,
+		BlockStmt: node,
+	}
+}
+
+func (node *Node) StartPos() token.Pos {
+	return NodeStartPos(node)
+}
+
+func NodeStartPos(node *Node) token.Pos {
+	if node == nil {
+		return -1
+	}
+	switch node.NodeType {
+	case TypeInvaild:
+		return -1
+	case TypeIdentifier:
+		return node.Identifier.Start
+	case TypeStringLiteral:
+		return node.StringLiteral.Start
+	case TypeIntegerLiteral:
+		return node.IntegerLiteral.Start
+	case TypeFloatLiteral:
+		return node.FloatLiteral.Start
+	case TypeBoolLiteral:
+		return node.BoolLiteral.Start
+	case TypeNilLiteral:
+		return node.NilLiteral.Start
+
+	case TypeListInitExpr:
+		return node.ListInitExpr.LBracket
+	case TypeMapInitExpr:
+		return node.MapInitExpr.LBrace
+
+	case TypeParenExpr:
+		return node.ParenExpr.LParen
+
+	case TypeAttrExpr:
+		return node.AttrExpr.Start
+
+	case TypeIndexExpr:
+		return node.IndexExpr.Obj.Start
+
+	case TypeArithmeticExpr:
+		return node.ArithmeticExpr.LHS.StartPos()
+	case TypeConditionalExpr:
+		return node.ConditionalExpr.LHS.StartPos()
+	case TypeAssignmentExpr:
+		return node.AssignmentExpr.LHS.StartPos()
+
+	case TypeCallExpr:
+		return node.CallExpr.NamePos
+
+	case TypeBlockStmt:
+		return node.BlockStmt.LBracePos
+
+	case TypeIfelseStmt:
+		if len(node.IfelseStmt.IfList) > 0 {
+			return node.IfelseStmt.IfList[0].Start
+		} else {
+			return -1
+		}
+
+	case TypeForStmt:
+		return node.ForStmt.ForPos
+	case TypeForInStmt:
+		return node.ForInStmt.ForPos
+	case TypeContinueStmt:
+		return node.ContinueStmt.Start
+	case TypeBreakStmt:
+		return node.BreakStmt.Start
+	}
+	return -1
 }

@@ -7,11 +7,15 @@ package ast
 
 import (
 	"strings"
+
+	"github.com/GuanceCloud/ppl/pkg/token"
 )
 
 type IfelseStmt struct {
 	IfList IfList
-	Else   Stmts
+	Else   *BlockStmt
+
+	ElsePos token.Pos
 }
 
 func (e *IfelseStmt) IsExpr() bool {
@@ -20,7 +24,7 @@ func (e *IfelseStmt) IsExpr() bool {
 
 func (e *IfelseStmt) String() string {
 	arr := []string{e.IfList.String()}
-	if len(e.Else) != 0 {
+	if e.Else != nil && len(e.Else.Stmts) != 0 {
 		arr = append(arr, "else", "{", e.Else.String(), "}")
 	}
 	return strings.Join(arr, " ")
@@ -42,21 +46,27 @@ func (e IfList) String() string {
 
 type IfStmtElem struct {
 	Condition *Node
-	Stmts     Stmts
+	Block     *BlockStmt
+
+	Start token.Pos
 }
 
 func (e *IfStmtElem) String() string {
-	arr := []string{e.Condition.String(), "{", e.Stmts.String(), "}"}
+	arr := []string{e.Condition.String(), "{", e.Block.String(), "}"}
 	return strings.Join(arr, " ")
 }
 
-type BreakStmt struct{}
+type BreakStmt struct {
+	Start token.Pos
+}
 
 func (e *BreakStmt) String() string {
 	return "break"
 }
 
-type ContinueStmt struct{}
+type ContinueStmt struct {
+	Start token.Pos
+}
 
 func (e *ContinueStmt) String() string {
 	return "continue"
@@ -65,7 +75,10 @@ func (e *ContinueStmt) String() string {
 type ForInStmt struct {
 	Varb *Node
 	Iter *Node
-	Body Stmts
+	Body *BlockStmt
+
+	ForPos token.Pos
+	InPos  token.Pos
 }
 
 func (e *ForInStmt) String() string {
@@ -83,9 +96,21 @@ type ForStmt struct {
 	Loop *Node
 
 	// step2: -> step3
-	Body Stmts
+	Body *BlockStmt
+
+	ForPos token.Pos
 }
 
 func (e *ForStmt) String() string {
 	return "for stmt"
+}
+
+type BlockStmt struct {
+	LBracePos token.Pos
+	RBracePos token.Pos
+	Stmts     Stmts
+}
+
+func (block *BlockStmt) String() string {
+	return "block stmt"
 }
