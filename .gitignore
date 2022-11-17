@@ -1,6 +1,5 @@
 pkg/parser/y.output
 *.pdf
-ppl
-ppl.exe
 rl.sh
 dist/
+test.output

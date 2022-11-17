@@ -22,67 +22,67 @@ func TestReplace(t *testing.T) {
 	}{
 		{
 			name: `normal1`,
-			pl: `input = load_json(_); str = input["str"] 
-			replace(str, "(1[0-9]{2})[0-9]{4}([0-9]{4})", "$1****$2")`,
-			in:       `{"str": "13789123014"}`,
-			outKey:   "str",
+			pl: `input = load_json(_); str1xxx = input["str1xxx"] 
+			replace(str1xxx, "(1[0-9]{2})[0-9]{4}([0-9]{4})", "$1****$2")`,
+			in:       `{"str1xxx": "13789123014"}`,
+			outKey:   "str1xxx",
 			fail:     false,
 			expected: "137****3014",
 		},
 
 		{
 			name: `normal2`,
-			pl: `input = load_json(_); str = input["str"] 
-			replace(str, "([a-z]*) \\w*", "$1 ***")`,
-			in:       `{"str": "zhang san"}`,
-			outKey:   "str",
+			pl: `input = load_json(_); str1xxx = input["str1xxx"] 
+			replace(str1xxx, "([a-z]*) \\w*", "$1 ***")`,
+			in:       `{"str1xxx": "zhang san"}`,
+			outKey:   "str1xxx",
 			expected: "zhang ***",
 			fail:     false,
 		},
 
 		{
 			name: `normal3`,
-			pl: `input = load_json(_); str = input["str"] 
-			replace(str, "([1-9]{4})[0-9]{10}([0-9]{4})", "$1**********$2")`,
-			in:       `{"str": "362201200005302565"}`,
-			outKey:   "str",
+			pl: `input = load_json(_); str1xxx = input["str1xxx"] 
+			replace(str1xxx, "([1-9]{4})[0-9]{10}([0-9]{4})", "$1**********$2")`,
+			in:       `{"str1xxx": "362201200005302565"}`,
+			outKey:   "str1xxx",
 			expected: "3622**********2565",
 			fail:     false,
 		},
 
 		{
 			name: `normal4`,
-			pl: `input = load_json(_); str = input["str"] 
-			replace(str, '([\u4e00-\u9fa5])[\u4e00-\u9fa5]([\u4e00-\u9fa5])', "$1＊$2")`,
-			in:       `{"str": "小阿卡"}`,
-			outKey:   "str",
+			pl: `input = load_json(_); str1xxx = input["str1xxx"] 
+			replace(str1xxx, '([\u4e00-\u9fa5])[\u4e00-\u9fa5]([\u4e00-\u9fa5])', "$1＊$2")`,
+			in:       `{"str1xxx": "小阿卡"}`,
+			outKey:   "str1xxx",
 			expected: "小＊卡",
 			fail:     false,
 		},
 
 		{
 			name: `normal5`,
-			pl: `input = load_json(_); str = input["str"]; add_key(str); printf("%v", get_key(str))
+			pl: `input = load_json(_); str1xxx = input["str1xxx"]; add_key(str1xxx); printf("%v", get_key(str1xxx))
 			replace(str1, '([\u4e00-\u9fa5])[\u4e00-\u9fa5]([\u4e00-\u9fa5])', "$1＊$2")`,
-			in:       `{"str": "小阿卡"}`,
-			outKey:   "str",
+			in:       `{"str1xxx": "小阿卡"}`,
+			outKey:   "str1xxx",
 			expected: "小阿卡",
 			fail:     false,
 		},
 
 		{
 			name: `not enough args`,
-			pl: `input = load_json(_); str = input["str"] 
-			replace(str, '([\u4e00-\u9fa5])[\u4e00-\u9fa5]([\u4e00-\u9fa5])')`,
-			in:   `{"str": "小阿卡"}`,
+			pl: `input = load_json(_); str1xxx = input["str1xxx"] 
+			replace(str1xxx, '([\u4e00-\u9fa5])[\u4e00-\u9fa5]([\u4e00-\u9fa5])')`,
+			in:   `{"str1xxx": "小阿卡"}`,
 			fail: true,
 		},
 
 		{
 			name: `invalid arg type`,
-			pl: `input = load_json(_); str = input["str"] 
-			replace(str, 2, "$1＊$2")`,
-			in:   `{"str": "小阿卡"}`,
+			pl: `input = load_json(_); str1xxx = input["str1xxx"] 
+			replace(str1xxx, 2, "$1＊$2")`,
+			in:   `{"str1xxx": "小阿卡"}`,
 			fail: true,
 		},
 	}

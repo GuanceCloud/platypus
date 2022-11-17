@@ -14,25 +14,27 @@ import (
 	"github.com/GuanceCloud/ppl/pkg/inimpl/guancecloud/input"
 )
 
-func SQLCoverChecking(ctx *runtime.Context, funcExpr *ast.CallExpr) error {
+func SQLCoverChecking(ctx *runtime.Context, funcExpr *ast.CallExpr) *runtime.RuntimeError {
 	if len(funcExpr.Param) != 1 {
-		return fmt.Errorf("func %s expects 1 args", funcExpr.Name)
+		return runtime.NewRunError(ctx, fmt.Sprintf(
+			"func %s expects 1 args", funcExpr.Name), funcExpr.NamePos)
 	}
 	if _, err := getKeyName(funcExpr.Param[0]); err != nil {
-		return err
+		return runtime.NewRunError(ctx, err.Error(), funcExpr.Param[0].StartPos())
 	}
 	return nil
 }
 
-func SQLCover(ctx *runtime.Context, funcExpr *ast.CallExpr) runtime.PlPanic {
+func SQLCover(ctx *runtime.Context, funcExpr *ast.CallExpr) *runtime.RuntimeError {
 	o := obfuscate.NewObfuscator(obfuscate.Config{})
 	if len(funcExpr.Param) != 1 {
-		return fmt.Errorf("func %s expects 1 args", funcExpr.Name)
+		return runtime.NewRunError(ctx, fmt.Sprintf(
+			"func %s expects 1 args", funcExpr.Name), funcExpr.NamePos)
 	}
 
 	key, err := getKeyName(funcExpr.Param[0])
 	if err != nil {
-		return err
+		return runtime.NewRunError(ctx, err.Error(), funcExpr.Param[0].StartPos())
 	}
 
 	cont, err := ctx.GetKeyConv2Str(key)
@@ -48,7 +50,6 @@ func SQLCover(ctx *runtime.Context, funcExpr *ast.CallExpr) runtime.PlPanic {
 		l.Debug(err)
 		return nil
 	}
-
 	if err := addKey2PtWithVal(ctx.InData(), key, v, ast.String,
 		input.KindPtDefault); err != nil {
 		l.Debug(err)

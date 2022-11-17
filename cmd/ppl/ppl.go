@@ -11,6 +11,7 @@ import (
 	plruntime "github.com/GuanceCloud/ppl/pkg/engine/runtime"
 	"github.com/GuanceCloud/ppl/pkg/inimpl/guancecloud/funcs"
 	"github.com/GuanceCloud/ppl/pkg/inimpl/guancecloud/input"
+
 	"github.com/influxdata/influxdb1-client/models"
 	influxdb "github.com/influxdata/influxdb1-client/v2"
 	"github.com/spf13/cobra"
@@ -176,9 +177,9 @@ func runcScript(options *Option) {
 	tn = pt.Time
 	measurement = pt.Measurement
 
-	err = engine.RunScriptWithRMapIn(script, pt, nil)
-	if err != nil {
-		fmt.Println(err)
+	errR := engine.RunScriptWithRMapIn(script, pt, nil)
+	if errR != nil {
+		fmt.Println(errR)
 		os.Exit(1)
 	}
 

@@ -13,9 +13,10 @@ import (
 	"github.com/GuanceCloud/ppl/pkg/engine/runtime"
 )
 
-func AddPatternChecking(ctx *runtime.Context, funcExpr *ast.CallExpr) error {
+func AddPatternChecking(ctx *runtime.Context, funcExpr *ast.CallExpr) *runtime.RuntimeError {
 	if len(funcExpr.Param) != 2 {
-		return fmt.Errorf("func %s expected 2 args", funcExpr.Name)
+		return runtime.NewRunError(ctx, fmt.Sprintf(
+			"func %s expected 2 args", funcExpr.Name), funcExpr.NamePos)
 	}
 
 	var name, pattern string
@@ -23,26 +24,26 @@ func AddPatternChecking(ctx *runtime.Context, funcExpr *ast.CallExpr) error {
 	case ast.TypeStringLiteral:
 		name = funcExpr.Param[0].StringLiteral.Val
 	default:
-		return fmt.Errorf("expect StringLiteral, got %s",
-			funcExpr.Param[0].NodeType)
+		return runtime.NewRunError(ctx, fmt.Sprintf("expect StringLiteral, got %s",
+			funcExpr.Param[0].NodeType), funcExpr.NamePos)
 	}
 
 	switch funcExpr.Param[1].NodeType { //nolint:exhaustive
 	case ast.TypeStringLiteral:
 		pattern = funcExpr.Param[1].StringLiteral.Val
 	default:
-		return fmt.Errorf("expect StringLiteral, got %s",
-			funcExpr.Param[1].NodeType)
+		return runtime.NewRunError(ctx, fmt.Sprintf("expect StringLiteral, got %s",
+			funcExpr.Param[1].NodeType), funcExpr.Param[1].StartPos())
 	}
 
 	deP, err := grok.DenormalizePattern(pattern, ctx)
 	if err != nil {
-		return err
+		return runtime.NewRunError(ctx, err.Error(), funcExpr.NamePos)
 	}
 	ctx.SetPattern(name, deP)
 	return nil
 }
 
-func AddPattern(ctx *runtime.Context, funcExpr *ast.CallExpr) runtime.PlPanic {
+func AddPattern(ctx *runtime.Context, funcExpr *ast.CallExpr) *runtime.RuntimeError {
 	return nil
 }

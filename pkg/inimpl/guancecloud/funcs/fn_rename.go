@@ -12,37 +12,40 @@ import (
 	"github.com/GuanceCloud/ppl/pkg/engine/runtime"
 )
 
-func RenameChecking(ctx *runtime.Context, funcExpr *ast.CallExpr) error {
+func RenameChecking(ctx *runtime.Context, funcExpr *ast.CallExpr) *runtime.RuntimeError {
 	if len(funcExpr.Param) != 2 {
-		return fmt.Errorf("func %s expected 2 args", funcExpr.Name)
+		return runtime.NewRunError(ctx, fmt.Sprintf(
+			"func %s expected 2 args", funcExpr.Name), funcExpr.NamePos)
 	}
 
 	if _, err := getKeyName(funcExpr.Param[0]); err != nil {
-		return err
+		return runtime.NewRunError(ctx, err.Error(), funcExpr.Param[0].StartPos())
 	}
 
 	switch funcExpr.Param[1].NodeType { //nolint:exhaustive
 	case ast.TypeAttrExpr, ast.TypeIdentifier:
 	default:
-		return fmt.Errorf("param key expect Identifier or AttrExpr, got `%s'",
-			funcExpr.Param[1].NodeType)
+		return runtime.NewRunError(ctx, fmt.Sprintf(
+			"param key expect Identifier or AttrExpr, got `%s'",
+			funcExpr.Param[1].NodeType), funcExpr.Param[1].StartPos())
 	}
 	return nil
 }
 
-func Rename(ctx *runtime.Context, funcExpr *ast.CallExpr) runtime.PlPanic {
+func Rename(ctx *runtime.Context, funcExpr *ast.CallExpr) *runtime.RuntimeError {
 	if len(funcExpr.Param) != 2 {
-		return fmt.Errorf("func %s expected 2 args", funcExpr.Name)
+		return runtime.NewRunError(ctx, fmt.Sprintf(
+			"func %s expected 2 args", funcExpr.Name), funcExpr.NamePos)
 	}
 
 	to, err := getKeyName(funcExpr.Param[0])
 	if err != nil {
-		return err
+		return runtime.NewRunError(ctx, err.Error(), funcExpr.Param[0].StartPos())
 	}
 
 	from, err := getKeyName(funcExpr.Param[1])
 	if err != nil {
-		return err
+		return runtime.NewRunError(ctx, err.Error(), funcExpr.Param[1].StartPos())
 	}
 
 	_ = renamePtKey(ctx.InData(), to, from)

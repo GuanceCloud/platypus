@@ -18,7 +18,7 @@ type ContextCheck struct {
 	continuestmt bool
 }
 
-func RunStmtsCheck(ctx *Context, ctxCheck *ContextCheck, nodes ast.Stmts) error {
+func RunStmtsCheck(ctx *Context, ctxCheck *ContextCheck, nodes ast.Stmts) *RuntimeError {
 	for _, node := range nodes {
 		if err := RunStmtCheck(ctx, ctxCheck, node); err != nil {
 			return err
@@ -27,7 +27,7 @@ func RunStmtsCheck(ctx *Context, ctxCheck *ContextCheck, nodes ast.Stmts) error 
 	return nil
 }
 
-func RunStmtCheck(ctx *Context, ctxCheck *ContextCheck, node *ast.Node) error {
+func RunStmtCheck(ctx *Context, ctxCheck *ContextCheck, node *ast.Node) *RuntimeError {
 	if node == nil {
 		return nil
 	}
@@ -38,7 +38,9 @@ func RunStmtCheck(ctx *Context, ctxCheck *ContextCheck, node *ast.Node) error {
 		// skip
 	case ast.TypeStringLiteral:
 		// skip
-	case ast.TypeNumberLiteral:
+	case ast.TypeFloatLiteral:
+		// skip
+	case ast.TypeIntegerLiteral:
 		// skip
 	case ast.TypeBoolLiteral:
 		// skip
@@ -83,21 +85,23 @@ func RunStmtCheck(ctx *Context, ctxCheck *ContextCheck, node *ast.Node) error {
 	return nil
 }
 
-func RunListInitExprCheck(ctx *Context, ctxCheck *ContextCheck, expr *ast.ListInitExpr) error {
+func RunListInitExprCheck(ctx *Context, ctxCheck *ContextCheck, expr *ast.ListInitExpr) *RuntimeError {
 	for _, v := range expr.List {
 		if err := RunStmtCheck(ctx, ctxCheck, v); err != nil {
-			return err
+			return err.ChainAppend(ctx, expr.LBracket)
 		}
 	}
 	return nil
 }
 
-func RunMapInitExprCheck(ctx *Context, ctxCheck *ContextCheck, expr *ast.MapInitExpr) error {
+func RunMapInitExprCheck(ctx *Context, ctxCheck *ContextCheck, expr *ast.MapInitExpr) *RuntimeError {
 	for _, v := range expr.KeyValeList {
 		switch v[0].NodeType { //nolint:exhaustive
-		case ast.TypeNumberLiteral, ast.TypeBoolLiteral, ast.TypeNilLiteral,
+		case ast.TypeFloatLiteral, ast.TypeIntegerLiteral,
+			ast.TypeBoolLiteral, ast.TypeNilLiteral,
 			ast.TypeListInitExpr, ast.TypeMapInitExpr:
-			return fmt.Errorf("map key expect string")
+			return NewRunError(ctx, "map key expect string: %s",
+				ast.NodeStartPos(v[0]))
 		default:
 		}
 		if err := RunStmtCheck(ctx, ctxCheck, v[0]); err != nil {
@@ -110,11 +114,11 @@ func RunMapInitExprCheck(ctx *Context, ctxCheck *ContextCheck, expr *ast.MapInit
 	return nil
 }
 
-func RunParenExprCheck(ctx *Context, ctxCheck *ContextCheck, expr *ast.ParenExpr) error {
+func RunParenExprCheck(ctx *Context, ctxCheck *ContextCheck, expr *ast.ParenExpr) *RuntimeError {
 	return RunStmtCheck(ctx, ctxCheck, expr.Param)
 }
 
-func RunAttrExprCheck(ctx *Context, ctxCheck *ContextCheck, expr *ast.AttrExpr) error {
+func RunAttrExprCheck(ctx *Context, ctxCheck *ContextCheck, expr *ast.AttrExpr) *RuntimeError {
 	if err := RunStmtCheck(ctx, ctxCheck, expr.Obj); err != nil {
 		return err
 	}
@@ -125,7 +129,21 @@ func RunAttrExprCheck(ctx *Context, ctxCheck *ContextCheck, expr *ast.AttrExpr) 
 	return nil
 }
 
-func RunArithmeticExprCheck(ctx *Context, ctxCheck *ContextCheck, expr *ast.ArithmeticExpr) error {
+func RunArithmeticExprCheck(ctx *Context, ctxCheck *ContextCheck, expr *ast.ArithmeticExpr) *RuntimeError {
+	if err := RunStmtCheck(ctx, ctxCheck, expr.LHS); err != nil {
+		return err
+	}
+	if err := RunStmtCheck(ctx, ctxCheck, expr.RHS); err != nil {
+		return err
+	}
+
+	// TODO
+	// check op
+
+	return nil
+}
+
+func RunConditionExprCheck(ctx *Context, ctxCheck *ContextCheck, expr *ast.ConditionalExpr) *RuntimeError {
 	if err := RunStmtCheck(ctx, ctxCheck, expr.LHS); err != nil {
 		return err
 	}
@@ -135,17 +153,7 @@ func RunArithmeticExprCheck(ctx *Context, ctxCheck *ContextCheck, expr *ast.Arit
 	return nil
 }
 
-func RunConditionExprCheck(ctx *Context, ctxCheck *ContextCheck, expr *ast.ConditionalExpr) error {
-	if err := RunStmtCheck(ctx, ctxCheck, expr.LHS); err != nil {
-		return err
-	}
-	if err := RunStmtCheck(ctx, ctxCheck, expr.RHS); err != nil {
-		return err
-	}
-	return nil
-}
-
-func RunIndexExprGetCheck(ctx *Context, ctxCheck *ContextCheck, expr *ast.IndexExpr) error {
+func RunIndexExprGetCheck(ctx *Context, ctxCheck *ContextCheck, expr *ast.IndexExpr) *RuntimeError {
 	for _, v := range expr.Index {
 		if err := RunStmtCheck(ctx, ctxCheck, v); err != nil {
 			return err
@@ -154,25 +162,27 @@ func RunIndexExprGetCheck(ctx *Context, ctxCheck *ContextCheck, expr *ast.IndexE
 	return nil
 }
 
-func RunCallExprCheck(ctx *Context, ctxCheck *ContextCheck, expr *ast.CallExpr) error {
+func RunCallExprCheck(ctx *Context, ctxCheck *ContextCheck, expr *ast.CallExpr) *RuntimeError {
 	_, ok := ctx.GetFuncCall(expr.Name)
 	if !ok {
-		return fmt.Errorf("unsupported func: `%v'", expr.Name)
+		return NewRunError(ctx, fmt.Sprintf(
+			"unsupported func: `%v`", expr.Name), expr.NamePos)
 	}
 
 	if err := RunStmtsCheck(ctx, ctxCheck, expr.Param); err != nil {
-		return err
+		return err.ChainAppend(ctx, expr.NamePos)
 	}
 
 	funcCheck, ok := ctx.GetFuncCheck(expr.Name)
 	if !ok {
-		return fmt.Errorf("not found check for func: `%v'", expr.Name)
+		return NewRunError(ctx, fmt.Sprintf(
+			"not found check for func: `%v`", expr.Name), expr.NamePos)
 	}
 
 	return funcCheck(ctx, expr)
 }
 
-func RunAssignmentExprCheck(ctx *Context, ctxCheck *ContextCheck, expr *ast.AssignmentExpr) error {
+func RunAssignmentExprCheck(ctx *Context, ctxCheck *ContextCheck, expr *ast.AssignmentExpr) *RuntimeError {
 	if err := RunStmtCheck(ctx, ctxCheck, expr.RHS); err != nil {
 		return err
 	}
@@ -182,7 +192,7 @@ func RunAssignmentExprCheck(ctx *Context, ctxCheck *ContextCheck, expr *ast.Assi
 	return nil
 }
 
-func RunIfElseStmtCheck(ctx *Context, ctxCheck *ContextCheck, stmt *ast.IfelseStmt) error {
+func RunIfElseStmtCheck(ctx *Context, ctxCheck *ContextCheck, stmt *ast.IfelseStmt) *RuntimeError {
 	ctx.StackEnterNew()
 	defer ctx.StackExitCur()
 
@@ -192,22 +202,26 @@ func RunIfElseStmtCheck(ctx *Context, ctxCheck *ContextCheck, stmt *ast.IfelseSt
 		}
 
 		ctx.StackEnterNew()
-		if err := RunStmtsCheck(ctx, ctxCheck, ifelem.Stmts); err != nil {
-			return err
+		if ifelem.Block != nil {
+			if err := RunStmtsCheck(ctx, ctxCheck, ifelem.Block.Stmts); err != nil {
+				return err
+			}
 		}
 		ctx.StackExitCur()
 	}
 
 	ctx.StackEnterNew()
-	if err := RunStmtsCheck(ctx, ctxCheck, stmt.Else); err != nil {
-		return err
+	if stmt.Else != nil {
+		if err := RunStmtsCheck(ctx, ctxCheck, stmt.Else.Stmts); err != nil {
+			return err
+		}
 	}
 	ctx.StackExitCur()
 
 	return nil
 }
 
-func RunForStmtCheck(ctx *Context, ctxCheck *ContextCheck, stmt *ast.ForStmt) error {
+func RunForStmtCheck(ctx *Context, ctxCheck *ContextCheck, stmt *ast.ForStmt) *RuntimeError {
 	ctx.StackEnterNew()
 	defer ctx.StackExitCur()
 
@@ -225,10 +239,13 @@ func RunForStmtCheck(ctx *Context, ctxCheck *ContextCheck, stmt *ast.ForStmt) er
 
 	// check body
 	ctx.StackEnterNew()
-	if err := RunStmtsCheck(ctx, ctxCheck, stmt.Body); err != nil {
-		ctx.StackExitCur()
-		return err
+	if stmt.Body != nil {
+		if err := RunStmtsCheck(ctx, ctxCheck, stmt.Body.Stmts); err != nil {
+			ctx.StackExitCur()
+			return err
+		}
 	}
+
 	ctx.StackExitCur()
 
 	// check loop
@@ -242,7 +259,7 @@ func RunForStmtCheck(ctx *Context, ctxCheck *ContextCheck, stmt *ast.ForStmt) er
 	return nil
 }
 
-func RunForInStmtCheck(ctx *Context, ctxCheck *ContextCheck, stmt *ast.ForInStmt) error {
+func RunForInStmtCheck(ctx *Context, ctxCheck *ContextCheck, stmt *ast.ForInStmt) *RuntimeError {
 	ctx.StackEnterNew()
 	defer ctx.StackExitCur()
 
@@ -250,7 +267,8 @@ func RunForInStmtCheck(ctx *Context, ctxCheck *ContextCheck, stmt *ast.ForInStmt
 	switch stmt.Varb.NodeType { //nolint:exhaustive
 	case ast.TypeIdentifier:
 	default:
-		return fmt.Errorf("node type expect identifier, but %s", stmt.Varb.NodeType)
+		return NewRunError(ctx, fmt.Sprintf("varb node type expect identifier, but %s",
+			stmt.Varb.NodeType), stmt.ForPos)
 	}
 
 	// check iter
@@ -262,9 +280,12 @@ func RunForInStmtCheck(ctx *Context, ctxCheck *ContextCheck, stmt *ast.ForInStmt
 
 	// check body
 	ctx.StackEnterNew()
-	if err := RunStmtsCheck(ctx, ctxCheck, stmt.Body); err != nil {
-		return err
+	if stmt.Body != nil {
+		if err := RunStmtsCheck(ctx, ctxCheck, stmt.Body.Stmts); err != nil {
+			return err
+		}
 	}
+
 	ctx.StackExitCur()
 
 	ctxCheck.forstmt = ctxCheck.forstmt[0 : len(ctxCheck.forstmt)-1]
@@ -273,17 +294,17 @@ func RunForInStmtCheck(ctx *Context, ctxCheck *ContextCheck, stmt *ast.ForInStmt
 	return nil
 }
 
-func RunBreakStmtCheck(ctx *Context, ctxCheck *ContextCheck, stmt *ast.BreakStmt) error {
+func RunBreakStmtCheck(ctx *Context, ctxCheck *ContextCheck, stmt *ast.BreakStmt) *RuntimeError {
 	if len(ctxCheck.forstmt) == 0 {
-		return fmt.Errorf("break not in loop")
+		return NewRunError(ctx, "break not in loop", stmt.Start)
 	}
 	ctxCheck.breakstmt = true
 	return nil
 }
 
-func RunContinueStmtCheck(ctx *Context, ctxCheck *ContextCheck, stmt *ast.ContinueStmt) error {
+func RunContinueStmtCheck(ctx *Context, ctxCheck *ContextCheck, stmt *ast.ContinueStmt) *RuntimeError {
 	if len(ctxCheck.forstmt) == 0 {
-		return fmt.Errorf("continue not in loop")
+		return NewRunError(ctx, "continue not in loop", stmt.Start)
 	}
 	ctxCheck.continuestmt = true
 	return nil

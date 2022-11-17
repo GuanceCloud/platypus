@@ -13,21 +13,22 @@ import (
 	"github.com/spf13/cast"
 )
 
-func PrintfChecking(ctx *runtime.Context, funcExpr *ast.CallExpr) error {
+func PrintfChecking(ctx *runtime.Context, funcExpr *ast.CallExpr) *runtime.RuntimeError {
 	if len(funcExpr.Param) < 1 {
-		return fmt.Errorf("function `%s' requires at least one argument", funcExpr.Name)
+		return runtime.NewRunError(ctx, "function `%s' requires at least one argument", funcExpr.NamePos)
 	}
 	if _, err := getKeyName(funcExpr.Param[0]); err != nil {
-		return err
+		return runtime.NewRunError(ctx, err.Error(), funcExpr.Param[0].StartPos())
 	}
 	return nil
 }
 
-func Printf(ctx *runtime.Context, funcExpr *ast.CallExpr) runtime.PlPanic {
+func Printf(ctx *runtime.Context, funcExpr *ast.CallExpr) *runtime.RuntimeError {
 	outdata := make([]interface{}, 0)
 
 	if len(funcExpr.Param) < 1 {
-		return fmt.Errorf("function `%s' requires at least one argument", funcExpr.Name)
+		return runtime.NewRunError(ctx,
+			"function `%s' requires at least one argument", funcExpr.NamePos)
 	}
 
 	fmtStr := getArgStr(ctx, funcExpr.Param[0])

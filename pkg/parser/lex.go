@@ -26,10 +26,11 @@ import (
 	"unicode/utf8"
 
 	"github.com/GuanceCloud/ppl/pkg/ast"
+	"github.com/GuanceCloud/ppl/pkg/token"
 )
 
 type PositionRange struct {
-	Start, End Pos
+	Start, End token.Pos
 }
 
 func (pos PositionRange) String() string {
@@ -38,14 +39,14 @@ func (pos PositionRange) String() string {
 
 type Item struct {
 	Typ ItemType
-	Pos Pos
+	Pos token.Pos
 	Val string
 }
 
 func (i *Item) PositionRange() *PositionRange {
 	return &PositionRange{
 		Start: i.Pos,
-		End:   i.Pos + Pos(len(i.Val)),
+		End:   i.Pos + token.Pos(len(i.Val)),
 	}
 }
 
@@ -86,19 +87,26 @@ const (
 var (
 	keywords = map[string]ItemType{
 		// Keywords.
-		"if":       IF,
-		"elif":     ELIF,
-		"else":     ELSE,
-		"false":    FALSE,
-		"nil":      NIL,
-		"null":     NULL,
-		"true":     TRUE,
-		"for":      FOR,
-		"in":       IN,
-		"while":    WHILE,
-		"break":    BREAK,
-		"continue": CONTINUE,
-		"return":   RETURN,
+		"if":         IF,
+		"elif":       ELIF,
+		"else":       ELSE,
+		"false":      FALSE,
+		"identifier": IDENTIFIER,
+		"nil":        NIL,
+		"null":       NULL,
+		"true":       TRUE,
+		"for":        FOR,
+		"in":         IN,
+		"while":      WHILE,
+		"break":      BREAK,
+		"continue":   CONTINUE,
+		"return":     RETURN,
+		"str":        STR,
+		"bool":       BOOL,
+		"int":        INT,
+		"float":      FLOAT,
+		"list":       LIST,
+		"map":        MAP,
 	}
 
 	ItemTypeStr = map[ItemType]string{
@@ -141,6 +149,9 @@ func init() { //nolint:gochecknoinits
 	for s, ty := range keywords {
 		ItemTypeStr[ty] = s
 	}
+	// Special numbers.
+	keywords["inf"] = NUMBER
+	keywords["nan"] = NUMBER
 }
 
 func (i ItemType) String() string {
@@ -185,18 +196,18 @@ type stateFn func(*Lexer) stateFn
 
 // Pos is the position in a string.
 // Negative numbers indicate undefined positions.
-type Pos int
+// type Pos int
 
 // Lexer holds the state of the scanner.
 type Lexer struct {
-	input       string  // The string being scanned.
-	state       stateFn // The next lexing function to enter.
-	pos         Pos     // Current position in the input.
-	start       Pos     // Start position of this Item.
-	width       Pos     // Width of last rune read from input.
-	lastPos     Pos     // Position of most recent Item returned by NextItem.
-	itemp       *Item   // Pointer to where the next scanned item should be placed.
-	scannedItem bool    // Set to true every time an item is scanned.
+	input       string    // The string being scanned.
+	state       stateFn   // The next lexing function to enter.
+	pos         token.Pos // Current position in the input.
+	start       token.Pos // Start position of this Item.
+	width       token.Pos // Width of last rune read from input.
+	lastPos     token.Pos // Position of most recent Item returned by NextItem.
+	itemp       *Item     // Pointer to where the next scanned item should be placed.
+	scannedItem bool      // Set to true every time an item is scanned.
 
 	parenDepth   int // nested depth of () exprs.
 	braceDepth   int // nested depth of {} exprs.
@@ -491,7 +502,7 @@ __goon:
 }
 
 func lexLineComment(l *Lexer) stateFn {
-	l.pos += Pos(len(lineComment))
+	l.pos += token.Pos(len(lineComment))
 	for r := l.next(); !isEOL(r) && r != eof; {
 		r = l.next()
 	}
@@ -609,7 +620,7 @@ func (l *Lexer) next() rune {
 		return eof
 	}
 	r, w := utf8.DecodeRuneInString(l.input[l.pos:])
-	l.width = Pos(w)
+	l.width = token.Pos(w)
 	l.pos += l.width
 	return r
 }

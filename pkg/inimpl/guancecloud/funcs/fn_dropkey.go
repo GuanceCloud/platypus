@@ -12,28 +12,29 @@ import (
 	"github.com/GuanceCloud/ppl/pkg/engine/runtime"
 )
 
-func DropkeyChecking(ctx *runtime.Context, funcExpr *ast.CallExpr) error {
+func DropkeyChecking(ctx *runtime.Context, funcExpr *ast.CallExpr) *runtime.RuntimeError {
 	if len(funcExpr.Param) != 1 {
-		return fmt.Errorf("func %s expected 1 args", funcExpr.Name)
+		return runtime.NewRunError(ctx, fmt.Sprintf(
+			"func %s expected 1 args", funcExpr.Name), funcExpr.NamePos)
 	}
 
 	if _, err := getKeyName(funcExpr.Param[0]); err != nil {
-		return err
+		return runtime.NewRunError(ctx, err.Error(), funcExpr.Param[0].StartPos())
 	}
 
 	return nil
 }
 
-func Dropkey(ctx *runtime.Context, funcExpr *ast.CallExpr) runtime.PlPanic {
+func Dropkey(ctx *runtime.Context, funcExpr *ast.CallExpr) *runtime.RuntimeError {
 	if len(funcExpr.Param) != 1 {
-		return fmt.Errorf("func %s expected 1 args", funcExpr.Name)
+		return runtime.NewRunError(ctx, fmt.Sprintf(
+			"func %s expected 1 args", funcExpr.Name), funcExpr.NamePos)
 	}
 
 	key, err := getKeyName(funcExpr.Param[0])
 	if err != nil {
-		return err
+		return runtime.NewRunError(ctx, err.Error(), funcExpr.Param[0].StartPos())
 	}
-
 	deletePtKey(ctx.InData(), key)
 
 	return nil

@@ -16,49 +16,52 @@ import (
 	"github.com/antchfx/xmlquery"
 )
 
-func XMLChecking(_ *runtime.Context, funcExpr *ast.CallExpr) error {
+func XMLChecking(ctx *runtime.Context, funcExpr *ast.CallExpr) *runtime.RuntimeError {
 	if len(funcExpr.Param) != 3 {
-		return fmt.Errorf("func %s expects 3 args", funcExpr.Name)
+		return runtime.NewRunError(ctx, fmt.Sprintf(
+			"func %s expects 3 args", funcExpr.Name), funcExpr.NamePos)
 	}
 
 	// XML field key.
 	if _, err := getKeyName(funcExpr.Param[0]); err != nil {
-		return err
+		return runtime.NewRunError(ctx, err.Error(), funcExpr.Param[0].StartPos())
 	}
 
 	// XPath expression.
 	switch funcExpr.Param[1].NodeType { //nolint:exhaustive
 	case ast.TypeStringLiteral:
 	default:
-		return fmt.Errorf("expect StringLiteral, got %s",
-			funcExpr.Param[1].NodeType)
+		return runtime.NewRunError(ctx, fmt.Sprintf("expect StringLiteral, got %s",
+			funcExpr.Param[1].NodeType), funcExpr.Param[1].StartPos())
 	}
 
 	// Field name.
 	switch funcExpr.Param[2].NodeType { //nolint:exhaustive
 	case ast.TypeAttrExpr, ast.TypeIdentifier, ast.TypeStringLiteral:
 	default:
-		return fmt.Errorf("expect AttrExpr or Identifier or StringLiteral, got %s",
-			funcExpr.Param[2].NodeType)
+		return runtime.NewRunError(ctx, fmt.Sprintf(
+			"expect AttrExpr or Identifier or StringLiteral, got %s",
+			funcExpr.Param[2].NodeType), funcExpr.Param[2].StartPos())
 	}
 
 	return nil
 }
 
-func XML(ctx *runtime.Context, funcExpr *ast.CallExpr) runtime.PlPanic {
+func XML(ctx *runtime.Context, funcExpr *ast.CallExpr) *runtime.RuntimeError {
 	var (
 		xmlKey, fieldName string
 		xpathExpr         string
 	)
 
 	if len(funcExpr.Param) != 3 {
-		return fmt.Errorf("func %s expects 3 args", funcExpr.Name)
+		return runtime.NewRunError(ctx, fmt.Sprintf(
+			"func %s expects 3 args", funcExpr.Name), funcExpr.NamePos)
 	}
 
 	// XML field key.
 	xmlKey, err := getKeyName(funcExpr.Param[0])
 	if err != nil {
-		return err
+		return runtime.NewRunError(ctx, err.Error(), funcExpr.Param[0].StartPos())
 	}
 
 	// XPath expression
@@ -66,15 +69,15 @@ func XML(ctx *runtime.Context, funcExpr *ast.CallExpr) runtime.PlPanic {
 	case ast.TypeStringLiteral:
 		xpathExpr = funcExpr.Param[1].StringLiteral.Val
 	default:
-		return fmt.Errorf("expect StringLiteStringLiteral:ral, got %s",
-			reflect.TypeOf(funcExpr.Param[1]).String())
+		return runtime.NewRunError(ctx, fmt.Sprintf("expect StringLiteStringLiteral:ral, got %s",
+			reflect.TypeOf(funcExpr.Param[1]).String()), funcExpr.Param[1].StartPos())
 	}
 
 	// Field name.
 
 	fieldName, err = getKeyName(funcExpr.Param[2])
 	if err != nil {
-		return err
+		return runtime.NewRunError(ctx, err.Error(), funcExpr.Param[2].StartPos())
 	}
 
 	cont, err := ctx.GetKeyConv2Str(xmlKey)

@@ -13,14 +13,15 @@ import (
 	"github.com/GuanceCloud/ppl/pkg/engine/runtime"
 )
 
-func LoadJSONChecking(ctx *runtime.Context, funcExpr *ast.CallExpr) error {
+func LoadJSONChecking(ctx *runtime.Context, funcExpr *ast.CallExpr) *runtime.RuntimeError {
 	if len(funcExpr.Param) != 1 {
-		return fmt.Errorf("func %s expected 1", funcExpr.Name)
+		return runtime.NewRunError(ctx, fmt.Sprintf(
+			"func %s expected 1", funcExpr.Name), funcExpr.NamePos)
 	}
 	return nil
 }
 
-func LoadJSON(ctx *runtime.Context, funcExpr *ast.CallExpr) runtime.PlPanic {
+func LoadJSON(ctx *runtime.Context, funcExpr *ast.CallExpr) *runtime.RuntimeError {
 	val, dtype, err := runtime.RunStmt(ctx, funcExpr.Param[0])
 	if err != nil {
 		return err
@@ -28,11 +29,12 @@ func LoadJSON(ctx *runtime.Context, funcExpr *ast.CallExpr) runtime.PlPanic {
 	var m any
 
 	if dtype != ast.String {
-		return fmt.Errorf("param data type expect string")
+		return runtime.NewRunError(ctx, "param data type expect string",
+			funcExpr.Param[0].StartPos())
 	}
-	err = json.Unmarshal([]byte(val.(string)), &m)
-	if err != nil {
-		return err
+	errJ := json.Unmarshal([]byte(val.(string)), &m)
+	if errJ != nil {
+		return runtime.NewRunError(ctx, errJ.Error(), funcExpr.Param[0].StartPos())
 	}
 	m, dtype = ast.DectDataType(m)
 

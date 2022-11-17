@@ -12,28 +12,31 @@ import (
 	"github.com/GuanceCloud/ppl/pkg/engine/runtime"
 )
 
-func SetMeasurementChecking(ctx *runtime.Context, funcExpr *ast.CallExpr) error {
+func SetMeasurementChecking(ctx *runtime.Context, funcExpr *ast.CallExpr) *runtime.RuntimeError {
 	if len(funcExpr.Param) != 2 && len(funcExpr.Param) != 1 {
-		return fmt.Errorf("func `%s' expected 1 or 2 args", funcExpr.Name)
+		return runtime.NewRunError(ctx, fmt.Sprintf(
+			"func `%s' expected 1 or 2 args", funcExpr.Name), funcExpr.NamePos)
 	}
 	if _, err := getKeyName(funcExpr.Param[0]); err != nil {
-		return err
+		return runtime.NewRunError(ctx, err.Error(), funcExpr.Param[0].StartPos())
 	}
 	if len(funcExpr.Param) == 2 {
 		switch funcExpr.Param[1].NodeType { //nolint:exhaustive
 		case ast.TypeBoolLiteral:
 		default:
-			return fmt.Errorf("param type expect BoolLiteral, got `%s'",
-				funcExpr.Param[1].NodeType)
+			return runtime.NewRunError(ctx, fmt.Sprintf(
+				"param type expect BoolLiteral, got `%s'",
+				funcExpr.Param[1].NodeType), funcExpr.Param[1].StartPos())
 		}
 	}
 
 	return nil
 }
 
-func SetMeasurement(ctx *runtime.Context, funcExpr *ast.CallExpr) runtime.PlPanic {
+func SetMeasurement(ctx *runtime.Context, funcExpr *ast.CallExpr) *runtime.RuntimeError {
 	if len(funcExpr.Param) != 2 && len(funcExpr.Param) != 1 {
-		return fmt.Errorf("func `%s' expected 1 or 2 args", funcExpr.Name)
+		return runtime.NewRunError(ctx, fmt.Sprintf(
+			"func `%s' expected 1 or 2 args", funcExpr.Name), funcExpr.NamePos)
 	}
 
 	val, dtype, err := runtime.RunStmt(ctx, funcExpr.Param[0])

@@ -16,6 +16,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+
 package parser
 
 import (
@@ -29,6 +30,8 @@ import (
 
 	"github.com/GuanceCloud/ppl/internal/logger"
 	"github.com/GuanceCloud/ppl/pkg/ast"
+
+	plToken "github.com/GuanceCloud/ppl/pkg/token"
 )
 
 var log logger.Logger = logger.NewStdoutLogger("iploc", "debug")
@@ -43,61 +46,12 @@ var parserPool = sync.Pool{
 	},
 }
 
-type ParseErrors []ParseError
-
-type ParseError struct {
-	Pos        *PositionRange
-	Err        error
-	Query      string
-	LineOffset int
-}
-
-func (e *ParseError) Error() string {
-	if e.Pos == nil {
-		return fmt.Sprintf("%s", e.Err)
-	}
-
-	pos := int(e.Pos.Start)
-	lastLineBrk := -1
-	ln := e.LineOffset + 1
-	var posStr string
-
-	if pos < 0 || pos > len(e.Query) {
-		posStr = "invalid position:"
-	} else {
-		for i, c := range e.Query[:pos] {
-			if c == '\n' {
-				lastLineBrk = i
-				ln++
-			}
-		}
-
-		col := pos - lastLineBrk
-		posStr = fmt.Sprintf("%d:%d", ln, col)
-	}
-
-	return fmt.Sprintf("%s parse error: %s", posStr, e.Err)
-}
-
-// Error impl Error() interface.
-func (errs ParseErrors) Error() string {
-	var errArray []string
-	for _, err := range errs {
-		errStr := err.Error()
-		if errStr != "" {
-			errArray = append(errArray, errStr)
-		}
-	}
-
-	return strings.Join(errArray, "\n")
-}
-
 type parser struct {
 	lex      Lexer
 	yyParser yyParserImpl
 
 	parseResult ast.Stmts
-	lastClosing Pos
+	lastClosing plToken.Pos
 	errs        ParseErrors
 
 	inject    ItemType
@@ -116,25 +70,6 @@ func (p *parser) InjectItem(typ ItemType) {
 	}
 	p.inject = typ
 	p.injecting = true
-}
-
-func (p *parser) number(v string) *ast.NumberLiteral {
-	nl := &ast.NumberLiteral{}
-
-	n, err := strconv.ParseInt(v, 0, 64)
-	if err != nil {
-		f, err := strconv.ParseFloat(v, 64)
-		if err != nil {
-			p.addParseErrf(p.yyParser.lval.item.PositionRange(),
-				"error parsing number: %s", err)
-		}
-		nl.Float = f
-	} else {
-		nl.IsInt = true
-		nl.Int = n
-	}
-
-	return nl
 }
 
 var errUnexpected = errors.New("unexpected error")
@@ -193,6 +128,7 @@ func (p *parser) unquoteString(s string) string {
 	if err != nil {
 		p.addParseErrf(p.yyParser.lval.item.PositionRange(),
 			"error unquoting string %q: %s", s, err)
+		return ""
 	}
 	return unq
 }
@@ -202,106 +138,255 @@ func (p *parser) unquoteMultilineString(s string) string {
 	if err != nil {
 		p.addParseErrf(p.yyParser.lval.item.PositionRange(),
 			"error unquoting multiline string %q: %s", s, err)
+		return ""
 	}
 	return unq
 }
 
-func (p *parser) newBreakStmt() *ast.Node {
-	return ast.WrapBreakStmt(&ast.BreakStmt{})
+// literal
+
+func (p *parser) newBoolLiteral(pos plToken.Pos, val bool) *ast.Node {
+	return ast.WrapBoolLiteral(&ast.BoolLiteral{
+		Val:   val,
+		Start: pos,
+	})
 }
 
-func (p *parser) newContinueStmt() *ast.Node {
-	return ast.WrapContinueStmt(&ast.ContinueStmt{})
+func (p *parser) newNilLiteral(pos plToken.Pos) *ast.Node {
+	return ast.WrapNilLiteral(&ast.NilLiteral{
+		Start: pos,
+	})
 }
 
-func (p *parser) newForStmt(initExpr *ast.Node, condExpr *ast.Node, loopExpr *ast.Node, body ast.Stmts) *ast.Node {
+func (p *parser) newIdentifierLiteral(name Item) *ast.Node {
+	return ast.WrapIdentifier(&ast.Identifier{
+		Name:  name.Val,
+		Start: name.Pos,
+	})
+}
+
+func (p *parser) newStringLiteral(val Item) *ast.Node {
+	return ast.WrapStringLiteral(&ast.StringLiteral{
+		Val:   val.Val,
+		Start: val.Pos,
+	})
+}
+
+func (p *parser) newParenExpr(lParen Item, node *ast.Node, rParen Item) *ast.Node {
+	return ast.WrapParenExpr(&ast.ParenExpr{
+		Param:  node,
+		LParen: lParen.Pos,
+		RParen: rParen.Pos,
+	})
+}
+
+func (p *parser) newListInitStartExpr(pos plToken.Pos) *ast.Node {
+	return ast.WrapListInitExpr(&ast.ListInitExpr{
+		List:     []*ast.Node{},
+		LBracket: pos,
+	})
+}
+
+func (p *parser) newListInitAppendExpr(initExpr *ast.Node, elem *ast.Node) *ast.Node {
+	if initExpr.NodeType != ast.TypeListInitExpr {
+		p.addParseErrf(p.yyParser.lval.item.PositionRange(),
+			"%s object is not ListInitExpr", initExpr.NodeType)
+		return nil
+	}
+
+	initExpr.ListInitExpr.List = append(initExpr.ListInitExpr.List, elem)
+	return initExpr
+}
+
+func (p *parser) newListInitEndExpr(initExpr *ast.Node, pos plToken.Pos) *ast.Node {
+	if initExpr.NodeType != ast.TypeListInitExpr {
+		p.addParseErrf(p.yyParser.lval.item.PositionRange(),
+			"%s object is not ListInitExpr", initExpr.NodeType)
+		return nil
+	}
+	initExpr.ListInitExpr.RBracket = pos
+	return initExpr
+}
+
+func (p *parser) newMapInitStartExpr(pos plToken.Pos) *ast.Node {
+	return ast.WrapMapInitExpr(&ast.MapInitExpr{
+		KeyValeList: [][2]*ast.Node{},
+		LBrace:      pos,
+	})
+}
+
+func (p *parser) newMapInitAppendExpr(initExpr *ast.Node, keyNode *ast.Node, valueNode *ast.Node) *ast.Node {
+	if initExpr.NodeType != ast.TypeMapInitExpr {
+		p.addParseErrf(p.yyParser.lval.item.PositionRange(),
+			"%s object is not MapInitExpr", initExpr.NodeType)
+		return nil
+	}
+
+	initExpr.MapInitExpr.KeyValeList = append(initExpr.MapInitExpr.KeyValeList,
+		[2]*ast.Node{keyNode, valueNode})
+	return initExpr
+}
+
+func (p *parser) newMapInitEndExpr(initExpr *ast.Node, pos plToken.Pos) *ast.Node {
+	if initExpr.NodeType != ast.TypeMapInitExpr {
+		p.addParseErrf(p.yyParser.lval.item.PositionRange(),
+			"%s object is not MapInitExpr", initExpr.NodeType)
+		return nil
+	}
+	initExpr.MapInitExpr.RBrace = pos
+	return initExpr
+}
+
+func (p *parser) newNumberLiteral(v Item) *ast.Node {
+	if n, err := strconv.ParseInt(v.Val, 0, 64); err != nil {
+		f, err := strconv.ParseFloat(v.Val, 64)
+		if err != nil {
+			p.addParseErrf(p.yyParser.lval.item.PositionRange(),
+				"error parsing number: %s", err)
+			return nil
+		}
+		return ast.WrapFloatLiteral(&ast.FloatLiteral{
+			Val:   f,
+			Start: v.Pos,
+		})
+	} else {
+		return ast.WrapIntegerLiteral(&ast.IntegerLiteral{
+			Val:   n,
+			Start: v.Pos,
+		})
+	}
+}
+
+func (p *parser) newBlockStmt(lBrace Item, stmts ast.Stmts, rBrace Item) *ast.BlockStmt {
+	return &ast.BlockStmt{
+		LBracePos: lBrace.Pos,
+		Stmts:     stmts,
+		RBracePos: rBrace.Pos,
+	}
+}
+
+func (p *parser) newBreakStmt(pos plToken.Pos) *ast.Node {
+	return ast.WrapBreakStmt(&ast.BreakStmt{
+		Start: pos,
+	})
+}
+
+func (p *parser) newContinueStmt(pos plToken.Pos) *ast.Node {
+	return ast.WrapContinueStmt(&ast.ContinueStmt{
+		Start: pos,
+	})
+}
+
+func (p *parser) newForStmt(initExpr *ast.Node, condExpr *ast.Node, loopExpr *ast.Node, body *ast.BlockStmt) *ast.Node {
+	pos := p.yyParser.lval.item.PositionRange()
+
 	return ast.WrapForStmt(&ast.ForStmt{
 		Init: initExpr,
 		Loop: loopExpr,
 		Cond: condExpr,
 		Body: body,
+
+		ForPos: pos.Start,
 	})
 }
 
-func (p *parser) newForInStmt(varb string, iter *ast.Node, body ast.Stmts) *ast.Node {
-	switch iter.NodeType { //nolint:exhaustive
-	case ast.TypeBoolLiteral, ast.TypeNilLiteral,
-		ast.TypeNumberLiteral:
-		p.addParseErrf(p.yyParser.lval.item.PositionRange(), "%s object is not iterable", iter.NodeType)
-	}
-	return ast.WrapForInStmt(&ast.ForInStmt{
-		Varb: ast.WrapIdentifier(&ast.Identifier{Name: varb}),
-		Iter: iter,
-		Body: body,
-	})
-}
-
-func (p *parser) newIfelseStmt(ifElseStmt *ast.Node, ifExpr *ast.IfStmtElem,
-	elifExpr *ast.IfStmtElem, elseExpr ast.Stmts,
-) *ast.Node {
-	if ifElseStmt == nil {
-		if ifExpr == nil {
-			p.addParseErrf(p.yyParser.lval.item.PositionRange(), "invalid if expression is empty")
-			return nil
-		} else { // 创建 if
-			return ast.WrapIfelseStmt(&ast.IfelseStmt{
-				IfList: ast.IfList{ifExpr},
-			})
-		}
-	}
-
-	if ifElseStmt.NodeType != ast.TypeIfelseStmt {
-		p.addParseErrf(p.yyParser.lval.item.PositionRange(),
-			fmt.Sprintf("invalid if expression type %s", ifElseStmt.NodeType))
+func (p *parser) newForInStmt(varb *ast.Node, iter *ast.Node, body *ast.BlockStmt, forTk, inTk Item) *ast.Node {
+	switch varb.NodeType { //nolint:exhaustive
+	case ast.TypeIdentifier:
+	default:
+		p.addParseErrf(p.yyParser.lval.item.PositionRange(), "%s object is not identifier", varb.NodeType)
 		return nil
 	}
 
-	if elifExpr != nil {
-		ifElseStmt.IfelseStmt.IfList = append(ifElseStmt.IfelseStmt.IfList, elifExpr)
+	switch iter.NodeType { //nolint:exhaustive
+	case ast.TypeBoolLiteral, ast.TypeNilLiteral,
+		ast.TypeIntegerLiteral, ast.TypeFloatLiteral:
+		p.addParseErrf(p.yyParser.lval.item.PositionRange(), "%s object is not iterable", iter.NodeType)
+		return nil
 	}
 
-	if elseExpr != nil {
-		ifElseStmt.IfelseStmt.Else = elseExpr
-	}
-
-	return ifElseStmt
+	return ast.WrapForInStmt(&ast.ForInStmt{
+		Varb:   varb,
+		Iter:   iter,
+		Body:   body,
+		ForPos: forTk.Pos,
+		InPos:  inTk.Pos,
+	})
 }
 
-func (p *parser) newIfExpr(condition *ast.Node, stmts ast.Stmts) *ast.IfStmtElem {
+func (p *parser) newIfElifStmt(ifElifList []*ast.IfStmtElem) *ast.Node {
+	if len(ifElifList) == 0 {
+		p.addParseErrf(p.yyParser.lval.item.PositionRange(), "invalid ifelse stmt is empty")
+		return nil
+	}
+
+	return ast.WrapIfelseStmt(
+		&ast.IfelseStmt{
+			IfList: ast.IfList(ifElifList),
+		},
+	)
+}
+
+func (p *parser) newIfElifelseStmt(ifElifList []*ast.IfStmtElem,
+	elseTk Item, elseElem *ast.BlockStmt,
+) *ast.Node {
+	if len(ifElifList) == 0 {
+		p.addParseErrf(p.yyParser.lval.item.PositionRange(), "invalid ifelse stmt is empty")
+		return nil
+	}
+
+	return ast.WrapIfelseStmt(
+		&ast.IfelseStmt{
+			IfList:  ast.IfList(ifElifList),
+			Else:    elseElem,
+			ElsePos: elseTk.Pos,
+		},
+	)
+}
+
+func (p *parser) newIfElem(ifTk Item, condition *ast.Node, block *ast.BlockStmt) *ast.IfStmtElem {
 	if condition == nil {
 		p.addParseErrf(p.yyParser.lval.item.PositionRange(), "invalid if/elif condition")
 		return nil
 	}
 
-	ifexpr := &ast.IfStmtElem{
+	ifElem := &ast.IfStmtElem{
 		Condition: condition,
-		Stmts:     stmts,
+		Block:     block,
+		Start:     ifTk.Pos,
 	}
 
-	return ifexpr
+	return ifElem
 }
 
-func (p *parser) newAssignmentExpr(l, r *ast.Node) *ast.Node {
+func (p *parser) newAssignmentExpr(l, r *ast.Node, eqOp Item) *ast.Node {
 	return ast.WrapAssignmentExpr(&ast.AssignmentExpr{
-		LHS: l,
-		RHS: r,
+		LHS:   l,
+		RHS:   r,
+		OpPos: eqOp.Pos,
 	})
 }
 
 func (p *parser) newConditionalExpr(l, r *ast.Node, op Item) *ast.Node {
 	return ast.WrapConditionExpr(&ast.ConditionalExpr{
-		RHS: r,
-		LHS: l,
-		Op:  AstOp(op.Typ),
+		RHS:   r,
+		LHS:   l,
+		Op:    AstOp(op.Typ),
+		OpPos: op.Pos,
 	})
 }
 
 func (p *parser) newArithmeticExpr(l, r *ast.Node, op Item) *ast.Node {
 	switch op.Typ {
-	case DIV, MOD:
-		if r.NodeType == ast.TypeNumberLiteral {
-			if r.NumberLiteral.IsInt && r.NumberLiteral.Int == 0 ||
-				!r.NumberLiteral.IsInt && r.NumberLiteral.Float == 0 {
+	case DIV, MOD: // div 0 or mod 0
+		switch r.NodeType { //nolint:exhaustive
+		case ast.TypeFloatLiteral:
+			if r.FloatLiteral.Val == 0 {
+				p.addParseErrf(p.yyParser.lval.item.PositionRange(), "division or modulo by zero")
+				return nil
+			}
+		case ast.TypeIntegerLiteral:
+			if r.IntegerLiteral.Val == 0 {
 				p.addParseErrf(p.yyParser.lval.item.PositionRange(), "division or modulo by zero")
 				return nil
 			}
@@ -313,18 +398,23 @@ func (p *parser) newArithmeticExpr(l, r *ast.Node, op Item) *ast.Node {
 			RHS: r,
 			LHS: l,
 			Op:  AstOp(op.Typ),
+
+			OpPos: op.Pos,
 		},
 	)
 }
 
 func (p *parser) newAttrExpr(obj, attr *ast.Node) *ast.Node {
+	pos := p.yyParser.lval.item.PositionRange()
+
 	return ast.WrapAttrExpr(&ast.AttrExpr{
-		Obj:  obj,
-		Attr: attr,
+		Obj:   obj,
+		Attr:  attr,
+		Start: pos.Start,
 	})
 }
 
-func (p *parser) newIndexExpr(obj, index *ast.Node) *ast.Node {
+func (p *parser) newIndexExpr(obj *ast.Node, lBracket Item, index *ast.Node, rBracket Item) *ast.Node {
 	if index == nil {
 		p.addParseErrf(p.yyParser.lval.item.PositionRange(), "invalid array index is emepty")
 		return nil
@@ -333,7 +423,9 @@ func (p *parser) newIndexExpr(obj, index *ast.Node) *ast.Node {
 	if obj == nil {
 		// .[idx]
 		return ast.WrapIndexExpr(&ast.IndexExpr{
-			Index: []*ast.Node{index},
+			Index:    []*ast.Node{index},
+			LBracket: []plToken.Pos{lBracket.Pos},
+			RBracket: []plToken.Pos{rBracket.Pos},
 		})
 	}
 
@@ -341,9 +433,13 @@ func (p *parser) newIndexExpr(obj, index *ast.Node) *ast.Node {
 	case ast.TypeIdentifier:
 		return ast.WrapIndexExpr(&ast.IndexExpr{
 			Obj: obj.Identifier, Index: []*ast.Node{index},
+			LBracket: []plToken.Pos{lBracket.Pos},
+			RBracket: []plToken.Pos{rBracket.Pos},
 		})
 	case ast.TypeIndexExpr:
 		obj.IndexExpr.Index = append(obj.IndexExpr.Index, index)
+		obj.IndexExpr.LBracket = append(obj.IndexExpr.LBracket, lBracket.Pos)
+		obj.IndexExpr.RBracket = append(obj.IndexExpr.RBracket, rBracket.Pos)
 		return obj
 	default:
 		p.addParseErrf(p.yyParser.lval.item.PositionRange(),
@@ -352,16 +448,31 @@ func (p *parser) newIndexExpr(obj, index *ast.Node) *ast.Node {
 	return nil
 }
 
-func (p *parser) newCallExpr(fname string, args []*ast.Node) (*ast.Node, error) {
+func (p *parser) newCallExpr(fn *ast.Node, args []*ast.Node, lParen, rParen Item) *ast.Node {
+	var fname string
+
+	switch fn.NodeType { //nolint:exhaustive
+	case ast.TypeIdentifier:
+		fname = fn.Identifier.Name
+	default:
+		p.addParseErrf(p.yyParser.lval.item.PositionRange(),
+			fmt.Sprintf("invalid fn name object type %s", fn.NodeType))
+		return nil
+	}
 	f := &ast.CallExpr{
-		Name: strings.ToLower(fname),
+		Name:    fname,
+		NamePos: fn.Identifier.Start,
+		LParen:  lParen.Pos,
+		RParen:  rParen.Pos,
 	}
 
 	// TODO: key-value param support
 	f.Param = append(f.Param, args...)
 
-	return ast.WrapCallExpr(f), nil
+	return ast.WrapCallExpr(f)
 }
+
+// end of yylex.(*parser).newXXXX
 
 // impl Lex interface.
 func (p *parser) Lex(lval *yySymType) int {
@@ -384,7 +495,7 @@ func (p *parser) Lex(lval *yySymType) int {
 	case ERROR:
 		pos := PositionRange{
 			Start: p.lex.start,
-			End:   Pos(len(p.lex.input)),
+			End:   plToken.Pos(len(p.lex.input)),
 		}
 
 		p.addParseErr(&pos, errors.New(p.yyParser.lval.item.Val))
@@ -394,7 +505,7 @@ func (p *parser) Lex(lval *yySymType) int {
 		lval.item.Typ = EOF
 		p.InjectItem(0)
 	case RIGHT_PAREN:
-		p.lastClosing = lval.item.Pos + Pos(len(lval.item.Val))
+		p.lastClosing = lval.item.Pos + plToken.Pos(len(lval.item.Val))
 	}
 	return int(typ)
 }
@@ -416,8 +527,6 @@ func newParser(input string) *parser {
 	}
 	return p
 }
-
-// end of yylex.(*parser).newXXXX
 
 func ParsePipeline(input string) (res ast.Stmts, err error) {
 	p := newParser(input)

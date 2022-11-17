@@ -26,6 +26,7 @@ import (
 	"testing"
 	"unicode/utf8"
 
+	"github.com/GuanceCloud/ppl/pkg/token"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -168,6 +169,54 @@ var cases = []struct {
 				input:    "5.",
 				expected: []Item{{NUMBER, 0, "5."}},
 			}, */
+			{
+				input:    "NaN",
+				expected: []Item{{NUMBER, 0, "NaN"}},
+			},
+			{
+				input:    "nAN",
+				expected: []Item{{NUMBER, 0, "nAN"}},
+			},
+			{
+				input:    "NaN 123",
+				expected: []Item{{NUMBER, 0, "NaN"}, {NUMBER, 4, "123"}},
+			},
+			{
+				input:    "NaN123",
+				expected: []Item{{ID, 0, "NaN123"}},
+			},
+			{
+				input:    "iNf",
+				expected: []Item{{NUMBER, 0, "iNf"}},
+			},
+			{
+				input:    "Inf",
+				expected: []Item{{NUMBER, 0, "Inf"}},
+			},
+			{
+				input:    "+Inf",
+				expected: []Item{{ADD, 0, "+"}, {NUMBER, 1, "Inf"}},
+			},
+			{
+				input:    "+Inf 123",
+				expected: []Item{{ADD, 0, "+"}, {NUMBER, 1, "Inf"}, {NUMBER, 5, "123"}},
+			},
+			{
+				input:    "-Inf",
+				expected: []Item{{SUB, 0, "-"}, {NUMBER, 1, "Inf"}},
+			},
+			{
+				input:    "Infoo",
+				expected: []Item{{ID, 0, "Infoo"}},
+			},
+			{
+				input:    "-Infoo",
+				expected: []Item{{SUB, 0, "-"}, {ID, 1, "Infoo"}},
+			},
+			{
+				input:    "-Inf 123",
+				expected: []Item{{SUB, 0, "-"}, {NUMBER, 1, "Inf"}, {NUMBER, 5, "123"}},
+			},
 			{
 				input:    "0x123 0X123",
 				expected: []Item{{NUMBER, 0, "0x123"}, {NUMBER, 6, "0X123"}},
@@ -350,6 +399,16 @@ var cases = []struct {
 				},
 			},
 			{
+				input: `{NaN	!= "bar" }`,
+				expected: []Item{
+					{LEFT_BRACE, 0, `{`},
+					{NUMBER, 1, `NaN`},
+					{NEQ, 5, `!=`},
+					{STRING, 8, `"bar"`},
+					{RIGHT_BRACE, 14, `}`},
+				},
+			},
+			{
 				input: `{alert!#"bar"}`, fail: true,
 			},
 		},
@@ -515,7 +574,7 @@ func TestLexer(t *testing.T) {
 					t.Fatalf("unexpected lexing error at position %d: %s", lastItem.Pos, lastItem)
 				}
 
-				eofItem := Item{EOF, Pos(len(test.input)), ""}
+				eofItem := Item{EOF, token.Pos(len(test.input)), ""}
 				assert.Equal(t, eofItem, lastItem)
 
 				out = out[:len(out)-1]

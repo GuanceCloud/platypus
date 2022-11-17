@@ -22,27 +22,27 @@ func TestSqlCover(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			pl: `input = load_json(_) ; str  =input["str"]; 
-			sql_cover(str)`,
-			in:       `{"str": "select abc from def where x > 3 and y < 5"}`,
-			outKey:   "str",
+			pl: `input = load_json(_) ; str1xxx  =input["str1xxx"]; 
+			sql_cover(str1xxx)`,
+			in:       `{"str1xxx": "select abc from def where x > 3 and y < 5"}`,
+			outKey:   "str1xxx",
 			expected: "select abc from def where x > ? and y < ?",
 			fail:     false,
 		},
 
 		{
 			name: "normal",
-			pl: `input = load_json(_) ; str  =input["str"]; 
-			sql_cover(str)`,
-			in:   `{"str": "SELECT $func$INSERT INTO table VALUES ('a', 1, 2)$func$ FROM users"}`,
+			pl: `input = load_json(_) ; str1xxx  =input["str1xxx"]; 
+			sql_cover(str1xxx)`,
+			in:   `{"str1xxx": "SELECT $func$INSERT INTO table VALUES ('a', 1, 2)$func$ FROM users"}`,
 			fail: true,
 		},
 		{
 			name: "normal",
-			pl: `input = load_json(_) ; str  =input["str"]; 
-			sql_cover(str)`,
-			in:       `{"str": "SELECT Codi , Nom_CA AS Nom, Descripció_CAT AS Descripció FROM ProtValAptitud WHERE Vigent=1 ORDER BY Ordre, Codi"}`,
-			outKey:   "str",
+			pl: `input = load_json(_) ; str1xxx  =input["str1xxx"]; 
+			sql_cover(str1xxx)`,
+			in:       `{"str1xxx": "SELECT Codi , Nom_CA AS Nom, Descripció_CAT AS Descripció FROM ProtValAptitud WHERE Vigent=1 ORDER BY Ordre, Codi"}`,
+			outKey:   "str1xxx",
 			expected: "SELECT Codi, Nom_CA, Descripció_CAT FROM ProtValAptitud WHERE Vigent = ? ORDER BY Ordre, Codi",
 			fail:     false,
 		},
@@ -53,10 +53,10 @@ func TestSqlCover(t *testing.T) {
 		},
 		{
 			name: "normal",
-			pl: `input = load_json(_) ; str  =input["str"]; 
-			sql_cover(str)`,
-			in:       `{"str": "SELECT ('/uffd')"}`,
-			outKey:   "str",
+			pl: `input = load_json(_) ; str1xxx  =input["str1xxx"]; 
+			sql_cover(str1xxx)`,
+			in:       `{"str1xxx": "SELECT ('/uffd')"}`,
+			outKey:   "str1xxx",
 			expected: "SELECT ( ? )",
 			fail:     false,
 		},

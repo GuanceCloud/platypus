@@ -34,7 +34,8 @@ func ParseScript(scripts map[string]string,
 		}
 
 		if err := CheckScript(p, check); err != nil {
-			retErrMap[name] = err
+			// TODO
+			retErrMap[name] = err.ChainError()
 			continue
 		}
 		retMap[name] = p
@@ -48,19 +49,19 @@ func ParseScript(scripts map[string]string,
 	return retMap, retErrMap
 }
 
-func RunScriptWithoutMapIn(proc *plruntime.Script, data plruntime.InputWithoutMap, signal plruntime.Signal) error {
+func RunScriptWithoutMapIn(proc *plruntime.Script, data plruntime.InputWithoutMap, signal plruntime.Signal) *plruntime.RuntimeError {
 	return plruntime.RunScriptWithoutMapIn(proc, data, signal)
 }
 
-func RunScriptWithRMapIn(proc *plruntime.Script, data plruntime.InputWithRMap, signal plruntime.Signal) error {
+func RunScriptWithRMapIn(proc *plruntime.Script, data plruntime.InputWithRMap, signal plruntime.Signal) *plruntime.RuntimeError {
 	return plruntime.RunScriptWithRMapIn(proc, data, signal)
 }
 
-func RunScriptRef(ctx *plruntime.Context, proc *plruntime.Script) error {
+func RunScriptRef(ctx *plruntime.Context, proc *plruntime.Script) *plruntime.RuntimeError {
 	return plruntime.RefRunScript(ctx, proc)
 }
 
-func CheckScript(proc *plruntime.Script, funcsCheck map[string]plruntime.FuncCheck) error {
+func CheckScript(proc *plruntime.Script, funcsCheck map[string]plruntime.FuncCheck) *plruntime.RuntimeError {
 	return plruntime.CheckScript(proc, funcsCheck)
 }
 

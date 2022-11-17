@@ -50,7 +50,7 @@ func TestRuntime(t *testing.T) {
 
 	1 != 2
 	2 == 2
-	2 && 2
+	2 > 2
 	c = 1 / 2 + 1 - 2 * 1 + 3 % 2
 	add_key(c)
 
@@ -166,23 +166,24 @@ add_key(len2, len("123"))
 		Namespace: "default",
 		Category:  "",
 		FilePath:  "",
+		Content:   pl,
 		Ast:       stmts,
 	}
-	err = CheckScript(script, map[string]FuncCheck{
+	errR := CheckScript(script, map[string]FuncCheck{
 		"add_key": addkeycheck,
 		"len":     lencheck,
 	})
-	if err != nil {
-		t.Fatal(err)
+	if errR != nil {
+		t.Fatal(*errR)
 	}
 
 	inData := &inputImpl{
 		data: map[string]any{},
 	}
 
-	err = RunScriptWithRMapIn(script, inData, nil)
-	if err != nil {
-		t.Fatal(err)
+	errR = RunScriptWithRMapIn(script, inData, nil)
+	if errR != nil {
+		t.Fatal(errR.ChainError())
 	}
 	assert.Equal(t, map[string]any{
 		"aa dw.": `{"1":2,"a":[1,2,5],"d":null}`,
@@ -588,11 +589,11 @@ func parseScript(content string) (ast.Stmts, error) {
 	return parser.ParsePipeline(content)
 }
 
-func callexprtest(ctx *Context, callExpr *ast.CallExpr) PlPanic {
+func callexprtest(ctx *Context, callExpr *ast.CallExpr) *RuntimeError {
 	return nil
 }
 
-func addkeytest(ctx *Context, callExpr *ast.CallExpr) PlPanic {
+func addkeytest(ctx *Context, callExpr *ast.CallExpr) *RuntimeError {
 	key := callExpr.Param[0].Identifier.Name
 	if len(callExpr.Param) > 1 {
 		val, dtype, err := RunStmt(ctx, callExpr.Param[1])
@@ -630,11 +631,11 @@ func addkeytest(ctx *Context, callExpr *ast.CallExpr) PlPanic {
 	return nil
 }
 
-func addkeycheck(ctx *Context, callExpr *ast.CallExpr) error {
+func addkeycheck(ctx *Context, callExpr *ast.CallExpr) *RuntimeError {
 	return nil
 }
 
-func lentest(ctx *Context, callExpr *ast.CallExpr) PlPanic {
+func lentest(ctx *Context, callExpr *ast.CallExpr) *RuntimeError {
 	val, dtype, err := RunStmt(ctx, callExpr.Param[0])
 	if err != nil {
 		return err
@@ -652,6 +653,6 @@ func lentest(ctx *Context, callExpr *ast.CallExpr) PlPanic {
 	return nil
 }
 
-func lencheck(ctx *Context, callexpr *ast.CallExpr) error {
+func lencheck(ctx *Context, callexpr *ast.CallExpr) *RuntimeError {
 	return nil
 }

@@ -13,29 +13,31 @@ import (
 	"github.com/GuanceCloud/ppl/pkg/inimpl/guancecloud/input"
 )
 
-func AddkeyChecking(_ *runtime.Context, funcExpr *ast.CallExpr) error {
+func AddkeyChecking(ctx *runtime.Context, funcExpr *ast.CallExpr) *runtime.RuntimeError {
 	if len(funcExpr.Param) > 2 || len(funcExpr.Param) < 1 {
-		return fmt.Errorf("func %s expected 1 or 2 args", funcExpr.Name)
+		return runtime.NewRunError(ctx, fmt.Sprintf(
+			"func %s expected 1 or 2 args", funcExpr.Name), funcExpr.NamePos)
 	}
 
 	if _, err := getKeyName(funcExpr.Param[0]); err != nil {
-		return err
+		return runtime.NewRunError(ctx, err.Error(), funcExpr.Param[0].StartPos())
 	}
 
 	return nil
 }
 
-func AddKey(ctx *runtime.Context, funcExpr *ast.CallExpr) runtime.PlPanic {
+func AddKey(ctx *runtime.Context, funcExpr *ast.CallExpr) *runtime.RuntimeError {
 	if funcExpr == nil {
-		return fmt.Errorf("unreachable")
+		return runtime.NewRunError(ctx, "unreachable", -1)
 	}
 	if len(funcExpr.Param) != 2 && len(funcExpr.Param) != 1 {
-		return fmt.Errorf("func %s expected 1 or 2 args", funcExpr.Name)
+		return runtime.NewRunError(ctx, fmt.Sprintf(
+			"func %s expected 1 or 2 args", funcExpr.Name), funcExpr.NamePos)
 	}
 
 	key, err := getKeyName(funcExpr.Param[0])
 	if err != nil {
-		return err
+		return runtime.NewRunError(ctx, err.Error(), funcExpr.Param[0].StartPos())
 	}
 
 	if len(funcExpr.Param) == 1 {
@@ -51,11 +53,10 @@ func AddKey(ctx *runtime.Context, funcExpr *ast.CallExpr) runtime.PlPanic {
 	var val any
 	var dtype ast.DType
 
-	val, dtype, err = runtime.RunStmt(ctx, funcExpr.Param[1])
-	if err != nil {
-		return err
+	val, dtype, errRun := runtime.RunStmt(ctx, funcExpr.Param[1])
+	if errRun != nil {
+		return errRun.ChainAppend(ctx, funcExpr.NamePos)
 	}
-
 	if err := addKey2PtWithVal(ctx.InData(), key, val, dtype, input.KindPtDefault); err != nil {
 		l.Debug(err)
 		return nil
