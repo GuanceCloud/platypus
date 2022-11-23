@@ -31,163 +31,163 @@ add_key(grok_match_ok, grok(_, "%{time}")) ; printf("%v", grok_match_ok)`,
 			expected: true,
 			outkey:   "grok_match_ok",
 		},
-		// 		{
-		// 			name: "normal_return_f",
-		// 			pl: `
-		// add_pattern("_second", "(?:(?:[0-5]?[0-9]|60)(?:[:.,][0-9]+)?)")
-		// add_pattern("_minute", "(?:[0-5][0-9])")
-		// add_pattern("_hour", "(?:2[0123]|[01]?[0-9])")
-		// add_pattern("time", "([^0-9]?)%{_hour:hour}:%{_minute:minute}(?::%{_second:second})([^0-9]?)")
-		// add_key(grok_match_ok, grok(_, "%{time}"))`,
-		// 			in:       "12 :13:14.123",
-		// 			expected: false,
-		// 			outkey:   "grok_match_ok",
-		// 		},
-		// 		{
-		// 			name: "normal_return_sample_t",
-		// 			pl: `
-		// add_key(grok_match_ok, grok(_, "12 :13:14.123"))`,
-		// 			in:       "12 :13:14.123",
-		// 			expected: true,
-		// 			outkey:   "grok_match_ok",
-		// 		},
-		// 		{
-		// 			name: "normal_return_sample_f",
-		// 			pl: `
-		// add_key(grok_match_ok, grok(_, "12 :13:14.123"))`,
-		// 			in:       "12:13:14.123",
-		// 			expected: false,
-		// 			outkey:   "grok_match_ok",
-		// 		},
-		// 		{
-		// 			name: "normal",
-		// 			pl: `
-		// add_pattern("_second", "(?:(?:[0-5]?[0-9]|60)(?:[:.,][0-9]+)?)")
-		// add_pattern("_minute", "(?:[0-5][0-9])")
-		// add_pattern("_hour", "(?:2[0123]|[01]?[0-9])")
-		// add_pattern("time", "([^0-9]?)%{_hour:hour}:%{_minute:minute}(?::%{_second:second})([^0-9]?)")
-		// grok(_, "%{time}")`,
-		// 			in:       "12:13:14.123",
-		// 			expected: "14.123",
-		// 			outkey:   "second",
-		// 		},
-		// 		{
-		// 			name: "normal",
-		// 			pl: `
-		// add_pattern("_second", "(?:(?:[0-5]?[0-9]|60)(?:[:.,][0-9]+)?)")
-		// add_pattern("_minute", "(?:[0-5][0-9])")
-		// add_pattern("_hour", "(?:2[0123]|[01]?[0-9])")
-		// add_pattern("time", "([^0-9]?)%{_hour:hour}:%{_minute:minute}(?::%{_second:second})([^0-9]?)")
-		// grok(_, "%{time}")`,
-		// 			in:       "12:13:14",
-		// 			expected: "13",
-		// 			outkey:   "minute",
-		// 		},
-		// 		{
-		// 			name: "normal",
-		// 			pl: `
-		// add_pattern("_second", "(?:(?:[0-5]?[0-9]|60)(?:[:.,][0-9]+)?)")
-		// add_pattern("_minute", "(?:[0-5][0-9])")
-		// add_pattern("_hour", "(?:2[0123]|[01]?[0-9])")
-		// add_pattern("time", "([^0-9]?)%{_hour:hour}:%{_minute:minute}(?::%{_second:second})([^0-9]?)")
-		// grok(_, "%{time}")`,
-		// 			in:       "12:13:14",
-		// 			expected: "12",
-		// 			outkey:   "hour",
-		// 		},
-		// 		{
-		// 			name: "normal",
-		// 			pl: `
-		// add_pattern("_second", "(?:(?:[0-5]?[0-9]|60)(?:[:.,][0-9]+)?)")
-		// add_pattern("_minute", "(?:[0-5][0-9])")
-		// add_pattern("_hour", "(?:2[0123]|[01]?[0-9])")
-		// add_pattern("time", "([^0-9]?)%{_hour:hour}:%{_minute:minute}(?::%{_second:second})([^0-9]?)")
-		// grok(_, "%{time}")`,
-		// 			in:       "12:13:14",
-		// 			expected: "14",
-		// 			outkey:   "second",
-		// 		},
-		// 		{
-		// 			name: "normal",
-		// 			pl: `
-		// add_pattern("time", "%{NUMBER:time:float}")
-		// grok(_, '''%{time}
-		// %{WORD:word:string}
-		// 	%{WORD:code:int}
-		// %{WORD:w1}''')`,
-		// 			in: `1.1
-		// s
-		// 	123cvf
-		// aa222`,
-		// 			expected: int64(0),
-		// 			outkey:   "code",
-		// 		},
-		// 		{
-		// 			name: "normal",
-		// 			pl: `
-		// add_pattern("time", "%{NUMBER:time:float}")
-		// grok(_, '''%{time}
-		// %{WORD:word:string}
-		// 	%{WORD:code:int}
-		// %{WORD:w1}''')`,
-		// 			in: `1.1
-		// s
-		// 	123
-		// aa222`,
-		// 			expected: int64(123),
-		// 			outkey:   "code",
-		// 		},
-		// 		{
-		// 			name: "normal",
-		// 			pl: `
-		// add_pattern("time", "%{NUMBER:time:float}")
-		// grok(_, '''%{time}
-		// %{WORD:word:str}
-		// 	%{WORD:code:int}
-		// %{WORD:w1}''')`,
-		// 			in: `1.1
-		// s
-		// 	123
-		// aa222`,
-		// 			expected: int64(123),
-		// 			outkey:   "code",
-		// 		},
-		// 		{
-		// 			name: "normal",
-		// 			pl: `
-		// add_pattern("_second", "(?:(?:[0-5]?[0-9]|60)(?:[:.,][0-9]+)?)")
-		// add_pattern("_minute", "(?:[0-5][0-9])")
-		// add_pattern("_hour", "(?:2[0123]|[01]?[0-9])")
-		// add_pattern("time", "([^0-9]?)%{_hour:hour:string}:%{_minute:minute:int}(?::%{_second:second:float})([^0-9]?)")
-		// grok(_, "%{WORD:date} %{time}")`,
-		// 			in:       "2021/1/11 2:13:14.123",
-		// 			expected: float64(14.123),
-		// 			outkey:   "second",
-		// 		},
-		// 		{
-		// 			name: "trim_space",
-		// 			in:   " not_space ",
-		// 			pl: `add_pattern("d", "[\\s\\S]*")
-		// 			grok(_, "%{d:item}")`,
-		// 			expected: "not_space",
-		// 			outkey:   "item",
-		// 		},
-		// 		{
-		// 			name: "trim_space, enable",
-		// 			in:   " not_space ",
-		// 			pl: `add_pattern("d", "[\\s\\S]*")
-		// 			grok(_, "%{d:item}", true)`,
-		// 			expected: "not_space",
-		// 			outkey:   "item",
-		// 		},
-		// 		{
-		// 			name: "trim_space, disable",
-		// 			in:   " not_space ",
-		// 			pl: `add_pattern("d", "[\\s\\S]*")
-		// 			grok(_, "%{d:item}", false)`,
-		// 			expected: " not_space ",
-		// 			outkey:   "item",
-		// 		},
+		{
+			name: "normal_return_f",
+			pl: `
+		add_pattern("_second", "(?:(?:[0-5]?[0-9]|60)(?:[:.,][0-9]+)?)")
+		add_pattern("_minute", "(?:[0-5][0-9])")
+		add_pattern("_hour", "(?:2[0123]|[01]?[0-9])")
+		add_pattern("time", "([^0-9]?)%{_hour:hour}:%{_minute:minute}(?::%{_second:second})([^0-9]?)")
+		add_key(grok_match_ok, grok(_, "%{time}"))`,
+			in:       "12 :13:14.123",
+			expected: false,
+			outkey:   "grok_match_ok",
+		},
+		{
+			name: "normal_return_sample_t",
+			pl: `
+		add_key(grok_match_ok, grok(_, "12 :13:14.123"))`,
+			in:       "12 :13:14.123",
+			expected: true,
+			outkey:   "grok_match_ok",
+		},
+		{
+			name: "normal_return_sample_f",
+			pl: `
+		add_key(grok_match_ok, grok(_, "12 :13:14.123"))`,
+			in:       "12:13:14.123",
+			expected: false,
+			outkey:   "grok_match_ok",
+		},
+		{
+			name: "normal",
+			pl: `
+		add_pattern("_second", "(?:(?:[0-5]?[0-9]|60)(?:[:.,][0-9]+)?)")
+		add_pattern("_minute", "(?:[0-5][0-9])")
+		add_pattern("_hour", "(?:2[0123]|[01]?[0-9])")
+		add_pattern("time", "([^0-9]?)%{_hour:hour}:%{_minute:minute}(?::%{_second:second})([^0-9]?)")
+		grok(_, "%{time}")`,
+			in:       "12:13:14.123",
+			expected: "14.123",
+			outkey:   "second",
+		},
+		{
+			name: "normal",
+			pl: `
+		add_pattern("_second", "(?:(?:[0-5]?[0-9]|60)(?:[:.,][0-9]+)?)")
+		add_pattern("_minute", "(?:[0-5][0-9])")
+		add_pattern("_hour", "(?:2[0123]|[01]?[0-9])")
+		add_pattern("time", "([^0-9]?)%{_hour:hour}:%{_minute:minute}(?::%{_second:second})([^0-9]?)")
+		grok(_, "%{time}")`,
+			in:       "12:13:14",
+			expected: "13",
+			outkey:   "minute",
+		},
+		{
+			name: "normal",
+			pl: `
+		add_pattern("_second", "(?:(?:[0-5]?[0-9]|60)(?:[:.,][0-9]+)?)")
+		add_pattern("_minute", "(?:[0-5][0-9])")
+		add_pattern("_hour", "(?:2[0123]|[01]?[0-9])")
+		add_pattern("time", "([^0-9]?)%{_hour:hour}:%{_minute:minute}(?::%{_second:second})([^0-9]?)")
+		grok(_, "%{time}")`,
+			in:       "12:13:14",
+			expected: "12",
+			outkey:   "hour",
+		},
+		{
+			name: "normal",
+			pl: `
+		add_pattern("_second", "(?:(?:[0-5]?[0-9]|60)(?:[:.,][0-9]+)?)")
+		add_pattern("_minute", "(?:[0-5][0-9])")
+		add_pattern("_hour", "(?:2[0123]|[01]?[0-9])")
+		add_pattern("time", "([^0-9]?)%{_hour:hour}:%{_minute:minute}(?::%{_second:second})([^0-9]?)")
+		grok(_, "%{time}")`,
+			in:       "12:13:14",
+			expected: "14",
+			outkey:   "second",
+		},
+		{
+			name: "normal",
+			pl: `
+		add_pattern("time", "%{NUMBER:time:float}")
+		grok(_, '''%{time}
+		%{WORD:word:string}
+			%{WORD:code:int}
+		%{WORD:w1}''')`,
+			in: `1.1
+		s
+			123cvf
+		aa222`,
+			expected: int64(0),
+			outkey:   "code",
+		},
+		{
+			name: "normal",
+			pl: `
+		add_pattern("time", "%{NUMBER:time:float}")
+		grok(_, '''%{time}
+		%{WORD:word:string}
+			%{WORD:code:int}
+		%{WORD:w1}''')`,
+			in: `1.1
+		s
+			123
+		aa222`,
+			expected: int64(123),
+			outkey:   "code",
+		},
+		{
+			name: "normal",
+			pl: `
+		add_pattern("time", "%{NUMBER:time:float}")
+		grok(_, '''%{time}
+		%{WORD:word:str}
+			%{WORD:code:int}
+		%{WORD:w1}''')`,
+			in: `1.1
+		s
+			123
+		aa222`,
+			expected: int64(123),
+			outkey:   "code",
+		},
+		{
+			name: "normal",
+			pl: `
+		add_pattern("_second", "(?:(?:[0-5]?[0-9]|60)(?:[:.,][0-9]+)?)")
+		add_pattern("_minute", "(?:[0-5][0-9])")
+		add_pattern("_hour", "(?:2[0123]|[01]?[0-9])")
+		add_pattern("time", "([^0-9]?)%{_hour:hour:string}:%{_minute:minute:int}(?::%{_second:second:float})([^0-9]?)")
+		grok(_, "%{WORD:date} %{time}")`,
+			in:       "2021/1/11 2:13:14.123",
+			expected: float64(14.123),
+			outkey:   "second",
+		},
+		{
+			name: "trim_space",
+			in:   " not_space ",
+			pl: `add_pattern("d", "[\\s\\S]*")
+					grok(_, "%{d:item}")`,
+			expected: "not_space",
+			outkey:   "item",
+		},
+		{
+			name: "trim_space, enable",
+			in:   " not_space ",
+			pl: `add_pattern("d", "[\\s\\S]*")
+					grok(_, "%{d:item}", true)`,
+			expected: "not_space",
+			outkey:   "item",
+		},
+		{
+			name: "trim_space, disable",
+			in:   " not_space ",
+			pl: `add_pattern("d", "[\\s\\S]*")
+					grok(_, "%{d:item}", false)`,
+			expected: " not_space ",
+			outkey:   "item",
+		},
 	}
 
 	for idx, tc := range cases {

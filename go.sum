@@ -2,8 +2,8 @@ github.com/DataDog/datadog-agent/pkg/obfuscate v0.39.0 h1:kXdXGOYeH2pKa3tdNGdrix
 github.com/DataDog/datadog-agent/pkg/obfuscate v0.39.0/go.mod h1:MxVcCIC42tBIjPm93BHdh9/vw2LivRiptj3HygI+GGQ=
 github.com/DataDog/datadog-go/v5 v5.1.0 h1:Zmq3tCk9+Tdq8Du73M71Zo6Dyx+cEo9QkCSCqQlHFaQ=
 github.com/DataDog/datadog-go/v5 v5.1.0/go.mod h1:KhiYb2Badlv9/rofz+OznKoEF5XKTonWyhx5K83AP8E=
-github.com/GuanceCloud/grok v1.1.1 h1:dyYyYVn4y0UWFTH3dYV1OZIRDG1wB3Y7aXBZLNqiaiQ=
-github.com/GuanceCloud/grok v1.1.1/go.mod h1:AHkJZYf7Qbo1FTZT6htdyScpICpgnkQ5+Hc0EmA88vM=
+github.com/GuanceCloud/grok v1.1.2 h1:xscdb39kbPjiO8HfhORt/wDZuQqhi8N/WyjNcQnWujA=
+github.com/GuanceCloud/grok v1.1.2/go.mod h1:AHkJZYf7Qbo1FTZT6htdyScpICpgnkQ5+Hc0EmA88vM=
 github.com/Microsoft/go-winio v0.5.0/go.mod h1:JPGBdM1cNvN/6ISo+n8V5iA4v8pBzdOpzfwIujj1a84=
 github.com/Microsoft/go-winio v0.5.1 h1:aPJp2QD7OOrhO5tQXqQoGSJc+DjDtWTGLOmNyAm6FgY=
 github.com/Microsoft/go-winio v0.5.1/go.mod h1:JPGBdM1cNvN/6ISo+n8V5iA4v8pBzdOpzfwIujj1a84=

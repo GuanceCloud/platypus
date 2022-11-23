@@ -4,7 +4,7 @@ go 1.18
 
 require (
 	github.com/DataDog/datadog-agent/pkg/obfuscate v0.39.0
-	github.com/GuanceCloud/grok v1.1.1
+	github.com/GuanceCloud/grok v1.1.2
 	github.com/antchfx/xmlquery v1.3.12
 	github.com/araddon/dateparse v0.0.0-20201001162425-8aadafed4dc4
 	github.com/influxdata/influxdb1-client v0.0.0-20220302092344-a9ab5670611c
