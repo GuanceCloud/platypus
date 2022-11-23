@@ -30,6 +30,7 @@ func ParseScript(scripts map[string]string,
 		p := &plruntime.Script{
 			FuncCall: call,
 			Name:     name,
+			Content:  content,
 			Ast:      stmts,
 		}
 
