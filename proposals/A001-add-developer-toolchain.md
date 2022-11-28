@@ -4,7 +4,7 @@ Add compiler toolchain for developers
 * Approver: @coanor
 * Status: Working Draft
 * Last updated: 2022-11-24
-* Discussion at: -
+* Discussion at: [#18](https://github.com/GuanceCloud/ppl/pull/18)
 
 ## Abstract
 
