@@ -1,3 +1,5 @@
+.DS_Store
+
 pkg/parser/y.output
 *.pdf
 rl.sh
