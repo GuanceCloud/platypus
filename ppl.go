@@ -1,5 +1,0 @@
-package ppl
-
-func init() {
-
-}
