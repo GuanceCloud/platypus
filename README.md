@@ -3,8 +3,6 @@
 
 # PPL (Pipeline Processor Language)
 
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat&logo=github&color=2370ff&labelColor=454545)](http://makeapullrequest.com)
-
 | English | [中文](README_zh.md) |
 | --- | --- |
  
