@@ -1,39 +1,24 @@
+GOFMT_FILES?=$$(find . -name '*.go' | grep -v vendor)
 
-.PHONY: lint test tools
+pre-commit: fmt lint test-cov
 
-GOLINT_BINARY := golangci-lint
+.PHONY: fmt
+fmt:
+	gofmt -w -s $(GOFMT_FILES)
 
-DATE := $(shell date -u +'%Y-%m-%d %H:%M:%S')
-
-VERSION := $(shell git describe --always --tags)
-
+.PHONY: lint
 lint:
-	$(GOLINT_BINARY) run --fix --allow-parallel-runners
+	golangci-lint run --fix --allow-parallel-runners
 
+.PHONY: test
 test:
-	@truncate -s 0 test.output
-	@echo "#####################" | tee -a test.output
-	@echo "#" $(DATE) | tee -a test.output
-	@echo "#" $(VERSION) | tee -a test.output
-	@echo "#####################" | tee -a test.output
-	i=0; \
-	for pkg in `go list ./...`; do \
-		echo "# testing $$pkg..." | tee -a test.output; \
-		CGO_ENABLED=1 LOGGER_PATH=nul go test -timeout 1m -cover $$pkg; \
-		if [ $$? != 0 ]; then \
-			printf "\033[31m [FAIL] %s\n\033[0m" $$pkg; \
-			i=`expr $$i + 1`; \
-		else \
-			echo "######################"; \
-			fi \
-	done; \
-	if [ $$i -gt 0 ]; then \
-		printf "\033[31m %d case failed.\n\033[0m" $$i; \
-		exit 1; \
-	else \
-		printf "\033[32m all testinig passed.\n\033[0m"; \
-	fi
+	go test -v ./...
 
+.PHONY: test-cov
+test-cov:
+	go test -cover -coverprofile=coverage.txt ./...
+
+.PHONY: tools
 tools:
 	mkdir -p ./dist
 	rm -r ./dist/
