@@ -1,4 +1,3 @@
-
 add_pattern("date2", "%{YEAR}[./]%{MONTHNUM}[./]%{MONTHDAY} %{TIME}")
 
 asd@@
@@ -46,4 +45,4 @@ if b {
     add_key(b)
 }
 
-use("s.ppl")
+use("s.platypus")

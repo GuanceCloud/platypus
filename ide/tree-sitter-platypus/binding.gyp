@@ -1,7 +1,7 @@
 {
   "targets": [
     {
-      "target_name": "tree_sitter_ppl_binding",
+      "target_name": "tree_sitter_platypus_binding",
       "include_dirs": [
         "<!(node -e \"require('nan')\")",
         "src"

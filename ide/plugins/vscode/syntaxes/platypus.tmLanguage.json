@@ -1,7 +1,7 @@
 {
 	"$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
-	"scopeName": "source.ppl",
-	"name": "ppl",
+	"scopeName": "source.platypus",
+	"name": "platypus",
 	"foldingStartMarker": "\\{\\s*$",
 	"foldingStopMarker": "^\\s*\\}",
 	"patterns": [
@@ -29,52 +29,52 @@
 	],
 	"repository": {
 		"comment": {
-			"name": "comment.line.number-sign.ppl",
+			"name": "comment.line.number-sign.platypus",
 			"match": "#.*"
 		},
 		"keywords": {
 			"patterns": [{
-				"name": "keyword.control.ppl",
+				"name": "keyword.control.platypus",
 				"match": "\\b(as|assert|if|elif|else|lambda|for|import|schema|protocol|rule|mixin|relaxed|check|and|in|is|not|or|all|any|map|filter|type)\\b"
 			}]
 		},
 		"number": {
 			"patterns": [{
-				"name": "constant.numeric.ppl",
+				"name": "constant.numeric.platypus",
 				"match": "(?x)-?(?:0|[1-9]\\d*)(?:(?:\\.\\d+)?(?:[eE][+-]?\\d+)?)?"
 			}]
 		},
 		"literals": {
 			"patterns": [{
-				"name": "constant.language.ppl",
+				"name": "constant.language.platypus",
 				"match": "\\b(true|false|nil|null)\\b"
 			}]
 		},
 		"single-quoted-strings": {
-			"name": "string.quoted.single.ppl",
+			"name": "string.quoted.single.platypus",
 			"begin": "'",
 			"end": "'",
 			"patterns": [
 				{
-					"name": "constant.character.escape.ppl",
+					"name": "constant.character.escape.platypus",
 					"match": "\\\\."
 				}
 			]
 		},
 		"double-quoted-strings": {
-			"name": "string.quoted.double.ppl",
+			"name": "string.quoted.double.platypus",
 			"begin": "\"",
 			"end": "\"",
 			"patterns": [
 				{
-					"name": "constant.character.escape.ppl",
+					"name": "constant.character.escape.platypus",
 					"match": "\\\\."
 				}
 			]
 		},
 		"function-call": {
 			"patterns": [{
-				"name": "meta.function-call.ppl support.function.ppl",
+				"name": "meta.function-call.platypus support.function.platypus",
 				"match": "\\b([a-zA-Z_]+)\\s*\\("
 			}]
 		}

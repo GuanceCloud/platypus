@@ -1,25 +1,28 @@
 {
-	"name": "ppl-vscode",
-	"description": "A language server for PPL (Pipeline Processor Language)",
-	"author": "Guance Cloud",
-	"license": "Apache License 2.0",
-	"version": "0.0.1",
+	"name": "platypus-vscode",
+	"displayName": "Platypus Programming Language",
+	"description": "A language server for Platypus Programming Language",
+	"icon": "images/icon.png",
+	"author": "dev-bot@guance.com",
+	"license": "MIT",
+	"version": "0.0.2",
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/GuanceCloud/ppl.git"
+		"url": "https://github.com/GuanceCloud/platypus.git"
 	},
-	"publisher": "Guance Cloud",
+	"publisher": "GuanceCloud",
 	"categories": [
 		"Programming Languages"
 	],
 	"keywords": [
-		"ppl"
+		"observerbility",
+		"platypus"
 	],
 	"engines": {
 		"vscode": "^1.63.0"
 	},
 	"activationEvents": [
-		"onLanguage:ppl"
+		"onLanguage:platypus"
 	],
 	"main": "./client/out/extension",
 	"contributes": {
@@ -46,17 +49,26 @@
 				}
 			}
 		},
-		"languages": [{
-			"id": "ppl",
-			"aliases": ["ppl"],
-			"extensions": [".p", ".ppl"],
-			"configuration": "./language-configuration.json"
-		  }],
-		  "grammars": [{
-			"language": "ppl",
-			"scopeName": "source.ppl",
-			"path": "./syntaxes/ppl.tmLanguage.json"
-		  }]
+		"languages": [
+			{
+				"id": "platypus",
+				"aliases": [
+					"platypus"
+				],
+				"extensions": [
+					".p",
+					".platypus"
+				],
+				"configuration": "./language-configuration.json"
+			}
+		],
+		"grammars": [
+			{
+				"language": "platypus",
+				"scopeName": "source.platypus",
+				"path": "./syntaxes/platypus.tmLanguage.json"
+			}
+		]
 	},
 	"scripts": {
 		"vscode:prepublish": "npm run compile",
@@ -78,7 +90,6 @@
 	"dependencies": {
 		"tree-sitter": "^0.20.1",
 		"tree-sitter-javascript": "^0.19.0",
-		"tree-sitter-ppl": "file:../../grammars",
 		"web-tree-sitter": "^0.20.7"
 	}
 }

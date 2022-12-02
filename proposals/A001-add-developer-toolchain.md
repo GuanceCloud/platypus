@@ -4,17 +4,17 @@ Add compiler toolchain for developers
 * Approver: @coanor
 * Status: Working Draft
 * Last updated: 2022-11-24
-* Discussion at: [#18](https://github.com/GuanceCloud/ppl/pull/18)
+* Discussion at: [#18](https://github.com/GuanceCloud/platypus/pull/18)
 
 ## Abstract
 
-PPL currently supports its own compiler frontend implementation, which is based on the goyacc parser generator to build AST from code. However, the popular tree-sitter is more suitable for IDE integraion and static analysis tools development. In order to converge with this industry trend, PPL will based on the tree-sitter solution to build framework of complier front-end and middle-end. Such as the parser, CST, semantic checker, and so on.
+Platypus currently supports its own compiler frontend implementation, which is based on the goyacc parser generator to build AST from code. However, the popular tree-sitter is more suitable for IDE integraion and static analysis tools development. In order to converge with this industry trend, Platypus will based on the tree-sitter solution to build framework of complier front-end and middle-end. Such as the parser, CST, semantic checker, and so on.
 
 The tree-sitter is a parser generator tool and an incremental parsing library. It can build a concrete syntax tree for a source file and efficiently update the syntax tree as the source file is edited. It can also be used to build code analysis tools.
 
 Tree-sitter is used by many popular programming languages, such as JavaScript, Python, C, C++, Java, Go, PHP, Ruby, C#, Rust, and so on.
 
-We need to add a compiler toolchain for developers to improve the development efficiency of PPL. Include the fowllowing features:
+We need to add a compiler toolchain for developers to improve the development efficiency of Platypus. Include the fowllowing features:
 
 * The language features:
     1. Support for **syntax highlighting**
@@ -113,7 +113,7 @@ Semantic model includes:
 
 ### Code navigation
 
-Because the PPL doesn't have the concept of the function definition, we can't provide the code navigation information. But we can provide the function information for the standard library.
+Because the Platypus doesn't have the concept of the function definition, we can't provide the code navigation information. But we can provide the function information for the standard library.
 
 * **Function Call**: hover the function call, we can provide the function information, such as the function name, the function description, the function parameters, and so on.
 * **Identifier**: click the identifier, we can jump to the first definition of the identifier.
@@ -132,7 +132,7 @@ Code linting and vunerability detection are both code scanning tools. We impleme
 
 If contributor will create a new linter, they can use one of the methods:
 
-* **Tree query + policy engine**: Tree-sitter provider the tree query engine, It can use S-expression the fetch information from CST. The policy engine is used to implement the linter rules. We can use PPL or OPA(Rego) as the policy engine.
+* **Tree query + policy engine**: Tree-sitter provider the tree query engine, It can use S-expression the fetch information from CST. The policy engine is used to implement the linter rules. We can use Platypus or OPA(Rego) as the policy engine.
 * **CodeQL**: When parsing complete, the LSP server will build the CST by tree-sitter, and based on it. We can build the basic block, the data/control flow graph, and so on. Then we can use the CodeQL to implement the code scanning tools.
 
 We will implement code tree query method first, and then implement the CodeQL method if we have enought time.
@@ -147,10 +147,10 @@ We will implement code tree query method first, and then implement the CodeQL me
 
 ## Implementation
 
-We will use the tree-sitter to build the compiler toolchain for PPL. The following is the implementation plan:
+We will use the tree-sitter to build the compiler toolchain for Platypus. The following is the implementation plan:
 
 1. Create a shared grammar folder for CST(Concrete Syntax Tree).
 2. Create textmate grammar for basiclly *token highlighting* about primitive types and keyword.
-2. Implement LSP(Language Server Protocol) with *semantic highlight*, *syntax checking*, *code completion* for PPL.
+2. Implement LSP(Language Server Protocol) with *semantic highlight*, *syntax checking*, *code completion* for Platypus.
 3. Integrate the LSP to Editor, such as VSCode, JetBrains IDE, NeoVim.
-4. Improving the language tools, implement *code linting*, *code formatting*, *vunerability detection* for PPL.
+4. Improving the language tools, implement *code linting*, *code formatting*, *vunerability detection* for Platypus.

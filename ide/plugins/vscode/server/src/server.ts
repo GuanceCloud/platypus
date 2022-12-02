@@ -27,14 +27,10 @@ import {
 	TextEdit,
 } from 'vscode-languageserver-textdocument';
 
-import data, {FunctionSepcification} from './data';
-
+import { IDE, IDEProvider } from './ide';
 
 // import Parser = require("tree-sitter");
 // import PPL = require("tree-sitter-ppl");
-
-import Parser = require('web-tree-sitter');
-import { SlowBuffer } from 'buffer';
 
 // Create a connection for the server, using Node's IPC as a transport.
 // Also include all preview / proposed LSP features.
@@ -154,48 +150,40 @@ documents.onDidChangeContent(change => {
 	validateTextDocument(change.document);
 });
 
-let languageParser: Parser;
+let ide: IDE;
 
 async function validateTextDocument(textDocument: TextDocument): Promise<void> {
-	if (!languageParser) {
-		await Parser.init();
-		languageParser = new Parser();
-		const Lang = await Parser.Language.load('/Users/yufei/workspace/github/yufeiminds/ppl/ide/grammars/tree-sitter-ppl.wasm');
-		languageParser.setLanguage(Lang);
+	if (!ide) {
+		ide = await new IDEProvider().init();
 	}
 
+	ide.acceptFile({ fileId: textDocument.uri, content: textDocument.getText() });
+
 	// In this simple example we get the settings for every validate run.
-	const settings = await getDocumentSettings(textDocument.uri);
+	// const settings = await getDocumentSettings(textDocument.uri);
 
-	// The validator creates diagnostics for all uppercase words length 2 and more
-	const text = textDocument.getText();
-	const tree = languageParser.parse(text);
-	console.debug(tree.rootNode.toString());
-
-	const query: Parser.Query = languageParser.getLanguage().query(`(ERROR) @error`);
-
-	const diagnostics: Diagnostic[] = query.captures(tree.rootNode).map(item => {
-		console.debug('capture error', item.name, item.node.toString());
-		const posRange = {
-			start: Position.create(item.node.startPosition.row, item.node.startPosition.column),
-			end: Position.create(item.node.endPosition.row, item.node.endPosition.column),
+	// Send the computed diagnostics to VSCode.
+	const lintResult = ide.lint({fileId: textDocument.uri});
+	const diagnostics: Diagnostic[] = lintResult.diagnostics.map(diagnostic => {
+		const rangeInfo = {
+			start: Position.create(diagnostic.range.start.row, diagnostic.range.start.column),
+			end: Position.create(diagnostic.range.end.row, diagnostic.range.end.column)
 		};
-		const diagnostic: Diagnostic = {
-			severity: DiagnosticSeverity.Warning,
-			range: posRange,
-			message: 'Syntax error',
-			source: 'ppl',
+		return {
+			severity: DiagnosticSeverity.Error,
+			range: rangeInfo,
+			message: diagnostic.message,
+			source: 'platypus',
 			relatedInformation: [
 				{
 					location: {
 						uri: textDocument.uri,
-						range: Object.assign({}, posRange)
+						range: Object.assign({}, rangeInfo)
 					},
-					message: `Unexpect token "${item.node.text}"`,
+					message: diagnostic.message,
 				},
 			],
 		};
-		return diagnostic;
 	});
 
 	// Send the computed diagnostics to VSCode.
@@ -210,18 +198,21 @@ connection.onDidChangeWatchedFiles(_change => {
 // This handler provides the initial list of the completion items.
 connection.onCompletion(
 	(_textDocumentPosition: TextDocumentPositionParams): CompletionItem[] => {
+		const semantic = ide.info();
 		// The pass parameter contains the position of the text document in
 		// which code complete got requested. For the example we ignore this
 		// info and always provide the same completion items.
-		const functionsItems: CompletionItem[] = data.functions.map((fn: FunctionSepcification, index: number) => ({
-			label: fn.name,
+		const functionsItems: CompletionItem[] = Object.keys(semantic.builtins).map((name: string) => ({
+			label: name,
 			kind: CompletionItemKind.Function,
-			data: index
+			detail: semantic.builtins[name].description,
+			documentation: semantic.builtins[name].doc,
+			data: name,
 		}));
-		const keywordsItems: CompletionItem[] = data.keywords.map((keyword: string, index: number) => ({
-			label: keyword,
+		const keywordsItems: CompletionItem[] = Object.keys(semantic.keywords).map((name: string) => ({
+			label: name,
 			kind: CompletionItemKind.Keyword,
-			data: index
+			data: name,
 		}));
 		return [...functionsItems, ...keywordsItems];
 	}
@@ -231,11 +222,11 @@ connection.onCompletion(
 // the completion list.
 connection.onCompletionResolve(
 	(item: CompletionItem): CompletionItem => {
-		if (item.kind === CompletionItemKind.Function) {
-			const fn = data.functions[item.data];
-			item.detail = fn.description;
-			item.documentation = fn.doc;
-		}
+		// if (item.kind === CompletionItemKind.Function) {
+		// 	const fn = data.functions[item.data];
+		// 	item.detail = fn.description;
+		// 	item.documentation = fn.doc;
+		// }
 		return item;
 	}
 );
@@ -264,7 +255,7 @@ connection.onCompletionResolve(
 // 			}
 // 		};
 // 	});
-	
+
 // });
 
 connection.onDocumentFormatting((params: DocumentFormattingParams): TextEdit[] => {

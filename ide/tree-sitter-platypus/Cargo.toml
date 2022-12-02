@@ -1,10 +1,10 @@
 [package]
-name = "tree-sitter-ppl"
-description = "ppl grammar for the tree-sitter parsing library"
+name = "tree-sitter-platypus"
+description = "platypus grammar for the tree-sitter parsing library"
 version = "0.0.1"
-keywords = ["incremental", "parsing", "ppl"]
+keywords = ["incremental", "parsing", "platypus"]
 categories = ["parsing", "text-editors"]
-repository = "https://github.com/tree-sitter/tree-sitter-ppl"
+repository = "https://github.com/tree-sitter/tree-sitter-platypus"
 edition = "2018"
 license = "MIT"
 

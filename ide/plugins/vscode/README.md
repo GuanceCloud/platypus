@@ -1,14 +1,16 @@
-# LSP Example
+# Platypus extension for Visual Studio Code
 
-Heavily documented sample code for https://code.visualstudio.com/api/language-extensions/language-server-extension-guide
+Here is the proposal for Language Server of [Platypus Programming Language](https://platypus.guance.io/).
 
-## Functionality
+## Features
 
-This Language Server works for plain text file. It has the following language features:
-- Completions
-- Diagnostics regenerated on each file change or configuration change
-
-It also includes an End-to-End test.
+* [x] Support for **syntax highlighting**
+* [x] Support for **code completion**
+* [x] Support for **code linting**
+* [ ] Support for **code formatting**
+* [ ] Support for **code navigation**
+* [ ] Support for **code refactoring**
+* [ ] Support for **vunerability detection**
 
 ## Structure
 

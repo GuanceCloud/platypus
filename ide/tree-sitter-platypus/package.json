@@ -1,0 +1,35 @@
+{
+  "name": "tree-sitter-platypus",
+  "version": "1.0.0",
+  "description": "Tree sitter grammar for Platypus Programming Language",
+  "main": "bindings/node",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/GuanceCloud/platypus.git"
+  },
+  "keywords": [
+    "platypus"
+  ],
+  "author": "Guance Cloud",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/GuanceCloud/platypus/issues"
+  },
+  "homepage": "https://github.com/GuanceCloud/platypus#readme",
+  "dependencies": {
+    "nan": "^2.17.0"
+  },
+  "tree-sitter": [
+    {
+      "scope": "source.platypus",
+      "file-types": [
+        "p",
+        "platypus"
+      ],
+      "injection-regex": "platypus"
+    }
+  ]
+}

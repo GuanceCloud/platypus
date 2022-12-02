@@ -1,4 +1,3 @@
-
 const functionsData: {
     version: string;
     docs: string;
@@ -517,7 +516,8 @@ const functionsData: {
     }
 };
 
-export interface FunctionSepcification {
+
+export interface IFunction {
     name: string;
 	doc: string;
 	prototype: string;
@@ -529,7 +529,7 @@ export interface FunctionSepcification {
 	};
 }
 
-export const functions: FunctionSepcification[] = Object.keys(functionsData.functions).map((name: string) => {
+export const functions: IFunction[] = Object.keys(functionsData.functions).map((name: string) => {
 	const fn = functionsData.functions[name];
 	return {
         name: name,
@@ -542,18 +542,4 @@ export const functions: FunctionSepcification[] = Object.keys(functionsData.func
 	};
 });
 
-export const keywords = [
-	"if",
-	"elif",
-	"else",
-	"for",
-	"in",
-	"break",
-	"continue",
-	"use",
-];
-
-export default {
-    functions,
-    keywords,
-};
+export default functions;

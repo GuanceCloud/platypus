@@ -15,7 +15,7 @@ if b {
     add_key(b)
 }
 
-use("s.ppl")
+use("s.platypus")
 # drop()
 
 ---

@@ -1,5 +1,5 @@
 {
-  "name": "ppl",
+  "name": "platypus",
   "rules": {
     "source_file": {
       "type": "REPEAT",
@@ -140,6 +140,10 @@
         {
           "type": "STRING",
           "value": "in"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "identifier"
         },
         {
           "type": "SYMBOL",

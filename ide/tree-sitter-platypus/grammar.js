@@ -14,11 +14,11 @@ const PREC = {
 }
 
 module.exports = grammar({
-  name: 'ppl',
+  name: 'platypus',
 
   rules: {
     // TODO: error?
-    // See: https://github.com/GuanceCloud/ppl/blob/main/pkg/parser/gram.y#LL131C9-L131C9
+    // See: https://github.com/GuanceCloud/platypus/blob/main/pkg/parser/gram.y#LL131C9-L131C9
     source_file: $ => repeat($._stmt),
 
     // Statements
