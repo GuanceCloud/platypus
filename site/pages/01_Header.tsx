@@ -4,7 +4,7 @@ import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline'
 
 const navigation = [
     { name: 'Home', href: '#' },
-    { name: 'Documentation', href: 'https://platypus.guance.io/docs' },
+    { name: 'Documentation', href: '/docs' },
 ]
 
 export default function Header() {

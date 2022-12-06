@@ -10,10 +10,10 @@ cd -
 
 # Build the documentation
 cd docs
-pip install -r requirements.txt
+# pip install -r requirements.txt
 mkdocs build
 cd -
 
-mkdir -p .build
+mkdir -p .build/docs
 cp -r site/out/* .build
 cp -r docs/site/* .build/docs
