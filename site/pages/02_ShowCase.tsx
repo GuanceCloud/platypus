@@ -130,7 +130,7 @@ export default function ShowCase() {
             <img
               className="relative mx-auto"
               width={490}
-              src="/images/hierarchy.png"
+              src="/images/landing/hierarchy.png"
               alt=""
             />
           </div>
@@ -208,7 +208,7 @@ export default function ShowCase() {
               <img
                 className="relative mx-auto"
                 width={490}
-                src="/images/sdlc.png"
+                src="/images/landing/sdlc.png"
                 alt=""
               />
             </div>
