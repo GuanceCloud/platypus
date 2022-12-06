@@ -4,13 +4,14 @@ set -ex
 
 # Build the landing pages
 cd site
+yarn
 yarn run build
 yarn run export
 cd -
 
 # Build the documentation
 cd docs
-# pip install -r requirements.txt
+pip install -r requirements.txt
 mkdocs build
 cd -
 
