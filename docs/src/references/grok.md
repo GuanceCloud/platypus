@@ -2,10 +2,10 @@
 
 ## Grok Pattern
 
-Grok pattern in PPL can be divided into two types:
+Grok pattern in Platypus can be divided into two types:
 
 - Built-in mode: Built-in pattern, which can be used by all pipeline scripts
-- Local mode: The new mode in the ppl script through add_pattern () function is a local mode, which is only valid for the current pipeline script
+- Local mode: The new mode in the platypus script through add_pattern () function is a local mode, which is only valid for the current pipeline script
 
 Take Nginx access-log as an example, the following explains how to write the corresponding grok, the original nginx access log is as follows:
 
@@ -37,7 +37,7 @@ default_time(time)
 
 ### Grok Conbination
 
-The essence of grok is to predefine some regular expressions for text matching extraction and name the predefined regular expressions, which is convenient to use and expand countless new patterns with nested references. For example, PPL has three built-in modes as follows:
+The essence of grok is to predefine some regular expressions for text matching extraction and name the predefined regular expressions, which is convenient to use and expand countless new patterns with nested references. For example, Platypus has three built-in modes as follows:
 
 ```python
 _second (?:(?:[0-5]?[0-9]|60)(?:[:.,][0-9]+)?)    # matching seconds, _second as the name of the mode

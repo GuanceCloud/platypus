@@ -1,0 +1,5 @@
+mkdocs
+mkdocs-material
+mkdocs-awesome-pages-plugin
+mkdocs-section-index
+mkdocs-static-i18n

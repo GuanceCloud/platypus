@@ -2,10 +2,10 @@
 
 ## Grok Pattern
 
-PPL 中 grok pattern 可以分为两类：
+Platypus 中 grok pattern 可以分为两类：
 
 - 内置模式：内置 pattern，所有 pipeline 脚本都可使用
-- 局部模式：在 ppl 脚本中通过 add_pattern() 函数新增的模式为局部模式，只针对当前 pipeline 脚本有效
+- 局部模式：在 platypus 脚本中通过 add_pattern() 函数新增的模式为局部模式，只针对当前 pipeline 脚本有效
 
 以下以 Nginx access-log 为例，说明一下如何编写对应的 grok，原始 nginx access log 如下：
 
@@ -37,7 +37,7 @@ default_time(time)
 
 ### Grok 组合
 
-grok 本质是预定义一些正则表达式来进行文本匹配提取，并且给预定义的正则表达式进行命名，方便使用与嵌套引用扩展出无数个新模式。比如 PPL 有 3 个如下内置模式：
+grok 本质是预定义一些正则表达式来进行文本匹配提取，并且给预定义的正则表达式进行命名，方便使用与嵌套引用扩展出无数个新模式。比如 Platypus 有 3 个如下内置模式：
 
 ```python
 _second (?:(?:[0-5]?[0-9]|60)(?:[:.,][0-9]+)?)    # 匹配秒数，_second为模式名
