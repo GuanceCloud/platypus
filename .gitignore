@@ -23,3 +23,6 @@ pkg/parser/y.output
 rl.sh
 dist/
 test.output
+
+# Local Netlify folder
+.netlify
