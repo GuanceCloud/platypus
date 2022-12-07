@@ -2,3 +2,5 @@ approvers:
   - vircoys
   - coanor
   - yufeiminds
+reviewers:
+  - guance-bot
