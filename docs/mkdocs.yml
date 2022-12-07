@@ -1,4 +1,5 @@
-site_name: PPL Language
+site_name: Platypus Programming Language
+docs_dir: src
 
 theme:
   name: material
@@ -21,11 +22,11 @@ plugins:
         en:
           name: English
           build: true
-          site_name: PPL language
+          site_name: Platypus Programming language
         zh:
           name: 中文
           build: true
-          site_name: PPL 语言
+          site_name: Platypus 编程语言
 
       default_language: en
       # material_alternate: false
@@ -37,13 +38,13 @@ plugins:
           references  : 参考文档 
 
 nav:
-- tutorials:
+- Tutorials:
   - index.md
-- how-tos:
+- How-tos:
   - how-tos/index.md
-- explaination:
+- Explainations:
   - explaination/index.md
-- references:
+- References:
   - references/pipeline.md
   - references/grok.md
 

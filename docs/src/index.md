@@ -1,47 +1,45 @@
-# 概述
+# Overview
 <!-- <div align="center">
 <br/>
 
 <img src="./docs/images/icon-color.svg" width="120">
+
 </div> -->
 
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat&logo=github&color=2370ff&labelColor=454545)](http://makeapullrequest.com)
-[![Go Report Card](https://goreportcard.com/badge/github.com/GuanceCloud/ppl)](https://goreportcard.com/report/github.com/GuanceCloud/ppl)
-[![Downloads](https://img.shields.io/github/downloads/GuanceCloud/ppl/total.svg)](https://github.com/GuanceCloud/ppl/releases)
+[![Go Report Card](https://goreportcard.com/badge/github.com/GuanceCloud/platypus)](https://goreportcard.com/report/github.com/GuanceCloud/platypus)
+[![Downloads](https://img.shields.io/github/downloads/GuanceCloud/platypus/total.svg)](https://github.com/GuanceCloud/platypus/releases)
 [![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/6660/badge)](https://bestpractices.coreinfrastructure.org/projects/6660)
 
+Platypus Programming Language is a domain-specific language for data processing, mainly for text and semi-structured data processing. Platypus can be used for large-scale log parsing and feature extraction at the edge. Multiple extraction methods such as Grok, JSON and XML are supported.
+As a data processing language, Platypus greatly improves the programmability of text and semi-structured processing.
 
-## 什么是 PPL
+## Getting Started
 
-Guance Cloud PPL（Pipeline Processor Language）是一种用于数据处理的领域特定语言，主要用于文本和半结构化数据处理。 PPL 可在边缘节点进行大规模数据解析和特征提取。 支持 Grok、JSON 和 XML 等多种提取方法。
-PPL作为一种数据处理语言，极大地提高了文本和半结构化数据处理的可编程性。
+### Construction of Platypus Tools
 
-## 快速开始
-
-### 构建 PPL 工具
-
-使用 go build 构建 ppl 命令行工具，并将 ppl 工具拷贝至 /usr/local/bin 目录下
+Use go build to construct Platypus command lines and copy them to the directory /usr/local/bin.
 
 ```sh
 go build cmd/ppl/ppl.go
 sudo cp ppl /usr/local/bin
 ```
 
-### PPL 工具使用方法
+### Instructions of Platypus
 
-由于 ppl 支持脚本间的引用，所以需要指定工作目录，默认为启动 ppl 命令时的目录作为其工作目录
+Since platypus supports inter-script introductions, it is necessary to specify the working directory, which by default is the directory of the platypus command lines when it is started.
 
-其中 `-s` 参数为必须传入的参数，在未指定输入时，仅检查脚本是否合法
+In addition, the parameter `-s` is a mandatory parameter and only checks if the script is legal when no entry is specified.
 
-ppl 工具支持的输入的数据协议:
+The input data protocol supported by the platypus tool:
 
-- `lineprotocol` 更多关于行协议信息见：[influxdb line-protocol](https://docs.influxdata.com/influxdb/cloud/reference/syntax/line-protocol/)
-- `text` 文本数据，可以是日志，json 等，将作为行协议 field 部分的 message 字段作为输入
+- `lineprotocol`: for more information about the protocol, check [influxdb line-protocol](https://docs.influxdata.com/influxdb/cloud/reference/syntax/line-protocol/).
+- `text`: text data, such as log and json, would be input as a message field in the field of line protocol.
 
-输出的数据协议:
+The output data protocol:
 
 - `lineprotocol`
-- `json` 行协议的 json 表示
+- `json`: representing line protocol data in json.
 
 ```sh
 Usage:
@@ -56,18 +54,18 @@ Flags:
   -w, --workspace string     ppl workspace directory (default "/path/to/ppl-process-working-dir")
 ```
 
-### 编写第一个 PPL 脚本
+### Edit the First Platypus Script
 
-> 内置函数文档： [pkg/engine/funcs/md](pkg/engine/funcs/md)
-> grok 文档： [docs/grok.md](docs/grok.md)
+> Built-in functions document: [pkg/inimpl/guancecloud/funcs/md/fn.md](pkg/inimpl/guancecloud/funcs/md/fn.md)
+> Grok document: [docs/grok.md](docs/grok.md)
 
-创建一个 `nginx_access_log.data`，并写入以下日志内容：
+Creat `nginx_access_log.data` and input the following logs:
 
 ```text
 207.46.13.28 - - [19/Oct/2022:02:25:59 +0000] "GET / HTTP/2.0" 200 5 "-" "Mozilla/5.0 (compatible; bingbot/2.0; +http://www.bing.com/bingbot.htm)"
 ```
 
-创建一个 `nginx_access_log.ppl`，并将以下内容写入脚本中：
+Creat `nginx_access_log.p` and input the following logs:
 
 ```txt
 # access log
@@ -89,10 +87,10 @@ nullif(upstream, "")
 default_time(time)
 ```
 
-执行 ppl 工具：
+Execute platypus tools:
 
 ```sh
-ppl@GuanceCloud:~/go/src/github.com/GuanceCloud/ppl/scripts/test_nginx_access_log$ ppl run -s nginx_access_log.ppl -i nginx_access_log.data 
+ppl run -s nginx_access_log.p -i nginx_access_log.data 
 {
   "fields": {
     "agent": "Mozilla/5.0 (compatible; bingbot/2.0; +http://www.bing.com/bingbot.htm)",
@@ -120,6 +118,6 @@ ppl@GuanceCloud:~/go/src/github.com/GuanceCloud/ppl/scripts/test_nginx_access_lo
 }
 ```
 
-## PPL 语法
+## Platypus Syntax
 
-语法文档见 [docs/pipeline.md](docs/pipeline.md)
+For more information of syntax, see [docs/pipeline.md](docs/pipeline.md).

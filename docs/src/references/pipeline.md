@@ -26,7 +26,7 @@ If you need to start with a letter or use the above characters in the identifier
 
 ### Special Identifiers
 
-The special identifier（`_`）represents the external raw input data when the ppl script is triggered, and this parameter may be implicitly passed to some functions.
+The special identifier（`_`）represents the external raw input data when the platypus script is triggered, and this parameter may be implicitly passed to some functions.
 
 In some functions, `_` is treated as an alias for ` message ` for forward compatibility.
 
@@ -132,7 +132,7 @@ a = a[0] # a == 1
 
 ## Operator
 
-The followings are the operators currently supported by PPL. The higher the value, the higher the priority.
+The followings are the operators currently supported by Platypus. The higher the value, the higher the priority.
 
 |Priority|Symbol|Combinability|Description|
 |-|-|-|-|
@@ -155,7 +155,7 @@ The followings are the operators currently supported by PPL. The higher the valu
 
 ## Expression
 
-PPL uses the symbol comma `,` as the expression separator, such as the separation of expressions when passing parameters to invoke expressions and initializing maps and lists.
+Platypus uses the symbol comma `,` as the expression separator, such as the separation of expressions when passing parameters to invoke expressions and initializing maps and lists.
 
 ### Call Expression
 
@@ -211,7 +211,7 @@ Parenthesized expressions can change the precedence of operands in binary expres
 
 ## Statement
 
-All expressions in the PPL can be treated as value statements when expressions are ended by list seperators `;` or `\n` , it would be treated as one statement, such as the following script content containing four statements.
+All expressions in the Platypus can be treated as value statements when expressions are ended by list seperators `;` or `\n` , it would be treated as one statement, such as the following script content containing four statements.
 
 ```go
 len("abc")
@@ -231,7 +231,7 @@ len(d)
 
 ### Select Statement
 
-PPL supports the syntax of  `if/elif/else`.
+Platypus supports the syntax of  `if/elif/else`.
 
 ```txt
 if condition {
@@ -279,7 +279,7 @@ The current condition can be any expression as long as its value is one of the b
 
 ### Loop Statement
 
-PPL supports the syntax of `for` and `for in` .
+Platypus supports the syntax of `for` and `for in` .
 
 The following are two statements that are only allowed in loop statement blocks:
 

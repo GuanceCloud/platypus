@@ -1,6 +1,6 @@
 # The project name is used in the name of the Brew formula, archives, etc. 
 # If none is given, it will be inferred from the name of the GitHub, GitLab, or Gitea release.
-project_name: ppl
+project_name: Platypus
 before:
   hooks:
     - go mod tidy
@@ -139,7 +139,7 @@ nfpms:
   - apk     
 
 
-env_files:
+env_files: {}
   # your github_token in this file
   # or
   # setup ENV github token: $ export GITHUB_TOKEN="YOUR_GH_TOKEN"
