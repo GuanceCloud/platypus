@@ -1,0 +1,1154 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.4.2, mkdocs-material-8.5.10">
+    
+    
+      
+        <title>Pipeline 处理器语言 - PPL language</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.975780f9.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.2505c338.min.css">
+        
+          
+          
+          <meta name="theme-color" content="#ffffff">
+        
+      
+      
+
+    
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="">
+  
+    
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#pipeline" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="PPL language" class="md-header__button md-logo" aria-label="PPL language" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            PPL language
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Pipeline 处理器语言
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <div class="md-header__option">
+        <div class="md-select">
+          
+          <button class="md-header__button md-icon" aria-label="Select language">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.52 17.52 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11.76-2.04M18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2l-4.5-12m-2.62 7 1.62-4.33L19.12 17h-3.24Z"/></svg>
+          </button>
+          <div class="md-select__inner">
+            <ul class="md-select__list">
+              
+                <li class="md-select__item">
+                  <a href="../../en/" hreflang="en" class="md-select__link">
+                    English
+                  </a>
+                </li>
+              
+                <li class="md-select__item">
+                  <a href="../../zh/" hreflang="zh" class="md-select__link">
+                    中文
+                  </a>
+                </li>
+              
+            </ul>
+          </div>
+        </div>
+      </div>
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-tabs__inner md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        tutorials
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../how-tos/" class="md-tabs__link">
+        how-tos
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../explaination/" class="md-tabs__link">
+        explaination
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../pipeline/" class="md-tabs__link">
+        references
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="PPL language" class="md-nav__button md-logo" aria-label="PPL language" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    PPL language
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_1" type="checkbox" id="__nav_1" checked>
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_1">
+          tutorials
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="tutorials" data-md-level="1">
+        <label class="md-nav__title" for="__nav_1">
+          <span class="md-nav__icon md-icon"></span>
+          tutorials
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        Overview
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_2" type="checkbox" id="__nav_2" checked>
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_2">
+          how-tos
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="how-tos" data-md-level="1">
+        <label class="md-nav__title" for="__nav_2">
+          <span class="md-nav__icon md-icon"></span>
+          how-tos
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../how-tos/" class="md-nav__link">
+        Overview
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_3" type="checkbox" id="__nav_3" checked>
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3">
+          explaination
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="explaination" data-md-level="1">
+        <label class="md-nav__title" for="__nav_3">
+          <span class="md-nav__icon md-icon"></span>
+          explaination
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../explaination/" class="md-nav__link">
+        Overview
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_4" type="checkbox" id="__nav_4" checked>
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_4">
+          references
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="references" data-md-level="1">
+        <label class="md-nav__title" for="__nav_4">
+          <span class="md-nav__icon md-icon"></span>
+          references
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pipeline/" class="md-nav__link">
+        Pipeline Processor Language
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../grok/" class="md-nav__link">
+        Grok
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    标识符与关键字
+  </a>
+  
+    <nav class="md-nav" aria-label="标识符与关键字">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    标识符
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    特殊标识符
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    关键字
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_5" class="md-nav__link">
+    注释
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_6" class="md-nav__link">
+    内置数据类型
+  </a>
+  
+    <nav class="md-nav" aria-label="内置数据类型">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_7" class="md-nav__link">
+    基本类型
+  </a>
+  
+    <nav class="md-nav" aria-label="基本类型">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#int" class="md-nav__link">
+    整数(int)类型
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#float" class="md-nav__link">
+    浮点(float)类型
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bool" class="md-nav__link">
+    布尔(bool)类型
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#str" class="md-nav__link">
+    字符(str)串类型
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#nil" class="md-nav__link">
+    Nil 类型
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_8" class="md-nav__link">
+    复合类型
+  </a>
+  
+    <nav class="md-nav" aria-label="复合类型">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#map" class="md-nav__link">
+    Map 类型
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#list" class="md-nav__link">
+    List 类型
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_9" class="md-nav__link">
+    运算符
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_10" class="md-nav__link">
+    表达式
+  </a>
+  
+    <nav class="md-nav" aria-label="表达式">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_11" class="md-nav__link">
+    调用表达式
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_12" class="md-nav__link">
+    二元表达式
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#list_1" class="md-nav__link">
+    List 初始化表达式
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#map_1" class="md-nav__link">
+    Map 初始化表达式
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_13" class="md-nav__link">
+    括号表达式
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_14" class="md-nav__link">
+    语句
+  </a>
+  
+    <nav class="md-nav" aria-label="语句">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_15" class="md-nav__link">
+    值语句（表达式语句）
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_16" class="md-nav__link">
+    选择语句
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_17" class="md-nav__link">
+    循环语句
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+<h1 id="pipeline">Pipeline 处理器语言</h1>
+<p>以下是 Pipeline 处理器语言定义。随着不同语法的逐步支持，该文档会做不同程度的调整和增删。</p>
+<h2 id="_1">标识符与关键字</h2>
+<h3 id="_2">标识符</h3>
+<p>标识符用于标识对象，可以用来表示一个变量、函数等，标识符包含关键字</p>
+<p>自定义的标识符不能与 Pipeline 数据处理器语言的关键字重复</p>
+<p>标识符可以由数字(<code>0-9</code>)、字母(<code>A-Z a-z</code>)、下划线(<code>_</code>) 构成，但首字符不能是数字且区分大小写:</p>
+<ul>
+<li><code>_abc</code></li>
+<li><code>abc</code></li>
+<li><code>abc1</code></li>
+<li><code>abc_1_</code></li>
+</ul>
+<p>如果需要以字母开头或在标识符中使用上述字符外需要使用反引号:</p>
+<ul>
+<li><code>`1abc`</code></li>
+<li><code>`@some-variable`</code></li>
+<li><code>`这是一个表情包变量👍`</code></li>
+</ul>
+<h3 id="_3">特殊标识符</h3>
+<p>特殊标识符（<code>_</code>）表示 ppl 脚本触发时的外部原始输入数据，这一参数可能隐式传递给部分函数</p>
+<p>在部分函数中，为保持前向兼容，<code>_</code> 将被视为 <code>message</code> 的别名。</p>
+<h3 id="_4">关键字</h3>
+<p>关键字是具有特殊意义的单词，如 <code>if</code>, <code>elif</code>, <code>else</code>, <code>for</code>, <code>in</code>, <code>break</code>, <code>continue</code> 等</p>
+<h2 id="_5">注释</h2>
+<p>以 <code>#</code> 为行注释字符，不支持行内注释</p>
+<pre><code class="language-python"># 这是一行注释
+a = 1 # 这是一行注释
+
+&quot;&quot;&quot;
+这是一个（多行）字符串，替代注释
+&quot;&quot;&quot;
+a = 2
+
+&quot;字符串&quot;
+a = 3
+</code></pre>
+<h2 id="_6">内置数据类型</h2>
+<p>在 Pipeline 数据处理器语言中，变量的值的类型可以动态变化，但每一个值都有其数据类型，其可以是<strong>基本类型</strong>的其中一种，也可以是<strong>复合类型</strong></p>
+<h3 id="_7">基本类型</h3>
+<h4 id="int">整数(int)类型</h4>
+<p>整型的类型长度为 64bit，有符号，当前仅支持以十进制的方式编写整数字面量,如 <code>-1</code>, <code>0</code>, <code>1</code>, <code>+19</code></p>
+<h4 id="float">浮点(float)类型</h4>
+<p>浮点型的类型长度为 64bit，有符号，当前仅支持以十进制的方式编写浮点数字面量,如 <code>-1.00001</code>, <code>0.0</code>, <code>1.0</code>, <code>+19.0</code></p>
+<h4 id="bool">布尔(bool)类型</h4>
+<p>布尔类型字面量仅有 <code>true</code> 和 <code>false</code> 两种</p>
+<h4 id="str">字符(str)串类型</h4>
+<p>字符串字面量可用双引号或单引号，多行字符串可以使用三双引号或三单引号将内容括起来进行编写</p>
+<ul>
+<li>
+<p><code>"hello world"</code></p>
+</li>
+<li>
+<p><code>'hello world'</code></p>
+</li>
+<li>
+<p><code>"""hello
+    world"""</code></p>
+</li>
+<li>
+<p><code>'''
+    hello
+    world
+    '''</code></p>
+</li>
+</ul>
+<h4 id="nil">Nil 类型</h4>
+<p>nil 为一种特殊的数据类型，表示无值，该类型字面量为 <code>nil</code>，当一个变量未赋值就使用时，其值为 nil</p>
+<h3 id="_8">复合类型</h3>
+<p>map 类型与 list 类型与基本类型不同，多个变量可以指向同一个 map 或 list 对象，在赋值时并不会进行 list 或 map 的内存拷贝，而是进行引用</p>
+<h4 id="map">Map 类型</h4>
+<p>map 类型为 key-value 结构，只有字符串类型才能作为 key，不限制 value 的数据类型</p>
+<p>其可通过索引表达式读写 map 中的元素</p>
+<pre><code class="language-python">a = {
+  &quot;1&quot;: [1, &quot;2&quot;, 3, nil],
+  &quot;2&quot;: 1.1,
+  &quot;abc&quot;: nil,
+  &quot;def&quot;: true
+}
+
+# 由于 a[&quot;1&quot;] 是 list 对象，此时 b 只是引用了 a[&quot;1&quot;] 的值
+b = a[&quot;1&quot;]
+
+&quot;&quot;&quot;
+此时 a[&quot;1&quot;][0] == 1.1
+&quot;&quot;&quot;
+b[0] = 1.1
+</code></pre>
+<h4 id="list">List 类型</h4>
+<p>list 类型可以在 list 中存储任意数量、任意类型的值
+其可通过索引表达式读写 list 中的元素</p>
+<pre><code class="language-python">a = [1, &quot;2&quot;, 3.0, false, nil, {&quot;a&quot;: 1}]
+
+a = a[0] # a == 1
+</code></pre>
+<h2 id="_9">运算符</h2>
+<p>以下为 PPL 当前支持的运算符，数值越大优先级越高</p>
+<table>
+<thead>
+<tr>
+<th>优先级</th>
+<th>符号</th>
+<th>结合性</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><code>=</code></td>
+<td>右</td>
+<td>赋值；命名参数；优先级最低</td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>\|\|</code></td>
+<td>左</td>
+<td>逻辑"或"</td>
+</tr>
+<tr>
+<td>3</td>
+<td><code>&amp;&amp;</code></td>
+<td>左</td>
+<td>逻辑"与"</td>
+</tr>
+<tr>
+<td>4</td>
+<td><code>&gt;=</code></td>
+<td>左</td>
+<td>条件"大于等于"</td>
+</tr>
+<tr>
+<td>4</td>
+<td><code>&gt;</code></td>
+<td>左</td>
+<td>条件"大于"</td>
+</tr>
+<tr>
+<td>4</td>
+<td><code>!=</code></td>
+<td>左</td>
+<td>条件"不等于"</td>
+</tr>
+<tr>
+<td>4</td>
+<td><code>==</code></td>
+<td>左</td>
+<td>条件"等于"</td>
+</tr>
+<tr>
+<td>4</td>
+<td><code>&lt;=</code></td>
+<td>左</td>
+<td>条件"小于等于"</td>
+</tr>
+<tr>
+<td>4</td>
+<td><code>&lt;</code></td>
+<td>左</td>
+<td>条件"小于"</td>
+</tr>
+<tr>
+<td>5</td>
+<td><code>+</code></td>
+<td>左</td>
+<td>算术"加"</td>
+</tr>
+<tr>
+<td>5</td>
+<td><code>-</code></td>
+<td>左</td>
+<td>算术"减"</td>
+</tr>
+<tr>
+<td>6</td>
+<td><code>*</code></td>
+<td>左</td>
+<td>算术"乘"</td>
+</tr>
+<tr>
+<td>6</td>
+<td><code>/</code></td>
+<td>左</td>
+<td>算术"除"</td>
+</tr>
+<tr>
+<td>6</td>
+<td><code>%</code></td>
+<td>左</td>
+<td>算术"取余数"</td>
+</tr>
+<tr>
+<td>7</td>
+<td><code>[]</code></td>
+<td>左</td>
+<td>使用 list 下标或 map 的键取值</td>
+</tr>
+<tr>
+<td>7</td>
+<td><code>()</code></td>
+<td>无</td>
+<td>可改变运算符优先级；函数调用</td>
+</tr>
+</tbody>
+</table>
+<h2 id="_10">表达式</h2>
+<p>PPL 使用符号逗号 <code>,</code> 作为表达式分隔符号，如用于调用表达式的参数传递和 map、list 的初始化时的表达式的分隔</p>
+<h3 id="_11">调用表达式</h3>
+<p>以下为一个函数调用，用于取列表元素个数：</p>
+<pre><code class="language-txt">len([1, 3, &quot;5&quot;])
+</code></pre>
+<h3 id="_12">二元表达式</h3>
+<p>赋值表达式属于二元表达式，其有返回值</p>
+<pre><code class="language-txt"># 0
+2 / 5
+
+# 0.4，计算时将左操作数的类型提升至浮点数
+2 / 5.0
+
+# true
+1 + 2 * 3 == 7 &amp;&amp; 1 &lt;= 2
+
+# b == 3; 
+# 由于 `=` 运算符的右结合性, a = (b = 3), a == 3
+a = b = 3
+</code></pre>
+<h3 id="list_1">List 初始化表达式</h3>
+<pre><code class="language-txt">[1, true, &quot;1&quot;, nil]
+</code></pre>
+<h3 id="map_1">Map 初始化表达式</h3>
+<pre><code class="language-txt">{
+  &quot;a&quot;: 1,
+  &quot;b&quot;: &quot;2&quot;,
+}
+</code></pre>
+<h3 id="_13">括号表达式</h3>
+<p>括号表达式可以改变二元表达式中的操作数运算优先级，但不能改变结合性</p>
+<pre><code class="language-txt"># 1 + 2 * 3 == 7
+
+(1 + 2) * 3  # == 9
+</code></pre>
+<h2 id="_14">语句</h2>
+<p>PPL 所有的表达式可以视为值语句，当表达式以语句分隔符号 <code>;</code> 或 <code>\n</code> 结束时，其将被视为一个语句，如以下脚本内容包含四个语句</p>
+<pre><code class="language-go">len(&quot;abc&quot;)
+1
+a = 2; a + 2 * 3 % 2
+</code></pre>
+<h3 id="_15">值语句（表达式语句）</h3>
+<p>表达式后面跟语句分隔符号时可视为值语句，以下为四个合法的语句</p>
+<pre><code class="language-txt">a = 1; b = 2;
+d = [1, 2]
+len(d)
+</code></pre>
+<h3 id="_16">选择语句</h3>
+<p>PPL 支持 <code>if/elif/else</code> 语法:</p>
+<pre><code class="language-txt">if condition {
+
+}
+</code></pre>
+<pre><code class="language-txt">if condition {
+
+} else {
+
+}
+</code></pre>
+<pre><code class="language-txt">if condition_1 {
+
+} elif condition_2 {
+
+} ... elif condition_n {
+
+} else {
+
+}
+</code></pre>
+<p>与大多数编程语言相同，根据 <code>if/elif</code> 的条件是否成立，进入对应的语句块中，若都不成立则进入 else 分支。</p>
+<p>当前 condition 可以是任意表达式，只要其值为内置数据类型之一，以下为判定条件：</p>
+<ul>
+<li>
+<p>当条件为 <code>int</code> 类型值时，其为 <code>0</code> 则条件为 <code>false</code>，否则为 <code>true</code></p>
+</li>
+<li>
+<p>当条件为 <code>float</code> 类型值时，其为 <code>0.0</code> 则条件为 <code>false</code>，否则为 <code>true</code></p>
+</li>
+<li>
+<p>当条件为 <code>string</code> 类型值时，其为空字符串 <code>""</code> 则条件为 <code>false</code>，否则为 <code>true</code></p>
+</li>
+<li>
+<p>当条件为 <code>bool</code> 类型值时，条件为当前值</p>
+</li>
+<li>
+<p>当条件为 <code>nil</code> 类型值时，条件为 <code>false</code></p>
+</li>
+<li>
+<p>当条件为 <code>map</code> 类型值时，其长度为 0 则条件为 <code>false</code>，否则为 <code>true</code></p>
+</li>
+<li>
+<p>当条件为 <code>list</code> 类型值时，其长度为 0 则条件为 <code>false</code>，否则为 <code>true</code></p>
+</li>
+</ul>
+<h3 id="_17">循环语句</h3>
+<p>PPL 支持 <code>for</code> 语句和 <code>for in</code> 语句</p>
+<p>以下为两个只允许在循环语句块中使用的语句：</p>
+<ul>
+<li><code>cotinue</code> 语句，不再执行后续语句，继续开始下一次循环</li>
+<li><code>break</code> 语句，结束循环</li>
+</ul>
+<p>使用 <code>for</code> 语句时可能造成无限循环，应谨慎使用，或尽可能使用 <code>for in</code> 语句替代</p>
+<pre><code class="language-txt">for init-expr; condition; loop-expr {
+
+}
+</code></pre>
+<pre><code class="language-txt">for varb_name in map_value/list_value/string_value  {
+
+}
+</code></pre>
+<p>使用示例：</p>
+<ol>
+<li>使用 <code>for</code> 执行 10 次循环</li>
+</ol>
+<pre><code class="language-txt">for a = 0; a &lt; 10; a = a + 1 {
+
+}
+</code></pre>
+<ol>
+<li>使用 <code>for in</code> 遍历 list 的所有元素</li>
+</ol>
+<pre><code class="language-txt">b = &quot;2&quot;
+for a in [&quot;1&quot;, &quot;a&quot; ,&quot;2&quot;] {
+  b = b + a
+  if b == &quot;21a&quot; {
+    break
+  }
+}
+
+# b == &quot;21a&quot;
+</code></pre>
+<ol>
+<li>使用 <code>for in</code> 遍历 map 的所有键</li>
+</ol>
+<pre><code class="language-txt">d = 0
+map_a = {&quot;a&quot;: 1, &quot;b&quot;:2}
+for x in map_a {
+  d = d + map_a[x]
+}
+</code></pre>
+<ol>
+<li>使用 <code>for in</code> 遍历 string 的所有字符</li>
+</ol>
+<pre><code class="language-txt">s = &quot;&quot;
+for c in &quot;abcdef&quot; {
+  if s == &quot;abc&quot; {
+    break
+  } else {
+    continue
+  }
+  s = s + &quot;a&quot;
+}
+
+# s == &quot;abc&quot;
+</code></pre>
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.instant", "search.suggest", "toc.follow", "navigation.tabs", "navigation.expand"], "search": "../../assets/javascripts/workers/search.16e2a7d4.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version.title": "Select version"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.5a2dcb6a.min.js"></script>
+      
+    
+    
+  </body>
+</html>
