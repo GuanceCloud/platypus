@@ -20,6 +20,8 @@ import {
 	HoverParams,
 	Hover,
 	MarkupKind,
+	Range,
+	CancellationToken,
 } from 'vscode-languageserver/node';
 
 import {
@@ -28,6 +30,7 @@ import {
 } from 'vscode-languageserver-textdocument';
 
 import { IDE, IDEProvider } from './ide';
+import { Range as IDERange } from './ide/semantic';
 
 // import Parser = require("tree-sitter");
 // import PPL = require("tree-sitter-ppl");
@@ -163,7 +166,7 @@ async function validateTextDocument(textDocument: TextDocument): Promise<void> {
 	// const settings = await getDocumentSettings(textDocument.uri);
 
 	// Send the computed diagnostics to VSCode.
-	const lintResult = ide.lint({fileId: textDocument.uri});
+	const lintResult = ide.lint({ fileId: textDocument.uri });
 	const diagnostics: Diagnostic[] = lintResult.diagnostics.map(diagnostic => {
 		const rangeInfo = {
 			start: Position.create(diagnostic.range.start.row, diagnostic.range.start.column),
@@ -231,32 +234,13 @@ connection.onCompletionResolve(
 	}
 );
 
-// connection.onHover((params: HoverParams): Hover => {
-// 	const textDocument = documents.get(params.textDocument.uri);
-
-// 	const token = textDocument?.getText({
-// 		start: params.position,
-// 		end: params.position,
-// 	});
-
-// 	const text = textDocument.getText();
-// 	const tree = languageParser.parse(text);
-// 	console.debug(tree.rootNode.toString());
-
-
-// 	const query: Parser.Query = languageParser.getLanguage().query(`(call_expr name: (identifier) @name)`);
-
-// 	query.captures(tree.rootNode).forEach(item => {
-// 		const slug = `${item.node.startPosition.row}-${item.node.startPosition.column}`;
-// 		{
-// 			contents: {
-// 				kind: MarkupKind.Markdown,
-// 				value: `Hello World, ${token}`
-// 			}
-// 		};
-// 	});
-
-// });
+// Convert Range to vscode Position
+const buildRange = (range: IDERange): Range => {
+	return {
+		start: Position.create(range.start.row, range.start.column),
+		end: Position.create(range.end.row, range.end.column),
+	};
+};
 
 connection.onDocumentFormatting((params: DocumentFormattingParams): TextEdit[] => {
 	const document = documents.get(params.textDocument.uri);
@@ -264,9 +248,13 @@ connection.onDocumentFormatting((params: DocumentFormattingParams): TextEdit[] =
 		return [];
 	}
 
-	const text = document.getText();
-	const result: TextEdit[] = [];
-	return result;
+	const formatResult = ide.format({ fileId: params.textDocument.uri });
+	return [
+		{
+			range: buildRange(formatResult.range),
+			newText: formatResult.formatted,
+		},
+	];
 });
 
 // Make the text document manager listen on the connection

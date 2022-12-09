@@ -1,5 +1,5 @@
 import Parser = require('web-tree-sitter');
-import { File, Range } from '../semantic';
+import { Range } from '../semantic';
 
 export interface Diagnostic {
     // The position information about source code.

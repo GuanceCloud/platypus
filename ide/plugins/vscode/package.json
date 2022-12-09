@@ -5,7 +5,7 @@
 	"icon": "images/icon.png",
 	"author": "dev-bot@guance.com",
 	"license": "MIT",
-	"version": "0.0.2",
+	"version": "0.0.4",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/GuanceCloud/platypus.git"
@@ -15,7 +15,7 @@
 		"Programming Languages"
 	],
 	"keywords": [
-		"observerbility",
+		"observability",
 		"platypus"
 	],
 	"engines": {
@@ -76,7 +76,8 @@
 		"watch": "tsc -b -w",
 		"lint": "eslint ./client/src ./server/src --ext .ts,.tsx",
 		"postinstall": "cd client && npm install && cd ../server && npm install && cd ..",
-		"test": "sh ./scripts/e2e.sh"
+		"test": "sh ./scripts/e2e.sh",
+		"clean": "rm -rf ./server/out && rm -rf ./client/out"
 	},
 	"devDependencies": {
 		"@types/mocha": "^9.1.0",

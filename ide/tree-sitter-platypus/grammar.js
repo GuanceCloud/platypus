@@ -19,7 +19,13 @@ module.exports = grammar({
   rules: {
     // TODO: error?
     // See: https://github.com/GuanceCloud/platypus/blob/main/pkg/parser/gram.y#LL131C9-L131C9
-    source_file: $ => repeat($._stmt),
+    source_file: $ => repeat($.inline_statement),
+
+    inline_statement: $ => seq(
+      $._stmt,
+      $.newline,
+      repeat($.newline),
+    ),
 
     // Statements
     _stmt: $ => choice(
@@ -34,6 +40,8 @@ module.exports = grammar({
       $.assign_stmt,
     ),
 
+    newline: $ => /\n+/,    
+
     comment: $ => token(prec(-10, /#.*/)),
 
     if_stmt: $ => prec.right(seq(
@@ -42,11 +50,12 @@ module.exports = grammar({
       field('consequence', $.block_stmts),
       repeat(seq(
         'elif',
-        field('alternative', $.block_stmts)
+        $._expr,
+        $.block_stmts
       )),
       optional(seq(
         'else',
-        field('alternative', $.block_stmts)
+        $.block_stmts
       ))
     )),
 
@@ -54,13 +63,13 @@ module.exports = grammar({
       'for',
       $.identifier,
       'in',
-      $.identifier,
+      $._expr,
       $.block_stmts,
     ),
 
     block_stmts: $ => seq(
       '{',
-      repeat($._stmt),
+      repeat($.inline_statement),
       '}',
     ),
 
@@ -149,23 +158,7 @@ module.exports = grammar({
       $._expr,
       ']',
     )),
-
-    // Expr: condition
-    cond_expr: $ => seq(
-      $._expr,
-      choice(
-        '>=',
-        '>',
-        '||',
-        '&&',
-        '<',
-        '<=',
-        '!=',
-        '==',
-      ),
-      $._expr,
-    ),
-
+  
     // Expr: list
     list_expr: $ => seq(
       '[',

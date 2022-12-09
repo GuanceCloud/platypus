@@ -282,31 +282,7 @@
       "required": false,
       "types": [
         {
-          "type": "assign_stmt",
-          "named": true
-        },
-        {
-          "type": "break_stmt",
-          "named": true
-        },
-        {
-          "type": "comment",
-          "named": true
-        },
-        {
-          "type": "continue_stmt",
-          "named": true
-        },
-        {
-          "type": "expr_stmt",
-          "named": true
-        },
-        {
-          "type": "for_in_stmt",
-          "named": true
-        },
-        {
-          "type": "if_stmt",
+          "type": "inline_statement",
           "named": true
         }
       ]
@@ -417,11 +393,51 @@
       "required": true,
       "types": [
         {
+          "type": "binary_expr",
+          "named": true
+        },
+        {
           "type": "block_stmts",
           "named": true
         },
         {
+          "type": "bool_lit",
+          "named": true
+        },
+        {
+          "type": "call_expr",
+          "named": true
+        },
+        {
           "type": "identifier",
+          "named": true
+        },
+        {
+          "type": "index_expr",
+          "named": true
+        },
+        {
+          "type": "list_expr",
+          "named": true
+        },
+        {
+          "type": "map_expr",
+          "named": true
+        },
+        {
+          "type": "nil_lit",
+          "named": true
+        },
+        {
+          "type": "number_lit",
+          "named": true
+        },
+        {
+          "type": "paren_expr",
+          "named": true
+        },
+        {
+          "type": "string_lit",
           "named": true
         }
       ]
@@ -431,16 +447,6 @@
     "type": "if_stmt",
     "named": true,
     "fields": {
-      "alternative": {
-        "multiple": true,
-        "required": false,
-        "types": [
-          {
-            "type": "block_stmts",
-            "named": true
-          }
-        ]
-      },
       "condition": {
         "multiple": false,
         "required": true,
@@ -501,6 +507,60 @@
           }
         ]
       }
+    },
+    "children": {
+      "multiple": true,
+      "required": false,
+      "types": [
+        {
+          "type": "binary_expr",
+          "named": true
+        },
+        {
+          "type": "block_stmts",
+          "named": true
+        },
+        {
+          "type": "bool_lit",
+          "named": true
+        },
+        {
+          "type": "call_expr",
+          "named": true
+        },
+        {
+          "type": "identifier",
+          "named": true
+        },
+        {
+          "type": "index_expr",
+          "named": true
+        },
+        {
+          "type": "list_expr",
+          "named": true
+        },
+        {
+          "type": "map_expr",
+          "named": true
+        },
+        {
+          "type": "nil_lit",
+          "named": true
+        },
+        {
+          "type": "number_lit",
+          "named": true
+        },
+        {
+          "type": "paren_expr",
+          "named": true
+        },
+        {
+          "type": "string_lit",
+          "named": true
+        }
+      ]
     }
   },
   {
@@ -553,6 +613,49 @@
         },
         {
           "type": "string_lit",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "inline_statement",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "assign_stmt",
+          "named": true
+        },
+        {
+          "type": "break_stmt",
+          "named": true
+        },
+        {
+          "type": "comment",
+          "named": true
+        },
+        {
+          "type": "continue_stmt",
+          "named": true
+        },
+        {
+          "type": "expr_stmt",
+          "named": true
+        },
+        {
+          "type": "for_in_stmt",
+          "named": true
+        },
+        {
+          "type": "if_stmt",
+          "named": true
+        },
+        {
+          "type": "newline",
           "named": true
         }
       ]
@@ -743,31 +846,7 @@
       "required": false,
       "types": [
         {
-          "type": "assign_stmt",
-          "named": true
-        },
-        {
-          "type": "break_stmt",
-          "named": true
-        },
-        {
-          "type": "comment",
-          "named": true
-        },
-        {
-          "type": "continue_stmt",
-          "named": true
-        },
-        {
-          "type": "expr_stmt",
-          "named": true
-        },
-        {
-          "type": "for_in_stmt",
-          "named": true
-        },
-        {
-          "type": "if_stmt",
+          "type": "inline_statement",
           "named": true
         }
       ]
@@ -915,6 +994,10 @@
   {
     "type": "in",
     "named": false
+  },
+  {
+    "type": "newline",
+    "named": true
   },
   {
     "type": "nil",
