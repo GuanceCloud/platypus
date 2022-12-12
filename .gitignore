@@ -18,6 +18,10 @@ coverage.txt
 # Output file
 .build/
 
+# Temprory files
+.DS_Store
+
+# Generated files
 pkg/parser/y.output
 *.pdf
 rl.sh
