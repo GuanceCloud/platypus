@@ -27,16 +27,16 @@ Platypus 是面向可观测性数据流水线的编程语言，主要用于文�
 可参考以下几种 Platypus Programming Language 的入门资料：
 
 | 链接 | 说明 |
-|------------------------------------------------ ------------------------------| ---------------------------------------------- ----- |
-| 👨‍💻 [主页](https://platypus.guance.io/)&nbsp; | 鸭嘴兽编程语言的主页。 |
-| 📥 [安装](https://platypus.guance.io/) | 本地安装 Platypus 的指南。 |
-| 👨‍🔧 [快速入门](https://platypus.guance.io/) | 编写第一个 Platypus 管道代码的指南。 |
-| 📚 [Platypus 语法](https://platypus.guance.io/) | Platypus 规范的参考文档。 |
+|------------------------------------------------------------------------------| --------------------------------------------------- |
+| 👨‍💻 [主页](https://platypus.guance.io/) | Platypus 编程语言的主页。 |
+| 📥 [安装](https://platypus.guance.io/) | Platypus 的本地安装指南。 |
+| 👨‍🔧 [快速入门](https://platypus.guance.io/) | 编写第一个 Platypus 脚本的指南。 |
+| 📚 [Platypus 语法](https://platypus.guance.io/) | Platypus 语言规范 |
 
 ## 社区
 
 * [![Slack](https://img.shields.io/badge/Slack-Join-brightgreen?style=flat&logo=slack)](https://discord.gg/gF2hHtFu)
-* [![GitHub Discuss](https://img.shields.io/badge/GitHub%20Discussions-discuss-blue?style=flat&logo=github&color=2370ff&labelColor=454545)](https://github.com/GuanceCloud/ 鸭嘴兽/讨论）
+* [![GitHub Discussions](https://img.shields.io/badge/GitHub%20Discussions-discuss-blue?style=flat&logo=github&color=2370ff&labelColor=454545)](https://github.com/GuanceCloud/platypus/discussions)
 * [![Community](https://img.shields.io/badge/Community-Guance%20Cloud-green??style=flat&logo=HomeAdvisor)](https://guance.io/)
 
 ## 贡献

@@ -125,7 +125,7 @@ publishers:
     ids:
       - platypus
     dir: "{{ dir .ArtifactPath }}"
-    cmd: curl -F package=@{{ .ArtifactName }} https://{{ .Env.FURY_TOKEN }}@releases.guance.io
+    cmd: curl -F package=@{{ .ArtifactName }} https://{{ .Env.FURY_TOKEN }}@push.fury.io/guancecloud/
 
 # your github_token in this file
 # or

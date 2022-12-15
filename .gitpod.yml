@@ -1,4 +1,4 @@
 vscode:
   extensions:
-    - "golang.Go",
+    - "golang.Go"
     - "GuanceCloud.platypus-vscode"
