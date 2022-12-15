@@ -18,12 +18,12 @@
 
     ```shell
     brew tap GuanceCloud/homebrew-tap
-    brew install platypus
+    brew install GuanceCloud/tap/platypus
     ```
 
 ### Windows
 
-=== "Chocolatey"
+=== "Chocolatey (Coming soon)"
 
     ```shell
     choco install platypus

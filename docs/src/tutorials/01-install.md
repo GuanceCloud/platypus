@@ -18,12 +18,12 @@ See [Release page](https://github.com/GuanceCloud/ppl/releases) to download the 
 
     ```shell
     brew tap GuanceCloud/homebrew-tap
-    brew install platypus
+    brew install GuanceCloud/tap/platypus
     ```
 
 ### Windows
 
-=== "Chocolatey"
+=== "Chocolatey (Coming soon)"
 
     ```shell
     choco install platypus
