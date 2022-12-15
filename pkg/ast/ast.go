@@ -11,7 +11,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/GuanceCloud/ppl/pkg/token"
+	"github.com/GuanceCloud/platypus/pkg/token"
 )
 
 type NodeType uint

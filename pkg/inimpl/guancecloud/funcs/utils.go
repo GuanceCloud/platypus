@@ -11,8 +11,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/GuanceCloud/ppl/pkg/ast"
-	"github.com/GuanceCloud/ppl/pkg/inimpl/guancecloud/input"
+	"github.com/GuanceCloud/platypus/pkg/ast"
+	"github.com/GuanceCloud/platypus/pkg/inimpl/guancecloud/input"
 
 	conv "github.com/spf13/cast"
 )

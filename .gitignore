@@ -30,3 +30,8 @@ test.output
 
 # Local Netlify folder
 .netlify
+
+# IDE
+.vscode/
+.idea/
+*.swp

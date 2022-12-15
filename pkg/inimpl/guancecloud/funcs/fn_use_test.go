@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/GuanceCloud/ppl/pkg/inimpl/guancecloud/input"
+	"github.com/GuanceCloud/platypus/pkg/inimpl/guancecloud/input"
 	"github.com/stretchr/testify/assert"
 )
 

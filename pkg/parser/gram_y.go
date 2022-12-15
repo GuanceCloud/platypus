@@ -8,7 +8,7 @@ import __yyfmt__ "fmt"
 //line gram.y:2
 
 import (
-	ast "github.com/GuanceCloud/ppl/pkg/ast"
+	ast "github.com/GuanceCloud/platypus/pkg/ast"
 )
 
 //line gram.y:10

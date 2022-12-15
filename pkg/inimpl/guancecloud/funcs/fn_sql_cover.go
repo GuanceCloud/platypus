@@ -9,9 +9,9 @@ import (
 	"fmt"
 
 	"github.com/DataDog/datadog-agent/pkg/obfuscate"
-	"github.com/GuanceCloud/ppl/pkg/ast"
-	"github.com/GuanceCloud/ppl/pkg/engine/runtime"
-	"github.com/GuanceCloud/ppl/pkg/inimpl/guancecloud/input"
+	"github.com/GuanceCloud/platypus/pkg/ast"
+	"github.com/GuanceCloud/platypus/pkg/engine/runtime"
+	"github.com/GuanceCloud/platypus/pkg/inimpl/guancecloud/input"
 )
 
 func SQLCoverChecking(ctx *runtime.Context, funcExpr *ast.CallExpr) *runtime.RuntimeError {

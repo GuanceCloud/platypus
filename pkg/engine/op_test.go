@@ -9,9 +9,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/GuanceCloud/ppl/pkg/engine/runtime"
-	"github.com/GuanceCloud/ppl/pkg/inimpl/guancecloud/funcs"
-	"github.com/GuanceCloud/ppl/pkg/inimpl/guancecloud/input"
+	"github.com/GuanceCloud/platypus/pkg/engine/runtime"
+	"github.com/GuanceCloud/platypus/pkg/inimpl/guancecloud/funcs"
+	"github.com/GuanceCloud/platypus/pkg/inimpl/guancecloud/input"
 	"github.com/stretchr/testify/assert"
 )
 

@@ -10,8 +10,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/GuanceCloud/ppl/pkg/ast"
-	"github.com/GuanceCloud/ppl/pkg/parser"
+	"github.com/GuanceCloud/platypus/pkg/ast"
+	"github.com/GuanceCloud/platypus/pkg/parser"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -42,7 +42,7 @@ func TestRuntime(t *testing.T) {
 	pl := `
 	b = 1 + 1
 	a = (b + 2) == 4 || False
-	c = a * 3 + +100 + -10 + 
+	c = a * 3 + +100 + -10 +
 		3/1.1
 	d = 4 / 3
 	e = "dwdw" + "3"
@@ -58,7 +58,7 @@ func TestRuntime(t *testing.T) {
 
 	f = map_a["nil"][-1]
 
-	
+
 	aaaa = 1.0 == (b = 1)
 
 	a = v = a
@@ -75,8 +75,8 @@ func TestRuntime(t *testing.T) {
 			e = e + "2"
 		}
 	}
-	ddd = "" 
-	
+	ddd = ""
+
 	# 无序遍历 key
 	# for x in {'a': 1, "b":2, "c":3} {
 	# 	ddd = ddd + x
@@ -130,13 +130,13 @@ for ; a; {
 	if a > 10 {
 		break
 	}
-} 
+}
 
 for ; ; a= 15 {
 	if a > 10 {
 		break
 	}
-} 
+}
 
 for a = 0; a < 12; a = a + 1 {
 	if a > 5 {

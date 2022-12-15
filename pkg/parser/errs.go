@@ -9,7 +9,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/GuanceCloud/ppl/pkg/token"
+	"github.com/GuanceCloud/platypus/pkg/token"
 )
 
 type ParseErrors []ParseError

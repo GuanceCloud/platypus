@@ -5,18 +5,23 @@ theme:
   name: material
   palette:
       primary: white 
-
+  favicon: icon.png
+  logo: logo.png
   language: en
   features:
-    - navigation.instant
+#    - navigation.instant
     - search.suggest
     - toc.follow
     - navigation.tabs
     - navigation.expand
+    - content.tabs.link
 
 plugins:
   - search
-
+  - redirects:
+      redirect_maps:
+        'index.md': 'tutorials/01-install.md'
+  - awesome-pages
   - i18n:
       languages:
         en:
@@ -32,21 +37,58 @@ plugins:
       # material_alternate: false
       nav_translations:
         zh:
-          tutorials   : 用户指南
-          how-tos     : 最佳实践
-          explaination: 设计文档
-          references  : 参考文档 
+          🏠 Home: 🏠 首页
+          📚 Tutorials: 📚 用户指南
+          How tos: 📖 最佳实践
+          ✍  Explanations: ✍️ 设计文档
+          📎 References: 📎 参考文档
+          🍺 Community: 🎉 开源社区
+          Guance Community: 观测云❤️开源社区
+          Contribution Guidelines: 贡献者指南
 
-nav:
-- Tutorials:
-  - index.md
-- How-tos:
-  - how-tos/index.md
-- Explainations:
-  - explaination/index.md
-- References:
-  - references/pipeline.md
-  - references/grok.md
+markdown_extensions:
+  - admonition
+  - attr_list
+  - md_in_html
+  - toc:
+      permalink: True
+  - meta
+  - pymdownx.caret
+  - pymdownx.mark
+  - pymdownx.tilde
+  - pymdownx.betterem
+  - pymdownx.critic
+  - pymdownx.keys
+  - pymdownx.snippets
+  - pymdownx.details
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.highlight:
+      anchor_linenums: true
+      auto_title: false
+      linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.emoji:
+      emoji_index: !!python/name:materialx.emoji.twemoji
+      emoji_generator: !!python/name:materialx.emoji.to_svg
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+
+#nav:
+#- Tutorials:
+#  - index.md
+#- How-tos:
+#  - how-tos/index.md
+#- Explanations:
+#  - explanations/index.md
+#- References:
+#  - references/pipeline.md
+#  - references/grok.md
 
 extra:
   alternate:

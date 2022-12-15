@@ -9,7 +9,7 @@ import (
 	"fmt"
 
 	"github.com/GuanceCloud/grok"
-	"github.com/GuanceCloud/ppl/pkg/ast"
+	"github.com/GuanceCloud/platypus/pkg/ast"
 )
 
 type Varb struct {

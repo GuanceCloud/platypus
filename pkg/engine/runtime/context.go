@@ -11,7 +11,7 @@ import (
 	"sync"
 
 	"github.com/GuanceCloud/grok"
-	"github.com/GuanceCloud/ppl/pkg/ast"
+	"github.com/GuanceCloud/platypus/pkg/ast"
 	"github.com/spf13/cast"
 )
 

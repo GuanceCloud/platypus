@@ -11,7 +11,7 @@ import (
 	"time"
 
 	tu "gitlab.jiagouyun.com/cloudcare-tools/cliutils/testutil"
-	"github.com/GuanceCloud/ppl/parser"
+	"github.com/GuanceCloud/platypus/parser"
 )
 
 func assertEqual(t *testing.T, a, b interface{}) {

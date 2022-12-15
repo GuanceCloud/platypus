@@ -10,8 +10,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/GuanceCloud/ppl/pkg/ast"
-	plruntime "github.com/GuanceCloud/ppl/pkg/engine/runtime"
+	"github.com/GuanceCloud/platypus/pkg/ast"
+	plruntime "github.com/GuanceCloud/platypus/pkg/engine/runtime"
 
 	"github.com/spf13/cast"
 )
