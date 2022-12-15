@@ -26,7 +26,7 @@ jobs:
         uses: docker/login-action@v1
         with:
           registry: docker.io
-          username: GuanceCloud
+          username: guancecloud
           password: ${{ secrets.DOCKER_PASSWORD }}
       - name: Fetch all tags
         run: git fetch --force --tags
