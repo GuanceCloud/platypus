@@ -256,88 +256,88 @@ brews:
       bin.install "platypus"
       # ...
 
-chocolateys:
-  - # Your app's owner.
-    # It basically means your.
-    # Defaults empty.
-    owners: Guance Cloud Inc
-
-    # The app's title.
-    # A human-friendly title of the package.
-    # Defaults to `ProjectName`.
-    title: Platypus Programming Language
-
-    # Your app's authors (probably you).
-    # Defaults are shown below.
-    authors: Guance Cloud
-
-    # Your app's project url.
-    # It is a required field.
-    project_url: https://platypus.guance.io/
-
-    # Template for the url which is determined by the given Token (github,
-    # gitlab or gitea)
-    # Default depends on the client.
-    url_template: "https://github.com/GuanceCloud/platypus/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
-
-    # App's icon.
-    # Default is empty.
-    icon_url: 'https://platypus.guance.io/images/icon.png'
-
-    # Your app's copyright details.
-    # Default is empty.
-    copyright: 2022 Guance Cloud Inc
-
-    # App's license information url.
-    license_url: https://github.com/GuanceCloud/platypus/blob/main/LICENSE
-
-    # Your apps's require license acceptance:
-    # Specify whether the client must prompt the consumer to accept the package
-    # license before installing.
-    # Default is false.
-    require_license_acceptance: false
-
-    # Your app's source url.
-    # Default is empty.
-    project_source_url: https://github.com/GuanceCloud/platypus
-
-    # Your app's documentation url.
-    # Default is empty.
-    docs_url: https://platypus.guance.io/docs
-
-    # App's bugtracker url.
-    # Default is empty.
-    bug_tracker_url: https://github.com/GuanceCloud/platypus/issues
-
-    # Your app's tag list.
-    # Default is empty.
-    tags: "language observability"
-
-    # Your app's summary:
-    summary: Platypus programming language for Observability Data Pipeline
-
-    # This the description of your chocolatey package.
-    # Supports markdown.
-    description: |
-      Build and run Platypus programs with the CLI.
-
-    # Your app's release notes.
-    # A description of the changes made in this release of the package.
-    # Supports markdown. To prevent the need to continually update this field,
-    # providing a URL to an external list of Release Notes is perfectly
-    # acceptable.
-    # Default is empty.
-    release_notes: "https://github.com/GuanceCloud/platypus/releases/tag/v{{ .Version }}"
-
-    # App's dependencies
-    # Default is empty. Version is not required.
-    dependencies:
-      - id: nfpm
-
-    # The api key that should be used to push to the chocolatey repository.
-    #
-    # WARNING: do not expose your api key in the configuration file!
-    api_key: '{{ .Env.CHOCOLATEY_API_KEY }}'
+#chocolateys:
+#  - # Your app's owner.
+#    # It basically means your.
+#    # Defaults empty.
+#    owners: Guance Cloud Inc
+#
+#    # The app's title.
+#    # A human-friendly title of the package.
+#    # Defaults to `ProjectName`.
+#    title: Platypus Programming Language
+#
+#    # Your app's authors (probably you).
+#    # Defaults are shown below.
+#    authors: Guance Cloud
+#
+#    # Your app's project url.
+#    # It is a required field.
+#    project_url: https://platypus.guance.io/
+#
+#    # Template for the url which is determined by the given Token (github,
+#    # gitlab or gitea)
+#    # Default depends on the client.
+#    url_template: "https://github.com/GuanceCloud/platypus/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
+#
+#    # App's icon.
+#    # Default is empty.
+#    icon_url: 'https://platypus.guance.io/images/icon.png'
+#
+#    # Your app's copyright details.
+#    # Default is empty.
+#    copyright: 2022 Guance Cloud Inc
+#
+#    # App's license information url.
+#    license_url: https://github.com/GuanceCloud/platypus/blob/main/LICENSE
+#
+#    # Your apps's require license acceptance:
+#    # Specify whether the client must prompt the consumer to accept the package
+#    # license before installing.
+#    # Default is false.
+#    require_license_acceptance: false
+#
+#    # Your app's source url.
+#    # Default is empty.
+#    project_source_url: https://github.com/GuanceCloud/platypus
+#
+#    # Your app's documentation url.
+#    # Default is empty.
+#    docs_url: https://platypus.guance.io/docs
+#
+#    # App's bugtracker url.
+#    # Default is empty.
+#    bug_tracker_url: https://github.com/GuanceCloud/platypus/issues
+#
+#    # Your app's tag list.
+#    # Default is empty.
+#    tags: "language observability"
+#
+#    # Your app's summary:
+#    summary: Platypus programming language for Observability Data Pipeline
+#
+#    # This the description of your chocolatey package.
+#    # Supports markdown.
+#    description: |
+#      Build and run Platypus programs with the CLI.
+#
+#    # Your app's release notes.
+#    # A description of the changes made in this release of the package.
+#    # Supports markdown. To prevent the need to continually update this field,
+#    # providing a URL to an external list of Release Notes is perfectly
+#    # acceptable.
+#    # Default is empty.
+#    release_notes: "https://github.com/GuanceCloud/platypus/releases/tag/v{{ .Version }}"
+#
+#    # App's dependencies
+#    # Default is empty. Version is not required.
+#    dependencies:
+#      - id: nfpm
+#
+#    # The api key that should be used to push to the chocolatey repository.
+#    #
+#    # WARNING: do not expose your api key in the configuration file!
+#    api_key: '{{ .Env.CHOCOLATEY_API_KEY }}'
 
 snapshot:
   # Allows you to change the name of the generated snapshot

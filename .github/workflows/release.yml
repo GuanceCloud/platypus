@@ -34,10 +34,6 @@ jobs:
         uses: actions/setup-go@v2
         with:
           go-version: 1.18
-      - name: Choco help
-        uses: crazy-max/ghaction-chocolatey@v2
-        with:
-          args: -h
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v2
         with:
