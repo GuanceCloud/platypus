@@ -118,7 +118,7 @@ func runScript(ctx context.Context, options *Options, script *plruntime.Script) 
 
 	errR := engine.RunScriptWithRMapIn(script, pt, nil)
 	if errR != nil {
-		return fmt.Errorf("run script error: %w", errR)
+		return fmt.Errorf("run script error: %w", errR.ChainError())
 	}
 
 	if dropped {

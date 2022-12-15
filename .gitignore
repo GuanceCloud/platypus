@@ -16,7 +16,10 @@ coverage.txt
 # vendor/
 
 # Output file
+# Docs
 .build/
+# VS Code extension
+*.vsix
 
 # Temprory files
 .DS_Store
