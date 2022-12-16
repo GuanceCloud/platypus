@@ -9,7 +9,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/GuanceCloud/ppl/pkg/engine/runtime"
+	"github.com/GuanceCloud/platypus/pkg/engine/runtime"
 )
 
 type searchPath struct {

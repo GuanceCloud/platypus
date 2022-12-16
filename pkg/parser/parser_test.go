@@ -22,7 +22,7 @@ package parser
 import (
 	"testing"
 
-	"github.com/GuanceCloud/ppl/pkg/ast"
+	"github.com/GuanceCloud/platypus/pkg/ast"
 	"github.com/stretchr/testify/assert"
 )
 

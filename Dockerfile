@@ -1,4 +1,3 @@
-FROM scratch
-# FROM alpine
-COPY ppl /usr/local/bin/ppl
-ENTRYPOINT ["/usr/local/bin/ppl"]
+FROM alpine:latest
+COPY platypus /usr/local/bin/platypus
+ENTRYPOINT ["/usr/local/bin/platypus"]

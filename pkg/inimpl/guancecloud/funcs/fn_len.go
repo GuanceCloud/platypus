@@ -8,8 +8,8 @@ package funcs
 import (
 	"fmt"
 
-	"github.com/GuanceCloud/ppl/pkg/ast"
-	"github.com/GuanceCloud/ppl/pkg/engine/runtime"
+	"github.com/GuanceCloud/platypus/pkg/ast"
+	"github.com/GuanceCloud/platypus/pkg/engine/runtime"
 )
 
 func LenChecking(ctx *runtime.Context, funcExpr *ast.CallExpr) *runtime.RuntimeError {

@@ -6,8 +6,8 @@
 package funcs
 
 import (
-	"github.com/GuanceCloud/ppl/pkg/ast"
-	"github.com/GuanceCloud/ppl/pkg/engine/runtime"
+	"github.com/GuanceCloud/platypus/pkg/ast"
+	"github.com/GuanceCloud/platypus/pkg/engine/runtime"
 )
 
 func ExitChecking(ctx *runtime.Context, node *ast.CallExpr) *runtime.RuntimeError {

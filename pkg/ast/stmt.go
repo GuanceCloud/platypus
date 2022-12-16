@@ -8,7 +8,7 @@ package ast
 import (
 	"strings"
 
-	"github.com/GuanceCloud/ppl/pkg/token"
+	"github.com/GuanceCloud/platypus/pkg/token"
 )
 
 type IfelseStmt struct {

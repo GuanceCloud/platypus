@@ -26,7 +26,7 @@ import (
 	"testing"
 	"unicode/utf8"
 
-	"github.com/GuanceCloud/ppl/pkg/token"
+	"github.com/GuanceCloud/platypus/pkg/token"
 	"github.com/stretchr/testify/assert"
 )
 

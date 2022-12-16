@@ -28,10 +28,10 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/GuanceCloud/ppl/internal/logger"
-	"github.com/GuanceCloud/ppl/pkg/ast"
+	"github.com/GuanceCloud/platypus/internal/logger"
+	"github.com/GuanceCloud/platypus/pkg/ast"
 
-	plToken "github.com/GuanceCloud/ppl/pkg/token"
+	plToken "github.com/GuanceCloud/platypus/pkg/token"
 )
 
 var log logger.Logger = logger.NewStdoutLogger("iploc", "debug")

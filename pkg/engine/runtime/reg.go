@@ -8,7 +8,7 @@ package runtime
 import (
 	"fmt"
 
-	"github.com/GuanceCloud/ppl/pkg/ast"
+	"github.com/GuanceCloud/platypus/pkg/ast"
 )
 
 type PlRegRange uint

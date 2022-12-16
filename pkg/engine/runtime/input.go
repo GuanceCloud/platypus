@@ -1,6 +1,6 @@
 package runtime
 
-import "github.com/GuanceCloud/ppl/pkg/ast"
+import "github.com/GuanceCloud/platypus/pkg/ast"
 
 type InType uint8
 

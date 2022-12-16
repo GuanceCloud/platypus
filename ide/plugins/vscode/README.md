@@ -2,7 +2,7 @@
 
 The Language Server of [Platypus Programming Language](https://platypus.guance.io/).
 
-See [Platypus proposal A001](https://github.com/GuanceCloud/ppl/blob/13e6f48d3c87861a697c668ca83827f11ecbb89f/proposals/A001-add-developer-toolchain.md) for details.
+See [Platypus proposal A001](https://github.com/GuanceCloud/platypus/blob/13e6f48d3c87861a697c668ca83827f11ecbb89f/proposals/A001-add-developer-toolchain.md) for details.
 
 ## Features
 

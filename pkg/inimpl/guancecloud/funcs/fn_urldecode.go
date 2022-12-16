@@ -8,9 +8,9 @@ package funcs
 import (
 	"fmt"
 
-	"github.com/GuanceCloud/ppl/pkg/ast"
-	"github.com/GuanceCloud/ppl/pkg/engine/runtime"
-	"github.com/GuanceCloud/ppl/pkg/inimpl/guancecloud/input"
+	"github.com/GuanceCloud/platypus/pkg/ast"
+	"github.com/GuanceCloud/platypus/pkg/engine/runtime"
+	"github.com/GuanceCloud/platypus/pkg/inimpl/guancecloud/input"
 )
 
 func URLDecodeChecking(ctx *runtime.Context, funcExpr *ast.CallExpr) *runtime.RuntimeError {

@@ -7,7 +7,7 @@
 package parser
 
 import (
-	ast "github.com/GuanceCloud/ppl/pkg/ast"
+	ast "github.com/GuanceCloud/platypus/pkg/ast"
 )
 
 %}

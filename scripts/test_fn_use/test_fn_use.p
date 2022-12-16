@@ -11,5 +11,5 @@ if b {
     add_key(b)
 }
 
-use("s.ppl")
+use("s.p")
 # drop()

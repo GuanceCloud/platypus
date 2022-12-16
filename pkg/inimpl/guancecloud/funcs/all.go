@@ -7,8 +7,8 @@
 package funcs
 
 import (
-	"github.com/GuanceCloud/ppl/internal/logger"
-	"github.com/GuanceCloud/ppl/pkg/engine/runtime"
+	"github.com/GuanceCloud/platypus/internal/logger"
+	"github.com/GuanceCloud/platypus/pkg/engine/runtime"
 	"go.uber.org/zap"
 )
 

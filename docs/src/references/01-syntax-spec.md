@@ -1,5 +1,4 @@
-# Pipeline Processor Language
-
+# Platypus Syntax Specification
 
 The following is the definition of Pipeline processor language. Being supported by increasing syntax, the document would be adjusted to varying degrees.
 

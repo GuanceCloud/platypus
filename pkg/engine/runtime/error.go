@@ -8,7 +8,7 @@ package runtime
 import (
 	"fmt"
 
-	"github.com/GuanceCloud/ppl/pkg/token"
+	"github.com/GuanceCloud/platypus/pkg/token"
 )
 
 type FilePos struct {

@@ -10,8 +10,8 @@ import (
 	"os"
 	"path/filepath"
 
-	plruntime "github.com/GuanceCloud/ppl/pkg/engine/runtime"
-	"github.com/GuanceCloud/ppl/pkg/parser"
+	plruntime "github.com/GuanceCloud/platypus/pkg/engine/runtime"
+	"github.com/GuanceCloud/platypus/pkg/parser"
 )
 
 func ParseScript(scripts map[string]string,

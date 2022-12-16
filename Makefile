@@ -23,3 +23,7 @@ tools:
 	mkdir -p ./dist
 	rm -r ./dist/
 	go build -o ./dist/ cmd/ppl/ppl.go 
+
+.PHONY: generate
+generate:
+	go run ./tools/build-cli-docs ./docs/references/cli/
