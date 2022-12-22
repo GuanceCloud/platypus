@@ -10,10 +10,11 @@ import (
 
 	"github.com/GuanceCloud/platypus/pkg/ast"
 	"github.com/GuanceCloud/platypus/pkg/engine/runtime"
+	"github.com/GuanceCloud/platypus/pkg/errchain"
 	"github.com/GuanceCloud/platypus/pkg/inimpl/guancecloud/input"
 )
 
-func DateTimeChecking(ctx *runtime.Context, funcExpr *ast.CallExpr) *runtime.RuntimeError {
+func DateTimeChecking(ctx *runtime.Context, funcExpr *ast.CallExpr) *errchain.PlError {
 	if len(funcExpr.Param) != 3 {
 		return runtime.NewRunError(ctx, fmt.Sprintf(
 			"func %s expected 3 args", funcExpr.Name), funcExpr.NamePos)
@@ -41,7 +42,7 @@ func DateTimeChecking(ctx *runtime.Context, funcExpr *ast.CallExpr) *runtime.Run
 	return nil
 }
 
-func DateTime(ctx *runtime.Context, funcExpr *ast.CallExpr) *runtime.RuntimeError {
+func DateTime(ctx *runtime.Context, funcExpr *ast.CallExpr) *errchain.PlError {
 	if len(funcExpr.Param) != 3 {
 		return runtime.NewRunError(ctx, fmt.Sprintf(
 			"func %s expected 3 args", funcExpr.Name), funcExpr.NamePos)

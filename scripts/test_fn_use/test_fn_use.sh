@@ -9,7 +9,7 @@ echo -e "\033[32m> platypus script (s.p):\033[0m"
 cat s.p
 
 echo -e "\033[32m> platypus run -s test_fn_use.p -i test_fn_use.data -t lineprotocol --output-type lineprotocol\033[0m"
-go run ../../cmd/platypus/platypus.go run -s test_fn_use.p -i test_fn_use.data -t lineprotocol --output-type lineprotocol
+go run ../../cmd/platypus/ run -s test_fn_use.p -i test_fn_use.data -t lineprotocol --output-type lineprotocol
 
 echo -e "\033[32m> platypus run -w . -s test_fn_use.p -i test_fn_use.data -t lineprotocol\033[0m"
-go run ../../cmd/platypus/platypus.go run -w . -s test_fn_use.p -i test_fn_use.data -t lineprotocol
+go run ../../cmd/platypus/ run -w . -s test_fn_use.p -i test_fn_use.data -t lineprotocol

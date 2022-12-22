@@ -238,7 +238,7 @@ func TestExprSeparation(t *testing.T) {
 	// for idx := len(cases) - 1; idx >= 0; idx-- {
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			Stmts, err := ParsePipeline(tc.in)
+			Stmts, err := ParsePipeline("", tc.in)
 
 			if !tc.fail {
 				assert.Equal(t, err, nil)
@@ -395,7 +395,7 @@ func TestParserFor(t *testing.T) {
 	// for idx := len(cases) - 1; idx >= 0; idx-- {
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			Stmts, err := ParsePipeline(tc.in)
+			Stmts, err := ParsePipeline("", tc.in)
 
 			if !tc.fail {
 				assert.Nil(t, err)
@@ -1297,7 +1297,7 @@ multiline-string
 	// for idx := len(cases) - 1; idx >= 0; idx-- {
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			Stmts, err := ParsePipeline(tc.in)
+			Stmts, err := ParsePipeline("", tc.in)
 
 			if !tc.fail {
 				assert.Nil(t, err)

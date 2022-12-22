@@ -16,9 +16,10 @@ import (
 	"github.com/GuanceCloud/platypus/pkg/inimpl/guancecloud/input"
 	"github.com/influxdata/influxdb1-client/models"
 	influxdb "github.com/influxdata/influxdb1-client/v2"
+	"go.uber.org/zap/zapcore"
 )
 
-var l = logger.NewStdoutLogger("cli", "debug")
+var l = logger.NewStdoutLogger("cli", zapcore.DebugLevel)
 
 func Run(ctx context.Context, options *Options) error {
 	if options.Script == "" {
@@ -27,14 +28,20 @@ func Run(ctx context.Context, options *Options) error {
 
 	script, err := loadScript(ctx, options)
 	if err != nil {
-		return err
+		l.Error(err)
+		return nil
 	}
 
+	// check script only
 	if options.Input == "" {
 		return nil
 	}
 
-	return runScript(ctx, options, script)
+	if err := runScript(ctx, options, script); err != nil {
+		l.Error(err)
+	}
+
+	return nil
 }
 
 func loadScript(ctx context.Context, options *Options) (*plruntime.Script, error) {
@@ -59,7 +66,7 @@ func loadScript(ctx context.Context, options *Options) (*plruntime.Script, error
 	scripts, errs := engine.ParseScript(scriptsContent, funcs.FuncsMap, funcs.FuncsCheckMap)
 	if len(errs) > 0 {
 		if err, ok := errs[options.Script]; ok {
-			return nil, fmt.Errorf("parse script error: %w", err)
+			return nil, err
 		}
 	}
 
@@ -118,7 +125,7 @@ func runScript(ctx context.Context, options *Options, script *plruntime.Script) 
 
 	errR := engine.RunScriptWithRMapIn(script, pt, nil)
 	if errR != nil {
-		return fmt.Errorf("run script error: %w", errR.ChainError())
+		return fmt.Errorf("run script error: %w", errR)
 	}
 
 	if dropped {
@@ -139,13 +146,13 @@ func runScript(ctx context.Context, options *Options, script *plruntime.Script) 
 		}); err != nil {
 			return fmt.Errorf("encode json output error: %w", err)
 		}
-		l.Debugf("Platypus Output Data:\n%s", buf.String())
+		l.Infof("Platypus Output Data:\n%s", buf.String())
 	case OutTypeLineProtocol:
 		pt, err := influxdb.NewPoint(measurement, tags, fields, tn)
 		if err != nil {
 			return fmt.Errorf("encode point output error: %w", err)
 		}
-		l.Debugf("Platypus Output Data:\n%s", pt.String())
+		l.Infof("Platypus Output Data:\n%s", pt.String())
 	}
 	return nil
 }

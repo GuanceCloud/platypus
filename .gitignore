@@ -30,6 +30,7 @@ pkg/parser/y.output
 rl.sh
 dist/
 test.output
+tmp/
 
 # Local Netlify folder
 .netlify

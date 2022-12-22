@@ -101,7 +101,7 @@ for a = 0; a < 12; a = a + 1 {
 	pt = input.InitPt(pt, "test", nil, nil, time.Now())
 	err := runtime.RunScriptWithRMapIn(script, pt, nil)
 	if err != nil {
-		t.Fatal(err.ChainError())
+		t.Fatal(err.Error())
 	}
 
 	t.Log(pt)

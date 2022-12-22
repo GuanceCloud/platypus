@@ -10,10 +10,12 @@ import (
 
 	"github.com/GuanceCloud/platypus/pkg/ast"
 	"github.com/GuanceCloud/platypus/pkg/engine/runtime"
+	"github.com/GuanceCloud/platypus/pkg/errchain"
 	"github.com/GuanceCloud/platypus/pkg/inimpl/guancecloud/input"
+	"github.com/GuanceCloud/platypus/pkg/token"
 )
 
-func AddkeyChecking(ctx *runtime.Context, funcExpr *ast.CallExpr) *runtime.RuntimeError {
+func AddkeyChecking(ctx *runtime.Context, funcExpr *ast.CallExpr) *errchain.PlError {
 	if len(funcExpr.Param) > 2 || len(funcExpr.Param) < 1 {
 		return runtime.NewRunError(ctx, fmt.Sprintf(
 			"func %s expected 1 or 2 args", funcExpr.Name), funcExpr.NamePos)
@@ -26,9 +28,9 @@ func AddkeyChecking(ctx *runtime.Context, funcExpr *ast.CallExpr) *runtime.Runti
 	return nil
 }
 
-func AddKey(ctx *runtime.Context, funcExpr *ast.CallExpr) *runtime.RuntimeError {
+func AddKey(ctx *runtime.Context, funcExpr *ast.CallExpr) *errchain.PlError {
 	if funcExpr == nil {
-		return runtime.NewRunError(ctx, "unreachable", -1)
+		return runtime.NewRunError(ctx, "unreachable", token.InvalidLnColPos)
 	}
 	if len(funcExpr.Param) != 2 && len(funcExpr.Param) != 1 {
 		return runtime.NewRunError(ctx, fmt.Sprintf(
@@ -55,7 +57,7 @@ func AddKey(ctx *runtime.Context, funcExpr *ast.CallExpr) *runtime.RuntimeError 
 
 	val, dtype, errRun := runtime.RunStmt(ctx, funcExpr.Param[1])
 	if errRun != nil {
-		return errRun.ChainAppend(ctx, funcExpr.NamePos)
+		return errRun.ChainAppend(ctx.Name(), funcExpr.NamePos)
 	}
 	if err := addKey2PtWithVal(ctx.InData(), key, val, dtype, input.KindPtDefault); err != nil {
 		l.Debug(err)

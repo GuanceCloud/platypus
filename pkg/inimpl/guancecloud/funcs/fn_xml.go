@@ -12,11 +12,12 @@ import (
 
 	"github.com/GuanceCloud/platypus/pkg/ast"
 	"github.com/GuanceCloud/platypus/pkg/engine/runtime"
+	"github.com/GuanceCloud/platypus/pkg/errchain"
 	"github.com/GuanceCloud/platypus/pkg/inimpl/guancecloud/input"
 	"github.com/antchfx/xmlquery"
 )
 
-func XMLChecking(ctx *runtime.Context, funcExpr *ast.CallExpr) *runtime.RuntimeError {
+func XMLChecking(ctx *runtime.Context, funcExpr *ast.CallExpr) *errchain.PlError {
 	if len(funcExpr.Param) != 3 {
 		return runtime.NewRunError(ctx, fmt.Sprintf(
 			"func %s expects 3 args", funcExpr.Name), funcExpr.NamePos)
@@ -47,7 +48,7 @@ func XMLChecking(ctx *runtime.Context, funcExpr *ast.CallExpr) *runtime.RuntimeE
 	return nil
 }
 
-func XML(ctx *runtime.Context, funcExpr *ast.CallExpr) *runtime.RuntimeError {
+func XML(ctx *runtime.Context, funcExpr *ast.CallExpr) *errchain.PlError {
 	var (
 		xmlKey, fieldName string
 		xpathExpr         string

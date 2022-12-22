@@ -9,7 +9,10 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/GuanceCloud/platypus/pkg/ast"
 	"github.com/GuanceCloud/platypus/pkg/engine/runtime"
+	"github.com/GuanceCloud/platypus/pkg/errchain"
+	"github.com/GuanceCloud/platypus/pkg/token"
 )
 
 type searchPath struct {
@@ -55,53 +58,96 @@ func (p *searchPath) String() string {
 	return strings.Join(p.path, " -> ")
 }
 
+type param struct {
+	name    string
+	namePos token.LnColPos
+
+	allNg    map[string]*runtime.Script
+	retMap   map[string]*runtime.Script
+	allErrNg map[string]error
+}
+
 func EngineCallRefLinkAndCheck(allNg map[string]*runtime.Script, allErrNg map[string]error) (map[string]*runtime.Script, map[string]error) {
 	retMap := map[string]*runtime.Script{}
 	retErrMap := map[string]error{}
 
-	for name, ng := range allNg {
+	for name, proc := range allNg {
+		p := &param{
+			name:     name,
+			namePos:  token.InvalidLnColPos,
+			allNg:    allNg,
+			allErrNg: allErrNg,
+			retMap:   retMap,
+		}
+
 		sPath := newSearchPath()
-		if err := dfs(name, ng, allNg, sPath, retMap, retErrMap, allErrNg); err != nil {
+		if err := dfs(name, proc, sPath, p); err != nil {
 			retErrMap[name] = err
 		} else {
-			retMap[name] = ng
+			retMap[name] = proc
 		}
 	}
 
 	return retMap, retErrMap
 }
 
-func dfs(name string, procc *runtime.Script, allNg map[string]*runtime.Script,
-	sPath *searchPath, retMap map[string]*runtime.Script, retErrMap map[string]error,
-	allErrNg map[string]error,
-) error {
+func dfs(name string, procc *runtime.Script, sPath *searchPath, p *param) error {
 	if err := sPath.Push(name); err != nil {
-		return err
-	}
-	if err, ok := retErrMap[name]; ok {
-		return err
+		return errchain.NewErr(p.name, p.namePos, err.Error())
 	}
 
-	if _, ok := retMap[name]; ok {
+	if _, ok := p.retMap[name]; ok {
 		return nil
 	}
 
-	for cName := range procc.CallRef {
-		if cNg, ok := allNg[cName]; !ok {
-			if err, ok := allErrNg[cName]; ok {
-				return fmt.Errorf("%s: %s", cName, err.Error())
+	for _, expr := range procc.CallRef {
+		cName, err := getParamRefScript(expr)
+		p.namePos = expr.NamePos
+		if err != nil {
+			return err
+		}
+
+		if cNg, ok := p.allNg[cName]; !ok {
+			if err, ok := p.allErrNg[cName]; ok {
+				if e, ok := err.(*errchain.PlError); ok {
+					return e.Copy().ChainAppend(
+						procc.Name, p.namePos)
+				}
+				return err
 			}
-			return fmt.Errorf("%s: script %s not found", sPath.String(), cName)
+			return errchain.NewErr(procc.Name, p.namePos,
+				fmt.Sprintf("script %s not found", cName))
 		} else {
-			procc.CallRef[cName] = cNg
-			if err := dfs(cName, cNg, allNg, sPath, retMap, retErrMap, allErrNg); err != nil {
+			expr.PrivateData = cNg
+			if err := dfs(cName, cNg, sPath, p); err != nil {
+				if e, ok := err.(*errchain.PlError); ok {
+					return e.Copy().ChainAppend(procc.Name, p.namePos)
+				}
 				return err
 			}
 		}
 	}
 
-	retMap[name] = procc
+	p.retMap[name] = procc
 	sPath.Pop()
 
 	return nil
+}
+
+func getParamRefScript(expr *ast.CallExpr) (string, error) {
+	if expr == nil {
+		return "", fmt.Errorf("nil ptr")
+	}
+	if expr.Name != "use" {
+		return "", fmt.Errorf("function name is not 'use'")
+	}
+	if len(expr.Param) != 1 {
+		return "", fmt.Errorf("the number of parameters is not 1")
+	}
+
+	if expr.Param[0].NodeType != ast.TypeStringLiteral {
+		return "", fmt.Errorf("param type expects StringLiteral got `%s`", expr.Param[0].NodeType)
+	}
+
+	return expr.Param[0].StringLiteral.Val, nil
 }

@@ -8,13 +8,14 @@ package funcs
 import (
 	"github.com/GuanceCloud/platypus/pkg/ast"
 	"github.com/GuanceCloud/platypus/pkg/engine/runtime"
+	"github.com/GuanceCloud/platypus/pkg/errchain"
 )
 
-func ExitChecking(ctx *runtime.Context, node *ast.CallExpr) *runtime.RuntimeError {
+func ExitChecking(ctx *runtime.Context, node *ast.CallExpr) *errchain.PlError {
 	return nil
 }
 
-func Exit(ctx *runtime.Context, node *ast.CallExpr) *runtime.RuntimeError {
+func Exit(ctx *runtime.Context, node *ast.CallExpr) *errchain.PlError {
 	ctx.SetExit()
 	return nil
 }

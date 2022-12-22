@@ -10,10 +10,11 @@ import (
 
 	"github.com/GuanceCloud/platypus/pkg/ast"
 	"github.com/GuanceCloud/platypus/pkg/engine/runtime"
+	"github.com/GuanceCloud/platypus/pkg/errchain"
 	"github.com/GuanceCloud/platypus/pkg/inimpl/guancecloud/input"
 )
 
-func SetTagChecking(ctx *runtime.Context, funcExpr *ast.CallExpr) *runtime.RuntimeError {
+func SetTagChecking(ctx *runtime.Context, funcExpr *ast.CallExpr) *errchain.PlError {
 	if len(funcExpr.Param) != 2 && len(funcExpr.Param) != 1 {
 		return runtime.NewRunError(ctx, fmt.Sprintf(
 			"func `%s' expected 1 or 2 args", funcExpr.Name), funcExpr.NamePos)
@@ -34,7 +35,7 @@ func SetTagChecking(ctx *runtime.Context, funcExpr *ast.CallExpr) *runtime.Runti
 	return nil
 }
 
-func SetTag(ctx *runtime.Context, funcExpr *ast.CallExpr) *runtime.RuntimeError {
+func SetTag(ctx *runtime.Context, funcExpr *ast.CallExpr) *errchain.PlError {
 	if len(funcExpr.Param) != 2 && len(funcExpr.Param) != 1 {
 		return runtime.NewRunError(ctx, fmt.Sprintf(
 			"func `%s' expected 1 or 2 args", funcExpr.Name), funcExpr.NamePos)
@@ -48,7 +49,7 @@ func SetTag(ctx *runtime.Context, funcExpr *ast.CallExpr) *runtime.RuntimeError 
 	var val any
 	var dtype ast.DType
 	if len(funcExpr.Param) == 2 {
-		var errR *runtime.RuntimeError
+		var errR *errchain.PlError
 		// 不限制值的数据类型，如果不是 string 类将在设置为 tag 时自动转换为 string
 		val, dtype, errR = runtime.RunStmt(ctx, funcExpr.Param[1])
 		if errR != nil {

@@ -22,7 +22,7 @@ test-cov:
 tools:
 	mkdir -p ./dist
 	rm -r ./dist/
-	go build -o ./dist/ cmd/ppl/ppl.go 
+	go build -o ./dist/platypus ./cmd/platypus/
 
 .PHONY: generate
 generate:

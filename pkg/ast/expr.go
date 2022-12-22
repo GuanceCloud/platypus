@@ -41,7 +41,7 @@ const (
 
 type Identifier struct {
 	Name  string
-	Start token.Pos
+	Start token.LnColPos
 }
 
 func (e *Identifier) IsExpr() bool {
@@ -54,7 +54,7 @@ func (e *Identifier) String() string {
 
 type StringLiteral struct {
 	Val   string
-	Start token.Pos
+	Start token.LnColPos
 }
 
 func (e *StringLiteral) IsExpr() bool {
@@ -69,13 +69,13 @@ func (e *StringLiteral) String() string {
 // 	IsInt bool
 // 	Float float64
 // 	Int   int64
-// 	Start token.Pos
-// 	End   token.Pos
+// 	Start token.FilePos
+// 	End   token.FilePos
 // }
 
 type IntegerLiteral struct {
 	Val   int64
-	Start token.Pos
+	Start token.LnColPos
 }
 
 func (e *IntegerLiteral) String() string {
@@ -88,7 +88,7 @@ func (e *IntegerLiteral) IsExpr() bool {
 
 type FloatLiteral struct {
 	Val   float64
-	Start token.Pos
+	Start token.LnColPos
 }
 
 func (e *FloatLiteral) String() string {
@@ -101,7 +101,7 @@ func (e *FloatLiteral) IsExpr() bool {
 
 type BoolLiteral struct {
 	Val   bool
-	Start token.Pos
+	Start token.LnColPos
 }
 
 func (e *BoolLiteral) String() string {
@@ -109,7 +109,7 @@ func (e *BoolLiteral) String() string {
 }
 
 type NilLiteral struct {
-	Start token.Pos
+	Start token.LnColPos
 }
 
 func (e *NilLiteral) IsExpr() bool {
@@ -122,8 +122,8 @@ func (e *NilLiteral) String() string {
 
 type MapInitExpr struct {
 	KeyValeList [][2]*Node // key,value list
-	LBrace      token.Pos
-	RBrace      token.Pos
+	LBrace      token.LnColPos
+	RBrace      token.LnColPos
 }
 
 func (e *MapInitExpr) IsExpr() bool {
@@ -144,8 +144,8 @@ func (e *MapInitExpr) String() string {
 
 type ListInitExpr struct {
 	List     []*Node
-	LBracket token.Pos
-	RBracket token.Pos
+	LBracket token.LnColPos
+	RBracket token.LnColPos
 }
 
 func (e *ListInitExpr) IsExpr() bool {
@@ -163,7 +163,7 @@ func (e *ListInitExpr) String() string {
 type ConditionalExpr struct {
 	Op       Op
 	LHS, RHS *Node
-	OpPos    token.Pos
+	OpPos    token.LnColPos
 }
 
 func (e *ConditionalExpr) IsExpr() bool {
@@ -177,7 +177,7 @@ func (e *ConditionalExpr) String() string {
 type ArithmeticExpr struct {
 	Op       Op
 	LHS, RHS *Node
-	OpPos    token.Pos
+	OpPos    token.LnColPos
 }
 
 func (e *ArithmeticExpr) IsExpr() bool {
@@ -191,7 +191,7 @@ func (e *ArithmeticExpr) String() string {
 type AttrExpr struct {
 	Obj   *Node
 	Attr  *Node
-	Start token.Pos
+	Start token.LnColPos
 }
 
 func (e *AttrExpr) IsExpr() bool {
@@ -212,8 +212,8 @@ func (e *AttrExpr) String() string {
 type IndexExpr struct {
 	Obj      *Identifier
 	Index    []*Node // int float string bool
-	LBracket []token.Pos
-	RBracket []token.Pos
+	LBracket []token.LnColPos
+	RBracket []token.LnColPos
 }
 
 func (e *IndexExpr) IsExpr() bool {
@@ -234,8 +234,8 @@ func (e *IndexExpr) String() string {
 
 type ParenExpr struct {
 	Param  *Node
-	LParen token.Pos
-	RParen token.Pos
+	LParen token.LnColPos
+	RParen token.LnColPos
 }
 
 func (e *ParenExpr) IsExpr() bool {
@@ -251,14 +251,16 @@ type CallExpr struct {
 	// Name *ast.Node
 
 	// temporary record function name location
-	NamePos token.Pos // as 'Start' (token.Pos)
+	NamePos token.LnColPos // as 'Start' (token.FilePos)
 
-	LParen token.Pos
-	RParen token.Pos
+	LParen token.LnColPos
+	RParen token.LnColPos
 
 	Name string
 
 	Param []*Node
+
+	PrivateData interface{}
 
 	// ParamIndex []int
 
@@ -280,7 +282,7 @@ func (e *CallExpr) String() string {
 
 type AssignmentExpr struct {
 	LHS, RHS *Node
-	OpPos    token.Pos
+	OpPos    token.LnColPos
 }
 
 func (e *AssignmentExpr) IsExpr() bool {
