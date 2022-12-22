@@ -12,10 +12,11 @@ import (
 
 	"github.com/GuanceCloud/platypus/pkg/ast"
 	"github.com/GuanceCloud/platypus/pkg/engine/runtime"
+	"github.com/GuanceCloud/platypus/pkg/errchain"
 	"github.com/GuanceCloud/platypus/pkg/inimpl/guancecloud/input"
 )
 
-func ReplaceChecking(ctx *runtime.Context, funcExpr *ast.CallExpr) *runtime.RuntimeError {
+func ReplaceChecking(ctx *runtime.Context, funcExpr *ast.CallExpr) *errchain.PlError {
 	if len(funcExpr.Param) != 3 {
 		return runtime.NewRunError(ctx, fmt.Sprintf(
 			"func %s expects 3 args", funcExpr.Name), funcExpr.NamePos)
@@ -42,7 +43,7 @@ func ReplaceChecking(ctx *runtime.Context, funcExpr *ast.CallExpr) *runtime.Runt
 	return nil
 }
 
-func Replace(ctx *runtime.Context, funcExpr *ast.CallExpr) *runtime.RuntimeError {
+func Replace(ctx *runtime.Context, funcExpr *ast.CallExpr) *errchain.PlError {
 	if len(funcExpr.Param) != 3 {
 		return runtime.NewRunError(ctx, fmt.Sprintf(
 			"func %s expects 3 args", funcExpr.Name), funcExpr.NamePos)

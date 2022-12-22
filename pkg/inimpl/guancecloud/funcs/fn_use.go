@@ -10,9 +10,10 @@ import (
 
 	"github.com/GuanceCloud/platypus/pkg/ast"
 	"github.com/GuanceCloud/platypus/pkg/engine/runtime"
+	"github.com/GuanceCloud/platypus/pkg/errchain"
 )
 
-func UseChecking(ctx *runtime.Context, funcExpr *ast.CallExpr) *runtime.RuntimeError {
+func UseChecking(ctx *runtime.Context, funcExpr *ast.CallExpr) *errchain.PlError {
 	if len(funcExpr.Param) != 1 {
 		return runtime.NewRunError(ctx, fmt.Sprintf(
 			"func %s expects 1 args", funcExpr.Name), funcExpr.NamePos)
@@ -20,16 +21,16 @@ func UseChecking(ctx *runtime.Context, funcExpr *ast.CallExpr) *runtime.RuntimeE
 
 	switch funcExpr.Param[0].NodeType { //nolint:exhaustive
 	case ast.TypeStringLiteral:
-		ctx.SetCallRef(funcExpr.Param[0].StringLiteral.Val)
+		ctx.SetCallRef(funcExpr)
 	default:
-		return runtime.NewRunError(ctx, fmt.Sprintf("param key expects AttrExpr or Identifier, got %s",
+		return runtime.NewRunError(ctx, fmt.Sprintf("param key expects StringLiteral, got %s",
 			funcExpr.Param[0].NodeType), funcExpr.Param[0].StartPos())
 	}
 
 	return nil
 }
 
-func Use(ctx *runtime.Context, funcExpr *ast.CallExpr) *runtime.RuntimeError {
+func Use(ctx *runtime.Context, funcExpr *ast.CallExpr) *errchain.PlError {
 	if len(funcExpr.Param) != 1 {
 		return runtime.NewRunError(ctx, fmt.Sprintf(
 			"func %s expects 1 args", funcExpr.Name), funcExpr.NamePos)
@@ -38,8 +39,13 @@ func Use(ctx *runtime.Context, funcExpr *ast.CallExpr) *runtime.RuntimeError {
 	var refScript *runtime.Script
 	switch funcExpr.Param[0].NodeType { //nolint:exhaustive
 	case ast.TypeStringLiteral:
-		if ng, ok := ctx.GetCallRef(funcExpr.Param[0].StringLiteral.Val); ok {
-			refScript = ng
+		if funcExpr.PrivateData != nil {
+			if s, ok := funcExpr.PrivateData.(*runtime.Script); ok {
+				refScript = s
+			} else {
+				l.Debugf("unknown error: %s", funcExpr.Param[0].StringLiteral.Val)
+				return nil
+			}
 		} else {
 			l.Debugf("script not found: %s", funcExpr.Param[0].StringLiteral.Val)
 			return nil
@@ -50,5 +56,9 @@ func Use(ctx *runtime.Context, funcExpr *ast.CallExpr) *runtime.RuntimeError {
 			funcExpr.Param[0].NodeType), funcExpr.Param[0].StartPos())
 	}
 
-	return runtime.RefRunScript(ctx, refScript)
+	err := runtime.RefRunScript(ctx, refScript)
+	if err != nil {
+		return err.ChainAppend(ctx.Name(), funcExpr.NamePos)
+	}
+	return nil
 }

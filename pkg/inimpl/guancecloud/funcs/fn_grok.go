@@ -11,10 +11,11 @@ import (
 	"github.com/GuanceCloud/grok"
 	"github.com/GuanceCloud/platypus/pkg/ast"
 	"github.com/GuanceCloud/platypus/pkg/engine/runtime"
+	"github.com/GuanceCloud/platypus/pkg/errchain"
 	"github.com/GuanceCloud/platypus/pkg/inimpl/guancecloud/input"
 )
 
-func GrokChecking(ctx *runtime.Context, funcExpr *ast.CallExpr) *runtime.RuntimeError {
+func GrokChecking(ctx *runtime.Context, funcExpr *ast.CallExpr) *errchain.PlError {
 	if funcExpr.Grok != nil {
 		return nil
 	}
@@ -56,7 +57,7 @@ func GrokChecking(ctx *runtime.Context, funcExpr *ast.CallExpr) *runtime.Runtime
 	return nil
 }
 
-func Grok(ctx *runtime.Context, funcExpr *ast.CallExpr) *runtime.RuntimeError {
+func Grok(ctx *runtime.Context, funcExpr *ast.CallExpr) *errchain.PlError {
 	grokRe := funcExpr.Grok
 	if grokRe == nil {
 		ctx.Regs.ReturnAppend(false, ast.Bool)

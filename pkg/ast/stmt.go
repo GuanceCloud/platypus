@@ -15,7 +15,7 @@ type IfelseStmt struct {
 	IfList IfList
 	Else   *BlockStmt
 
-	ElsePos token.Pos
+	ElsePos token.LnColPos
 }
 
 func (e *IfelseStmt) IsExpr() bool {
@@ -48,7 +48,7 @@ type IfStmtElem struct {
 	Condition *Node
 	Block     *BlockStmt
 
-	Start token.Pos
+	Start token.LnColPos
 }
 
 func (e *IfStmtElem) String() string {
@@ -57,7 +57,7 @@ func (e *IfStmtElem) String() string {
 }
 
 type BreakStmt struct {
-	Start token.Pos
+	Start token.LnColPos
 }
 
 func (e *BreakStmt) String() string {
@@ -65,7 +65,7 @@ func (e *BreakStmt) String() string {
 }
 
 type ContinueStmt struct {
-	Start token.Pos
+	Start token.LnColPos
 }
 
 func (e *ContinueStmt) String() string {
@@ -77,8 +77,8 @@ type ForInStmt struct {
 	Iter *Node
 	Body *BlockStmt
 
-	ForPos token.Pos
-	InPos  token.Pos
+	ForPos token.LnColPos
+	InPos  token.LnColPos
 }
 
 func (e *ForInStmt) String() string {
@@ -98,7 +98,7 @@ type ForStmt struct {
 	// step2: -> step3
 	Body *BlockStmt
 
-	ForPos token.Pos
+	ForPos token.LnColPos
 }
 
 func (e *ForStmt) String() string {
@@ -106,8 +106,8 @@ func (e *ForStmt) String() string {
 }
 
 type BlockStmt struct {
-	LBracePos token.Pos
-	RBracePos token.Pos
+	LBracePos token.LnColPos
+	RBracePos token.LnColPos
 	Stmts     Stmts
 }
 

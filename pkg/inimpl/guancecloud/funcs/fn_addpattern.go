@@ -11,9 +11,10 @@ import (
 	"github.com/GuanceCloud/grok"
 	"github.com/GuanceCloud/platypus/pkg/ast"
 	"github.com/GuanceCloud/platypus/pkg/engine/runtime"
+	"github.com/GuanceCloud/platypus/pkg/errchain"
 )
 
-func AddPatternChecking(ctx *runtime.Context, funcExpr *ast.CallExpr) *runtime.RuntimeError {
+func AddPatternChecking(ctx *runtime.Context, funcExpr *ast.CallExpr) *errchain.PlError {
 	if len(funcExpr.Param) != 2 {
 		return runtime.NewRunError(ctx, fmt.Sprintf(
 			"func %s expected 2 args", funcExpr.Name), funcExpr.NamePos)
@@ -44,6 +45,6 @@ func AddPatternChecking(ctx *runtime.Context, funcExpr *ast.CallExpr) *runtime.R
 	return nil
 }
 
-func AddPattern(ctx *runtime.Context, funcExpr *ast.CallExpr) *runtime.RuntimeError {
+func AddPattern(ctx *runtime.Context, funcExpr *ast.CallExpr) *errchain.PlError {
 	return nil
 }
