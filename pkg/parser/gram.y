@@ -406,8 +406,8 @@ map_init : map_init_start RIGHT_BRACE
 			}
 		| empty_block
 			{ 
-				$$ = yylex.(*parser).newMapInitStartExpr($1.LBracePos)
-				$$ = yylex.(*parser).newMapInitEndExpr($$, $1.RBracePos)
+				$$ = yylex.(*parser).newMapInitStartExpr($1.LBracePos.Pos)
+				$$ = yylex.(*parser).newMapInitEndExpr($$, $1.RBracePos.Pos)
 			}
 		;
 
@@ -478,10 +478,10 @@ number_literal	: NUMBER
 			case SUB:
 				if num.NodeType == ast.TypeFloatLiteral {
 					num.FloatLiteral.Val = -num.FloatLiteral.Val
-					num.FloatLiteral.Start = $1.Pos
+					num.FloatLiteral.Start = yylex.(*parser).posCache.LnCol($1.Pos)
 				} else {
 					num.IntegerLiteral.Val = -num.IntegerLiteral.Val
-					num.IntegerLiteral.Start = $1.Pos
+					num.IntegerLiteral.Start = yylex.(*parser).posCache.LnCol($1.Pos)
 
 				}
 			}

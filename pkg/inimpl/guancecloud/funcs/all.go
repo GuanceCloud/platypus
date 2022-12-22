@@ -12,7 +12,7 @@ import (
 	"go.uber.org/zap"
 )
 
-var l logger.Logger = logger.NewStdoutLogger("funcs", "debug")
+var l logger.Logger = logger.NewStdoutLogger("funcs", zap.DebugLevel)
 
 func InitLog(logger *zap.SugaredLogger) {
 	l = logger

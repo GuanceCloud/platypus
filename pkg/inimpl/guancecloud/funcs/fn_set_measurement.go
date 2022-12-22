@@ -10,9 +10,10 @@ import (
 
 	"github.com/GuanceCloud/platypus/pkg/ast"
 	"github.com/GuanceCloud/platypus/pkg/engine/runtime"
+	"github.com/GuanceCloud/platypus/pkg/errchain"
 )
 
-func SetMeasurementChecking(ctx *runtime.Context, funcExpr *ast.CallExpr) *runtime.RuntimeError {
+func SetMeasurementChecking(ctx *runtime.Context, funcExpr *ast.CallExpr) *errchain.PlError {
 	if len(funcExpr.Param) != 2 && len(funcExpr.Param) != 1 {
 		return runtime.NewRunError(ctx, fmt.Sprintf(
 			"func `%s' expected 1 or 2 args", funcExpr.Name), funcExpr.NamePos)
@@ -33,7 +34,7 @@ func SetMeasurementChecking(ctx *runtime.Context, funcExpr *ast.CallExpr) *runti
 	return nil
 }
 
-func SetMeasurement(ctx *runtime.Context, funcExpr *ast.CallExpr) *runtime.RuntimeError {
+func SetMeasurement(ctx *runtime.Context, funcExpr *ast.CallExpr) *errchain.PlError {
 	if len(funcExpr.Param) != 2 && len(funcExpr.Param) != 1 {
 		return runtime.NewRunError(ctx, fmt.Sprintf(
 			"func `%s' expected 1 or 2 args", funcExpr.Name), funcExpr.NamePos)

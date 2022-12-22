@@ -30,10 +30,10 @@ type Logger interface {
 	Fatalf(format string, args ...interface{})
 }
 
-func NewStdoutLogger(name, level string) Logger {
+func NewStdoutLogger(name string, level zapcore.Level) Logger {
 	cfg := &zap.Config{
-		Level:    zap.NewAtomicLevelAt(zapcore.DebugLevel),
-		Encoding: `json`,
+		Level:    zap.NewAtomicLevelAt(level),
+		Encoding: `console`,
 		EncoderConfig: zapcore.EncoderConfig{
 			NameKey:    NameKeyMod,
 			MessageKey: NameKeyMsg,
@@ -46,6 +46,8 @@ func NewStdoutLogger(name, level string) Logger {
 			EncodeCaller: zapcore.FullCallerEncoder,
 		},
 	}
+
+	cfg.OutputPaths = append(cfg.OutputPaths, "stdout")
 
 	l, err := cfg.Build()
 	if err != nil {

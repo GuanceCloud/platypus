@@ -10,10 +10,11 @@ import (
 
 	"github.com/GuanceCloud/platypus/pkg/ast"
 	"github.com/GuanceCloud/platypus/pkg/engine/runtime"
+	"github.com/GuanceCloud/platypus/pkg/errchain"
 	"github.com/GuanceCloud/platypus/pkg/inimpl/guancecloud/input"
 )
 
-func StrfmtChecking(ctx *runtime.Context, funcExpr *ast.CallExpr) *runtime.RuntimeError {
+func StrfmtChecking(ctx *runtime.Context, funcExpr *ast.CallExpr) *errchain.PlError {
 	if len(funcExpr.Param) < 2 {
 		return runtime.NewRunError(ctx, fmt.Sprintf(
 			"func `%s' expects more than 2 args", funcExpr.Name), funcExpr.NamePos)
@@ -30,7 +31,7 @@ func StrfmtChecking(ctx *runtime.Context, funcExpr *ast.CallExpr) *runtime.Runti
 	return nil
 }
 
-func Strfmt(ctx *runtime.Context, funcExpr *ast.CallExpr) *runtime.RuntimeError {
+func Strfmt(ctx *runtime.Context, funcExpr *ast.CallExpr) *errchain.PlError {
 	outdata := make([]interface{}, 0)
 
 	if len(funcExpr.Param) < 2 {

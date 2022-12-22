@@ -18,7 +18,7 @@ type NodeType uint
 
 const (
 	// expr.
-	TypeInvaild NodeType = iota
+	TypeInvalid NodeType = iota
 
 	TypeIdentifier
 	TypeStringLiteral
@@ -52,8 +52,8 @@ const (
 
 func (t NodeType) String() string {
 	switch t {
-	case TypeInvaild:
-		return "Invaild"
+	case TypeInvalid:
+		return "Invalid"
 	case TypeIdentifier:
 		return "Identifier"
 	case TypeStringLiteral:
@@ -358,17 +358,17 @@ func WrapeBlockStmt(node *BlockStmt) *Node {
 	}
 }
 
-func (node *Node) StartPos() token.Pos {
+func (node *Node) StartPos() token.LnColPos {
 	return NodeStartPos(node)
 }
 
-func NodeStartPos(node *Node) token.Pos {
+func NodeStartPos(node *Node) token.LnColPos {
 	if node == nil {
-		return -1
+		return token.InvalidLnColPos
 	}
 	switch node.NodeType {
-	case TypeInvaild:
-		return -1
+	case TypeInvalid:
+		return token.InvalidLnColPos
 	case TypeIdentifier:
 		return node.Identifier.Start
 	case TypeStringLiteral:
@@ -413,7 +413,7 @@ func NodeStartPos(node *Node) token.Pos {
 		if len(node.IfelseStmt.IfList) > 0 {
 			return node.IfelseStmt.IfList[0].Start
 		} else {
-			return -1
+			return token.InvalidLnColPos
 		}
 
 	case TypeForStmt:
@@ -425,5 +425,5 @@ func NodeStartPos(node *Node) token.Pos {
 	case TypeBreakStmt:
 		return node.BreakStmt.Start
 	}
-	return -1
+	return token.InvalidLnColPos
 }

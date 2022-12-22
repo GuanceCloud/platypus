@@ -10,10 +10,11 @@ import (
 
 	"github.com/GuanceCloud/platypus/pkg/ast"
 	"github.com/GuanceCloud/platypus/pkg/engine/runtime"
+	"github.com/GuanceCloud/platypus/pkg/errchain"
 	"github.com/spf13/cast"
 )
 
-func PrintfChecking(ctx *runtime.Context, funcExpr *ast.CallExpr) *runtime.RuntimeError {
+func PrintfChecking(ctx *runtime.Context, funcExpr *ast.CallExpr) *errchain.PlError {
 	if len(funcExpr.Param) < 1 {
 		return runtime.NewRunError(ctx, "function `%s' requires at least one argument", funcExpr.NamePos)
 	}
@@ -23,7 +24,7 @@ func PrintfChecking(ctx *runtime.Context, funcExpr *ast.CallExpr) *runtime.Runti
 	return nil
 }
 
-func Printf(ctx *runtime.Context, funcExpr *ast.CallExpr) *runtime.RuntimeError {
+func Printf(ctx *runtime.Context, funcExpr *ast.CallExpr) *errchain.PlError {
 	outdata := make([]interface{}, 0)
 
 	if len(funcExpr.Param) < 1 {

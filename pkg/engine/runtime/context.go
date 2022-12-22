@@ -21,7 +21,7 @@ const (
 )
 
 type Script struct {
-	CallRef map[string]*Script
+	CallRef []*ast.CallExpr
 
 	FuncCall map[string]FuncCall
 
@@ -60,12 +60,16 @@ type Context struct {
 
 	procExit bool
 
-	callRCef map[string]*Script
+	callRCef []*ast.CallExpr
 
 	name    string
 	content string
 	// namespace string
 	// filepath  string
+}
+
+func (ctx *Context) Name() string {
+	return ctx.name
 }
 
 func (ctx *Context) InData() any {
@@ -78,7 +82,7 @@ func (ctx *Context) InData() any {
 }
 
 func InitCtxWithoutMap(ctx *Context, inWithoutMap InputWithoutMap, funcs map[string]FuncCall,
-	callRef map[string]*Script, signal Signal, name, content string,
+	callRef []*ast.CallExpr, signal Signal, name, content string,
 ) *Context {
 	ctx.Regs.Reset()
 
@@ -102,7 +106,7 @@ func InitCtxWithoutMap(ctx *Context, inWithoutMap InputWithoutMap, funcs map[str
 }
 
 func InitCtxWithRMap(ctx *Context, inWithRMap InputWithRMap, funcs map[string]FuncCall,
-	callRef map[string]*Script, signal Signal, name, content string,
+	callRef []*ast.CallExpr, signal Signal, name, content string,
 ) *Context {
 	ctx.Regs.Reset()
 
@@ -138,7 +142,7 @@ func InitCtxForCheck(ctx *Context, funcs map[string]FuncCall, funcsCheck map[str
 	ctx.funcCall = funcs
 	ctx.funcCheck = funcsCheck
 
-	ctx.callRCef = map[string]*Script{}
+	ctx.callRCef = []*ast.CallExpr{}
 	ctx.loopBreak = false
 	ctx.loopContinue = false
 
@@ -163,21 +167,11 @@ func (ctx *Context) SetExit() {
 	ctx.procExit = true
 }
 
-func (ctx *Context) GetCallRef(name string) (*Script, bool) {
+func (ctx *Context) SetCallRef(expr *ast.CallExpr) {
 	if ctx.callRCef == nil {
-		return nil, false
+		ctx.callRCef = []*ast.CallExpr{}
 	}
-	if v, ok := ctx.callRCef[name]; ok && v != nil {
-		return v, ok
-	}
-	return nil, false
-}
-
-func (ctx *Context) SetCallRef(name string) {
-	if ctx.callRCef == nil {
-		ctx.callRCef = map[string]*Script{}
-	}
-	ctx.callRCef[name] = nil
+	ctx.callRCef = append(ctx.callRCef, expr)
 }
 
 func (ctx *Context) GetKey(key string) (*Varb, error) {

@@ -11,6 +11,7 @@ import (
 	"testing"
 
 	"github.com/GuanceCloud/platypus/pkg/ast"
+	"github.com/GuanceCloud/platypus/pkg/errchain"
 	"github.com/GuanceCloud/platypus/pkg/parser"
 	"github.com/stretchr/testify/assert"
 )
@@ -183,7 +184,7 @@ add_key(len2, len("123"))
 
 	errR = RunScriptWithRMapIn(script, inData, nil)
 	if errR != nil {
-		t.Fatal(errR.ChainError())
+		t.Fatal(errR.Error())
 	}
 	assert.Equal(t, map[string]any{
 		"aa dw.": `{"1":2,"a":[1,2,5],"d":null}`,
@@ -586,14 +587,14 @@ func TestCondOp(t *testing.T) {
 }
 
 func parseScript(content string) (ast.Stmts, error) {
-	return parser.ParsePipeline(content)
+	return parser.ParsePipeline("", content)
 }
 
-func callexprtest(ctx *Context, callExpr *ast.CallExpr) *RuntimeError {
+func callexprtest(ctx *Context, callExpr *ast.CallExpr) *errchain.PlError {
 	return nil
 }
 
-func addkeytest(ctx *Context, callExpr *ast.CallExpr) *RuntimeError {
+func addkeytest(ctx *Context, callExpr *ast.CallExpr) *errchain.PlError {
 	key := callExpr.Param[0].Identifier.Name
 	if len(callExpr.Param) > 1 {
 		val, dtype, err := RunStmt(ctx, callExpr.Param[1])
@@ -631,11 +632,11 @@ func addkeytest(ctx *Context, callExpr *ast.CallExpr) *RuntimeError {
 	return nil
 }
 
-func addkeycheck(ctx *Context, callExpr *ast.CallExpr) *RuntimeError {
+func addkeycheck(ctx *Context, callExpr *ast.CallExpr) *errchain.PlError {
 	return nil
 }
 
-func lentest(ctx *Context, callExpr *ast.CallExpr) *RuntimeError {
+func lentest(ctx *Context, callExpr *ast.CallExpr) *errchain.PlError {
 	val, dtype, err := RunStmt(ctx, callExpr.Param[0])
 	if err != nil {
 		return err
@@ -653,6 +654,6 @@ func lentest(ctx *Context, callExpr *ast.CallExpr) *RuntimeError {
 	return nil
 }
 
-func lencheck(ctx *Context, callexpr *ast.CallExpr) *RuntimeError {
+func lencheck(ctx *Context, callexpr *ast.CallExpr) *errchain.PlError {
 	return nil
 }

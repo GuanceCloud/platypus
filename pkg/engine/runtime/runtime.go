@@ -11,15 +11,16 @@ import (
 	"reflect"
 
 	"github.com/GuanceCloud/platypus/pkg/ast"
+	"github.com/GuanceCloud/platypus/pkg/errchain"
 	"github.com/spf13/cast"
 )
 
 type (
-	FuncCheck func(*Context, *ast.CallExpr) *RuntimeError
-	FuncCall  func(*Context, *ast.CallExpr) *RuntimeError
+	FuncCheck func(*Context, *ast.CallExpr) *errchain.PlError
+	FuncCall  func(*Context, *ast.CallExpr) *errchain.PlError
 )
 
-func RunScriptWithoutMapIn(proc *Script, data InputWithoutMap, signal Signal) *RuntimeError {
+func RunScriptWithoutMapIn(proc *Script, data InputWithoutMap, signal Signal) *errchain.PlError {
 	if proc == nil {
 		return nil
 	}
@@ -28,11 +29,10 @@ func RunScriptWithoutMapIn(proc *Script, data InputWithoutMap, signal Signal) *R
 	defer PutContext(ctx)
 
 	ctx = InitCtxWithoutMap(ctx, data, proc.FuncCall, proc.CallRef, signal, proc.Name, proc.Content)
-	RunStmts(ctx, proc.Ast)
-	return nil
+	return RunStmts(ctx, proc.Ast)
 }
 
-func RunScriptWithRMapIn(proc *Script, data InputWithRMap, signal Signal) *RuntimeError {
+func RunScriptWithRMapIn(proc *Script, data InputWithRMap, signal Signal) *errchain.PlError {
 	if proc == nil {
 		return nil
 	}
@@ -44,7 +44,7 @@ func RunScriptWithRMapIn(proc *Script, data InputWithRMap, signal Signal) *Runti
 	return RunStmts(ctx, proc.Ast)
 }
 
-func RefRunScript(ctx *Context, proc *Script) *RuntimeError {
+func RefRunScript(ctx *Context, proc *Script) *errchain.PlError {
 	if proc == nil {
 		return nil
 	}
@@ -65,7 +65,7 @@ func RefRunScript(ctx *Context, proc *Script) *RuntimeError {
 	return RunStmts(newctx, proc.Ast)
 }
 
-func CheckScript(proc *Script, funcsCheck map[string]FuncCheck) *RuntimeError {
+func CheckScript(proc *Script, funcsCheck map[string]FuncCheck) *errchain.PlError {
 	ctx := GetContext()
 	defer PutContext(ctx)
 	InitCtxForCheck(ctx, proc.FuncCall, funcsCheck, proc.Name, proc.Content)
@@ -77,7 +77,7 @@ func CheckScript(proc *Script, funcsCheck map[string]FuncCheck) *RuntimeError {
 	return nil
 }
 
-func RunStmts(ctx *Context, nodes ast.Stmts) *RuntimeError {
+func RunStmts(ctx *Context, nodes ast.Stmts) *errchain.PlError {
 	for _, node := range nodes {
 		if _, _, err := RunStmt(ctx, node); err != nil {
 			ctx.procExit = true
@@ -91,7 +91,7 @@ func RunStmts(ctx *Context, nodes ast.Stmts) *RuntimeError {
 	return nil
 }
 
-func RunIfElseStmt(ctx *Context, stmt *ast.IfelseStmt) (any, ast.DType, *RuntimeError) {
+func RunIfElseStmt(ctx *Context, stmt *ast.IfelseStmt) (any, ast.DType, *errchain.PlError) {
 	ctx.StackEnterNew()
 	defer ctx.StackExitCur()
 
@@ -167,7 +167,7 @@ func condTrue(val any, dtype ast.DType) bool {
 	return true
 }
 
-func RunForStmt(ctx *Context, stmt *ast.ForStmt) (any, ast.DType, *RuntimeError) {
+func RunForStmt(ctx *Context, stmt *ast.ForStmt) (any, ast.DType, *errchain.PlError) {
 	ctx.StackEnterNew()
 	defer ctx.StackExitCur()
 
@@ -224,7 +224,7 @@ func RunForStmt(ctx *Context, stmt *ast.ForStmt) (any, ast.DType, *RuntimeError)
 	return nil, ast.Void, nil
 }
 
-func RunForInStmt(ctx *Context, stmt *ast.ForInStmt) (any, ast.DType, *RuntimeError) {
+func RunForInStmt(ctx *Context, stmt *ast.ForInStmt) (any, ast.DType, *errchain.PlError) {
 	ctx.StackEnterNew()
 	defer ctx.StackExitCur()
 
@@ -334,18 +334,18 @@ func forcontinue(ctx *Context) {
 	}
 }
 
-func RunBreakStmt(ctx *Context, stmt *ast.BreakStmt) (any, ast.DType, *RuntimeError) {
+func RunBreakStmt(ctx *Context, stmt *ast.BreakStmt) (any, ast.DType, *errchain.PlError) {
 	ctx.loopBreak = true
 	return nil, ast.Void, nil
 }
 
-func RunContinueStmt(ctx *Context, stmt *ast.ContinueStmt) (any, ast.DType, *RuntimeError) {
+func RunContinueStmt(ctx *Context, stmt *ast.ContinueStmt) (any, ast.DType, *errchain.PlError) {
 	ctx.loopContinue = true
 	return nil, ast.Void, nil
 }
 
 // RunStmt for all expr.
-func RunStmt(ctx *Context, node *ast.Node) (any, ast.DType, *RuntimeError) {
+func RunStmt(ctx *Context, node *ast.Node) (any, ast.DType, *errchain.PlError) {
 	// TODO
 	// 存在个别 node 为 nil 的情况
 	if node == nil {
@@ -411,7 +411,7 @@ func RunStmt(ctx *Context, node *ast.Node) (any, ast.DType, *RuntimeError) {
 	}
 }
 
-func RunListInitExpr(ctx *Context, expr *ast.ListInitExpr) (any, ast.DType, *RuntimeError) {
+func RunListInitExpr(ctx *Context, expr *ast.ListInitExpr) (any, ast.DType, *errchain.PlError) {
 	ret := []any{}
 	for _, v := range expr.List {
 		v, _, err := RunStmt(ctx, v)
@@ -423,7 +423,7 @@ func RunListInitExpr(ctx *Context, expr *ast.ListInitExpr) (any, ast.DType, *Run
 	return ret, ast.List, nil
 }
 
-func RunMapInitExpr(ctx *Context, expr *ast.MapInitExpr) (any, ast.DType, *RuntimeError) {
+func RunMapInitExpr(ctx *Context, expr *ast.MapInitExpr) (any, ast.DType, *errchain.PlError) {
 	ret := map[string]any{}
 
 	for _, v := range expr.KeyValeList {
@@ -463,7 +463,7 @@ func RunMapInitExpr(ctx *Context, expr *ast.MapInitExpr) (any, ast.DType, *Runti
 // 	}
 // }
 
-func RunIndexExprGet(ctx *Context, expr *ast.IndexExpr) (any, ast.DType, *RuntimeError) {
+func RunIndexExprGet(ctx *Context, expr *ast.IndexExpr) (any, ast.DType, *errchain.PlError) {
 	key := expr.Obj.Name
 
 	varb, err := ctx.GetKey(key)
@@ -493,7 +493,7 @@ func RunIndexExprGet(ctx *Context, expr *ast.IndexExpr) (any, ast.DType, *Runtim
 	return searchListAndMap(ctx, varb.Value, expr.Index)
 }
 
-func searchListAndMap(ctx *Context, obj any, index []*ast.Node) (any, ast.DType, *RuntimeError) {
+func searchListAndMap(ctx *Context, obj any, index []*ast.Node) (any, ast.DType, *errchain.PlError) {
 	cur := obj
 
 	for _, i := range index {
@@ -540,13 +540,13 @@ func searchListAndMap(ctx *Context, obj any, index []*ast.Node) (any, ast.DType,
 	return cur, dtype, nil
 }
 
-func RunParenExpr(ctx *Context, expr *ast.ParenExpr) (any, ast.DType, *RuntimeError) {
+func RunParenExpr(ctx *Context, expr *ast.ParenExpr) (any, ast.DType, *errchain.PlError) {
 	return RunStmt(ctx, expr.Param)
 }
 
 // BinarayExpr
 
-func RunConditionExpr(ctx *Context, expr *ast.ConditionalExpr) (any, ast.DType, *RuntimeError) {
+func RunConditionExpr(ctx *Context, expr *ast.ConditionalExpr) (any, ast.DType, *errchain.PlError) {
 	lhs, lhsT, err := RunStmt(ctx, expr.LHS)
 	if err != nil {
 		return nil, ast.Invalid, err
@@ -577,7 +577,7 @@ func RunConditionExpr(ctx *Context, expr *ast.ConditionalExpr) (any, ast.DType, 
 	}
 }
 
-func RunArithmeticExpr(ctx *Context, expr *ast.ArithmeticExpr) (any, ast.DType, *RuntimeError) {
+func RunArithmeticExpr(ctx *Context, expr *ast.ArithmeticExpr) (any, ast.DType, *errchain.PlError) {
 	// 允许字符串通过操作符 '+' 进行拼接
 
 	lhsVal, lhsValType, errOpInt := RunStmt(ctx, expr.LHS)
@@ -634,7 +634,7 @@ func RunArithmeticExpr(ctx *Context, expr *ast.ArithmeticExpr) (any, ast.DType, 
 	return v, dtype, nil
 }
 
-func RunAssignmentExpr(ctx *Context, expr *ast.AssignmentExpr) (any, ast.DType, *RuntimeError) {
+func RunAssignmentExpr(ctx *Context, expr *ast.AssignmentExpr) (any, ast.DType, *errchain.PlError) {
 	v, dtype, err := RunStmt(ctx, expr.RHS)
 	if err != nil {
 		return nil, ast.Invalid, err
@@ -656,7 +656,7 @@ func RunAssignmentExpr(ctx *Context, expr *ast.AssignmentExpr) (any, ast.DType, 
 	}
 }
 
-func changeListOrMapValue(ctx *Context, obj any, index []*ast.Node, val any, dtype ast.DType) (any, ast.DType, *RuntimeError) {
+func changeListOrMapValue(ctx *Context, obj any, index []*ast.Node, val any, dtype ast.DType) (any, ast.DType, *errchain.PlError) {
 	cur := obj
 	lenIdx := len(index)
 
@@ -713,7 +713,7 @@ func changeListOrMapValue(ctx *Context, obj any, index []*ast.Node, val any, dty
 	return nil, ast.Nil, nil
 }
 
-func RunCallExpr(ctx *Context, expr *ast.CallExpr) (any, ast.DType, *RuntimeError) {
+func RunCallExpr(ctx *Context, expr *ast.CallExpr) (any, ast.DType, *errchain.PlError) {
 	defer ctx.Regs.Reset()
 	if funcCall, ok := ctx.GetFuncCall(expr.Name); ok {
 		if err := funcCall(ctx, expr); err != nil {
