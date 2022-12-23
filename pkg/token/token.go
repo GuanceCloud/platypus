@@ -64,13 +64,13 @@ func (c *PosCache) LnCol(pos Pos) LnColPos {
 	}
 
 	return LnColPos{
+		Pos: pos,
 		Ln:  int(ln) + 1,
 		Col: int(pos) - c.lineStartPos[ln] + 1,
 	}
 }
 
 func NewPosCache(query string) *PosCache {
-
 	cache := PosCache{
 		query:        query,
 		lineStartPos: []int{0},
