@@ -12,15 +12,16 @@ import (
 	"github.com/GuanceCloud/platypus/pkg/token"
 )
 
-type FilePos struct {
-	FilePath string
-	Ln       int
-	Col      int
+type Position struct {
+	File string `json:"file"` // filename or filepath
+	Ln   int    `json:"ln"`
+	Col  int    `json:"col"`
+	Pos  int    `json:"pos"`
 }
 
 type PlError struct {
-	pos []FilePos
-	err string
+	PosChain []Position `json:"pos_chain"`
+	Err      string     `json:"error"`
 }
 
 type PlErrors []PlError
@@ -34,50 +35,52 @@ func (e PlErrors) Error() string {
 }
 
 func (e *PlError) Error() string {
-	if len(e.pos) == 0 {
+	if len(e.PosChain) == 0 {
 		return ""
 	}
 
 	var errr string
 
-	for i := 0; i < len(e.pos); i++ {
-		pos := e.pos[i]
+	for i := 0; i < len(e.PosChain); i++ {
+		pos := e.PosChain[i]
 		if i == 0 {
-			errr += fmt.Sprintf("%s:%d:%d: %s", pos.FilePath, pos.Ln, pos.Col, e.err)
+			errr += fmt.Sprintf("%s:%d:%d: %s", pos.File, pos.Ln, pos.Col, e.Err)
 		} else {
 			errr += fmt.Sprintf(
-				"\n%s:%d:%d:", e.pos[i].FilePath,
-				e.pos[i].Ln, e.pos[i].Col)
+				"\n%s:%d:%d:", e.PosChain[i].File,
+				e.PosChain[i].Ln, e.PosChain[i].Col)
 		}
 	}
 	return errr
 }
 
-func (e *PlError) ChainAppend(filepath string, pos token.LnColPos) *PlError {
-	e.pos = append(e.pos, FilePos{
-		Ln:       pos.Ln,
-		Col:      pos.Col,
-		FilePath: filepath,
+func (e *PlError) ChainAppend(file string, pos token.LnColPos) *PlError {
+	e.PosChain = append(e.PosChain, Position{
+		File: file,
+		Ln:   pos.Ln,
+		Col:  pos.Col,
+		Pos:  int(pos.Pos),
 	})
 	return e
 }
 
 func (e *PlError) Copy() *PlError {
 	return &PlError{
-		err: e.err,
-		pos: append([]FilePos{}, e.pos...),
+		Err:      e.Err,
+		PosChain: append([]Position{}, e.PosChain...),
 	}
 }
 
-func NewErr(filepath string, pos token.LnColPos, err string) *PlError {
+func NewErr(file string, pos token.LnColPos, err string) *PlError {
 	return &PlError{
-		pos: []FilePos{
+		PosChain: []Position{
 			{
-				FilePath: filepath,
-				Col:      pos.Col,
-				Ln:       pos.Ln,
+				File: file,
+				Ln:   pos.Ln,
+				Col:  pos.Col,
+				Pos:  int(pos.Pos),
 			},
 		},
-		err: err,
+		Err: err,
 	}
 }
