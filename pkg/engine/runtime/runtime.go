@@ -510,8 +510,7 @@ func searchListAndMap(ctx *Context, obj any, index []*ast.Node) (any, ast.DType,
 			var ok bool
 			cur, ok = curVal[key.(string)]
 			if !ok {
-				return nil, ast.Invalid, NewRunError(ctx,
-					"key not found", i.StartPos())
+				return nil, ast.Nil, nil
 			}
 		case []any:
 			if keyType != ast.Int {
