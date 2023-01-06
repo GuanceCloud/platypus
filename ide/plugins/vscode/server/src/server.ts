@@ -32,18 +32,12 @@ import {
 import { IDE, IDEProvider } from './ide';
 import { Range as IDERange } from './ide/semantic';
 
-// import Parser = require("tree-sitter");
-// import PPL = require("tree-sitter-ppl");
-
 // Create a connection for the server, using Node's IPC as a transport.
 // Also include all preview / proposed LSP features.
 const connection = createConnection(ProposedFeatures.all);
 
 // Create a simple text document manager.
 const documents: TextDocuments<TextDocument> = new TextDocuments(TextDocument);
-
-// const parser = new Parser();
-// parser.setLanguage(PPL);
 
 let hasConfigurationCapability = false;
 let hasWorkspaceFolderCapability = false;

@@ -46,6 +46,10 @@ default_time(time)
 a = 2
 b = ""
 c = true
+d = `
+asd
+aaaa
+`
 
 if a {
     add_key(a)
