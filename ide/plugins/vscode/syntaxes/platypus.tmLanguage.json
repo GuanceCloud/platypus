@@ -24,6 +24,9 @@
 			"include": "#double-quoted-strings"
 		},
 		{
+			"include": "#multiline-strings"
+		},
+		{
 			"include": "#function-call"
 		}
 	],
@@ -65,6 +68,17 @@
 			"name": "string.quoted.double.platypus",
 			"begin": "\"",
 			"end": "\"",
+			"patterns": [
+				{
+					"name": "constant.character.escape.platypus",
+					"match": "\\\\."
+				}
+			]
+		},
+		"multiline-strings": {
+			"name": "string.unquoted.platypus",
+			"begin": "`",
+			"end": "`",
 			"patterns": [
 				{
 					"name": "constant.character.escape.platypus",
