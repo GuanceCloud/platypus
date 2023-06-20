@@ -86,6 +86,8 @@ for a = 0; a < 12; a = a + 1 {
 	a = a - 1
   }
 
+  add_key("list_", [1,2, {"a": [1,2 , 2 /1]}, {}])
+
 `
 
 	scripts, errs := ParseScript(map[string]string{
@@ -113,5 +115,6 @@ for a = 0; a < 12; a = a + 1 {
 		"ef":     int64(6),
 		"len1":   int64(2),
 		"len2":   int64(3),
+		"list_":  "[1,2,{\"a\":[1,2,2]},{}]",
 	}, pt.Fields)
 }
