@@ -54,10 +54,10 @@ func TestExprSeparation(t *testing.T) {
 			]
 
 			# 只支持基础数据类型
-			# [1, 3, "3", 1. ,
-			# 	[1, 3, "3", 1.
-			# 		]
-			# ]
+			[1, 3, "3", true, 1. ,
+				[1, 3, "3", true, 1.
+					], {}
+			]
 
 			a = 1; func1()
 			func2(1, 3,
@@ -106,6 +106,28 @@ func TestExprSeparation(t *testing.T) {
 							ast.WrapStringLiteral(&ast.StringLiteral{Val: "3"}),
 							ast.WrapBoolLiteral(&ast.BoolLiteral{Val: true}),
 							ast.WrapFloatLiteral(&ast.FloatLiteral{Val: 1.}),
+						},
+					}),
+
+				ast.WrapListInitExpr(
+					&ast.ListInitExpr{
+						List: []*ast.Node{
+							ast.WrapIntegerLiteral(&ast.IntegerLiteral{Val: 1}),
+							ast.WrapIntegerLiteral(&ast.IntegerLiteral{Val: 3}),
+							ast.WrapStringLiteral(&ast.StringLiteral{Val: "3"}),
+							ast.WrapBoolLiteral(&ast.BoolLiteral{Val: true}),
+							ast.WrapFloatLiteral(&ast.FloatLiteral{Val: 1.}),
+							ast.WrapListInitExpr(
+								&ast.ListInitExpr{
+									List: []*ast.Node{
+										ast.WrapIntegerLiteral(&ast.IntegerLiteral{Val: 1}),
+										ast.WrapIntegerLiteral(&ast.IntegerLiteral{Val: 3}),
+										ast.WrapStringLiteral(&ast.StringLiteral{Val: "3"}),
+										ast.WrapBoolLiteral(&ast.BoolLiteral{Val: true}),
+										ast.WrapFloatLiteral(&ast.FloatLiteral{Val: 1.}),
+									},
+								}),
+							ast.WrapMapInitExpr(&ast.MapInitExpr{}),
 						},
 					}),
 				ast.WrapAssignmentExpr(&ast.AssignmentExpr{
