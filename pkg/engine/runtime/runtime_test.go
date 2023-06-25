@@ -165,7 +165,6 @@ add_key(len2, len("123"))
 		},
 		Name:      "abc",
 		Namespace: "default",
-		Category:  "",
 		FilePath:  "",
 		Content:   pl,
 		Ast:       stmts,
@@ -195,6 +194,155 @@ add_key(len2, len("123"))
 		"len1":   int64(2),
 		"len2":   int64(3),
 		"c":      int64(0),
+	}, inData.data)
+}
+
+func TestForInStmt(t *testing.T) {
+	cases := []struct {
+		n    string
+		s    string
+		e    map[string]any
+		fail bool
+	}{
+		{
+			n: "t1",
+			s: `
+a = 0
+b = {"a":1, "v":2}
+
+for x in b {
+	a = a + b[x]
+}
+
+add_key("a", a)
+			`,
+			e: map[string]any{
+				"a": int64(3),
+			},
+		},
+		{
+			n: "t1",
+			s: `
+a = ""
+
+for x in "defgh" {
+	a = a + x
+}
+
+add_key("a", a)
+			`,
+			e: map[string]any{
+				"a": "defgh",
+			},
+		},
+	}
+
+	for _, c := range cases {
+		t.Run(c.n, func(t *testing.T) {
+			stmts, err := parseScript(c.s)
+			if err != nil {
+				if c.fail {
+					return
+				}
+				t.Fatal(err)
+			}
+
+			script := &Script{
+				CallRef: nil,
+				FuncCall: map[string]FuncCall{
+					"add_key": addkeytest,
+				},
+				Name:      "abc",
+				Namespace: "default",
+				Content:   c.s,
+				Ast:       stmts,
+			}
+			errR := CheckScript(script, map[string]FuncCheck{
+				"add_key": addkeycheck,
+			})
+			if errR != nil {
+				t.Fatal(*errR)
+			}
+
+			inData := &inputImpl{
+				data: map[string]any{},
+			}
+
+			errR = RunScriptWithRMapIn(script, inData, nil)
+			if errR != nil {
+				t.Fatal(errR.Error())
+			}
+			assert.Equal(t, c.e, inData.data)
+		})
+	}
+}
+
+func TestInExpr(t *testing.T) {
+
+	pl := `
+	add_key("t1", "a" in [1,"a"])
+	add_key("t1_1", nil in [1,"a"])
+	add_key("t1_2", 1 in [1,"a"])
+	add_key("t1_3", nil in [nil,"a"])
+	
+	add_key("t2", "def" in "abcdef")
+	add_key("t2_1", "x" in "abcdef")
+
+	add_key("t3", "a" in {"a": 1})
+	add_key("t3_1", "b" in {"a": 1})
+	add_key("t3_2", "a" in {})
+
+	x = 1
+	y = [1]
+	add_key("t4", x in y)
+	`
+	stmts, err := parseScript(pl)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	script := &Script{
+		CallRef: nil,
+		FuncCall: map[string]FuncCall{
+			"test":    callexprtest,
+			"add_key": addkeytest,
+			"len":     lentest,
+		},
+		Name:      "abc",
+		Namespace: "default",
+		Category:  "",
+		FilePath:  "",
+		Content:   pl,
+		Ast:       stmts,
+	}
+	errR := CheckScript(script, map[string]FuncCheck{
+		"add_key": addkeycheck,
+		"len":     lencheck,
+	})
+	if errR != nil {
+		t.Fatal(*errR)
+	}
+
+	inData := &inputImpl{
+		data: map[string]any{},
+	}
+
+	errR = RunScriptWithRMapIn(script, inData, nil)
+	if errR != nil {
+		t.Fatal(errR.Error())
+	}
+	assert.Equal(t, map[string]any{
+		"t1":   true,
+		"t1_1": false,
+		"t1_2": true,
+		"t1_3": true,
+		"t2":   true,
+		"t2_1": false,
+		"t3":   true,
+		"t3_1": false,
+		"t3_2": false,
+
+		"t4": true,
 	}, inData.data)
 }
 
@@ -595,7 +743,16 @@ func callexprtest(ctx *Context, callExpr *ast.CallExpr) *errchain.PlError {
 }
 
 func addkeytest(ctx *Context, callExpr *ast.CallExpr) *errchain.PlError {
-	key := callExpr.Param[0].Identifier.Name
+	var key string
+	switch callExpr.Param[0].NodeType {
+	case ast.TypeIdentifier:
+		key = callExpr.Param[0].Identifier.Name
+	case ast.TypeStringLiteral:
+		key = callExpr.Param[0].StringLiteral.Val
+	default:
+		return NewRunError(ctx, "key type", callExpr.NamePos)
+	}
+
 	if len(callExpr.Param) > 1 {
 		val, dtype, err := RunStmt(ctx, callExpr.Param[1])
 		if err != nil {
