@@ -130,7 +130,8 @@ func TestExprSeparation(t *testing.T) {
 							ast.WrapMapInitExpr(&ast.MapInitExpr{}),
 						},
 					}),
-				ast.WrapAssignmentExpr(&ast.AssignmentExpr{
+				ast.WrapAssignmentStmt(&ast.AssignmentExpr{
+					Op:  ast.EQ,
 					LHS: ast.WrapIdentifier(&ast.Identifier{Name: "a"}),
 					RHS: ast.WrapIntegerLiteral(&ast.IntegerLiteral{Val: 1}),
 				}),
@@ -164,7 +165,8 @@ func TestExprSeparation(t *testing.T) {
 								RHS: ast.WrapIdentifier(&ast.Identifier{Name: "y"}),
 							}),
 							Block: &ast.BlockStmt{Stmts: ast.Stmts{
-								ast.WrapAssignmentExpr(&ast.AssignmentExpr{
+								ast.WrapAssignmentStmt(&ast.AssignmentExpr{
+									Op:  ast.EQ,
 									LHS: ast.WrapIdentifier(&ast.Identifier{Name: "a"}),
 									RHS: ast.WrapArithmeticExpr(&ast.ArithmeticExpr{
 										LHS: ast.WrapIdentifier(&ast.Identifier{Name: "a"}),
@@ -177,15 +179,18 @@ func TestExprSeparation(t *testing.T) {
 					},
 				}),
 
-				ast.WrapAssignmentExpr(&ast.AssignmentExpr{
+				ast.WrapAssignmentStmt(&ast.AssignmentExpr{
+					Op:  ast.EQ,
 					LHS: ast.WrapIdentifier(&ast.Identifier{Name: "a"}),
 					RHS: ast.WrapIdentifier(&ast.Identifier{Name: "b"}),
 				}),
-				ast.WrapAssignmentExpr(&ast.AssignmentExpr{
+				ast.WrapAssignmentStmt(&ast.AssignmentExpr{
+					Op:  ast.EQ,
 					LHS: ast.WrapIdentifier(&ast.Identifier{Name: "a"}),
 					RHS: ast.WrapIdentifier(&ast.Identifier{Name: "c"}),
 				}),
-				ast.WrapAssignmentExpr(&ast.AssignmentExpr{
+				ast.WrapAssignmentStmt(&ast.AssignmentExpr{
+					Op:  ast.EQ,
 					LHS: ast.WrapIdentifier(&ast.Identifier{Name: "a"}),
 					RHS: ast.WrapIdentifier(&ast.Identifier{Name: "d"}),
 				}),
@@ -202,7 +207,8 @@ func TestExprSeparation(t *testing.T) {
 									RHS: ast.WrapIdentifier(&ast.Identifier{Name: "y"}),
 								}),
 								Block: &ast.BlockStmt{Stmts: ast.Stmts{
-									ast.WrapAssignmentExpr(&ast.AssignmentExpr{
+									ast.WrapAssignmentStmt(&ast.AssignmentExpr{
+										Op:  ast.EQ,
 										LHS: ast.WrapIdentifier(&ast.Identifier{Name: "a"}),
 										RHS: ast.WrapArithmeticExpr(&ast.ArithmeticExpr{
 											LHS: ast.WrapIdentifier(&ast.Identifier{Name: "a"}),
@@ -255,6 +261,114 @@ func TestExprSeparation(t *testing.T) {
 				),
 			},
 		},
+		{
+			name: "+||",
+			in: `a * -1 + b || x + 1 && 1 / 2 == 1
+			a += b + +!-1
+			a -= 1
+			a *= 1
+			a /= 1
+			a %= 1
+			`,
+			expected: ast.Stmts{
+				ast.WrapConditionExpr(
+					&ast.ConditionalExpr{
+						Op: AstOp(EQEQ),
+						LHS: ast.WrapConditionExpr(&ast.ConditionalExpr{
+							Op: AstOp(OR),
+							LHS: ast.WrapArithmeticExpr(&ast.ArithmeticExpr{
+								Op: AstOp(ADD),
+								LHS: ast.WrapArithmeticExpr(&ast.ArithmeticExpr{
+									Op:  AstOp(MUL),
+									LHS: ast.WrapIdentifier(&ast.Identifier{Name: "a"}),
+									RHS: ast.WrapIntegerLiteral(&ast.IntegerLiteral{Val: -1}),
+								}),
+								RHS: ast.WrapIdentifier(&ast.Identifier{Name: "b"}),
+							}),
+							RHS: ast.WrapConditionExpr(&ast.ConditionalExpr{
+								Op: AstOp(AND),
+								LHS: ast.WrapArithmeticExpr(&ast.ArithmeticExpr{
+									Op:  AstOp(ADD),
+									LHS: ast.WrapIdentifier(&ast.Identifier{Name: "x"}),
+									RHS: ast.WrapIntegerLiteral(&ast.IntegerLiteral{Val: 1}),
+								}),
+								RHS: ast.WrapArithmeticExpr(&ast.ArithmeticExpr{
+									Op:  AstOp(DIV),
+									LHS: ast.WrapIntegerLiteral(&ast.IntegerLiteral{Val: 1}),
+									RHS: ast.WrapIntegerLiteral(&ast.IntegerLiteral{Val: 2}),
+								}),
+							}),
+						}),
+						RHS: ast.WrapIntegerLiteral(&ast.IntegerLiteral{Val: 1}),
+					},
+				),
+				ast.WrapAssignmentStmt(
+					&ast.AssignmentExpr{
+						Op: ast.ADDEQ,
+						LHS: ast.WrapIdentifier(&ast.Identifier{
+							Name: "a",
+						}),
+						RHS: ast.WrapArithmeticExpr(
+							&ast.ArithmeticExpr{
+								Op:  ast.ADD,
+								LHS: ast.WrapIdentifier(&ast.Identifier{Name: "b"}),
+								RHS: ast.WrapUnaryExpr(&ast.UnaryExpr{
+									Op: ast.ADD,
+									RHS: ast.WrapUnaryExpr(&ast.UnaryExpr{
+										Op:  ast.NOT,
+										RHS: ast.WrapIntegerLiteral(&ast.IntegerLiteral{Val: -1}),
+									}),
+								}),
+							},
+						),
+					},
+				),
+				ast.WrapAssignmentStmt(
+					&ast.AssignmentExpr{
+						Op: ast.SUBEQ,
+						LHS: ast.WrapIdentifier(&ast.Identifier{
+							Name: "a",
+						}),
+						RHS: ast.WrapIntegerLiteral(&ast.IntegerLiteral{
+							Val: 1,
+						}),
+					},
+				),
+				ast.WrapAssignmentStmt(
+					&ast.AssignmentExpr{
+						Op: ast.MULEQ,
+						LHS: ast.WrapIdentifier(&ast.Identifier{
+							Name: "a",
+						}),
+						RHS: ast.WrapIntegerLiteral(&ast.IntegerLiteral{
+							Val: 1,
+						}),
+					},
+				),
+				ast.WrapAssignmentStmt(
+					&ast.AssignmentExpr{
+						Op: ast.DIVEQ,
+						LHS: ast.WrapIdentifier(&ast.Identifier{
+							Name: "a",
+						}),
+						RHS: ast.WrapIntegerLiteral(&ast.IntegerLiteral{
+							Val: 1,
+						}),
+					},
+				),
+				ast.WrapAssignmentStmt(
+					&ast.AssignmentExpr{
+						Op: ast.MODEQ,
+						LHS: ast.WrapIdentifier(&ast.Identifier{
+							Name: "a",
+						}),
+						RHS: ast.WrapIntegerLiteral(&ast.IntegerLiteral{
+							Val: 1,
+						}),
+					},
+				),
+			},
+		},
 	}
 
 	// for idx := len(cases) - 1; idx >= 0; idx-- {
@@ -276,7 +390,7 @@ func TestExprSeparation(t *testing.T) {
 				y = Stmts.String()
 				assert.Nil(t, err)
 				assert.Equal(t, x, y)
-				t.Logf("ok %s -> %s", tc.in, y)
+				// t.Logf("ok %s -> %s", tc.in, y)
 			} else {
 				t.Logf("%s -> expect fail: %v", tc.in, err)
 				assert.NotNil(t, err, "")
@@ -303,7 +417,8 @@ func TestParserFor(t *testing.T) {
 					Varb: ast.WrapIdentifier(&ast.Identifier{Name: "x"}),
 					Iter: ast.WrapIdentifier(&ast.Identifier{Name: "y"}),
 					Body: &ast.BlockStmt{Stmts: ast.Stmts{
-						ast.WrapAssignmentExpr(&ast.AssignmentExpr{
+						ast.WrapAssignmentStmt(&ast.AssignmentExpr{
+							Op:  ast.EQ,
 							LHS: ast.WrapIdentifier(&ast.Identifier{Name: "b"}),
 							RHS: ast.WrapIntegerLiteral(&ast.IntegerLiteral{Val: 1}),
 						}),
@@ -348,7 +463,8 @@ func TestParserFor(t *testing.T) {
 								ast.WrapBreakStmt(&ast.BreakStmt{}),
 							}},
 						}),
-						ast.WrapAssignmentExpr(&ast.AssignmentExpr{
+						ast.WrapAssignmentStmt(&ast.AssignmentExpr{
+							Op:  ast.EQ,
 							LHS: ast.WrapIdentifier(&ast.Identifier{Name: "a"}),
 							RHS: ast.WrapArithmeticExpr(&ast.ArithmeticExpr{
 								LHS: ast.WrapIdentifier(&ast.Identifier{Name: "a"}),
@@ -375,7 +491,8 @@ func TestParserFor(t *testing.T) {
 						}),
 					}),
 					Body: &ast.BlockStmt{Stmts: ast.Stmts{
-						ast.WrapAssignmentExpr(&ast.AssignmentExpr{
+						ast.WrapAssignmentStmt(&ast.AssignmentExpr{
+							Op:  ast.EQ,
 							LHS: ast.WrapIdentifier(&ast.Identifier{Name: "b"}),
 							RHS: ast.WrapIntegerLiteral(&ast.IntegerLiteral{Val: 1}),
 						}),
@@ -396,7 +513,8 @@ func TestParserFor(t *testing.T) {
 						Name: "func",
 					}),
 				}),
-				Loop: ast.WrapAssignmentExpr(&ast.AssignmentExpr{
+				Loop: ast.WrapAssignmentStmt(&ast.AssignmentExpr{
+					Op: ast.EQ,
 					LHS: ast.WrapIdentifier(&ast.Identifier{
 						Name: "x",
 					}),
@@ -405,7 +523,48 @@ func TestParserFor(t *testing.T) {
 					}),
 				}),
 				Body: &ast.BlockStmt{Stmts: ast.Stmts{
-					ast.WrapAssignmentExpr(&ast.AssignmentExpr{
+					ast.WrapAssignmentStmt(&ast.AssignmentExpr{
+						Op:  ast.EQ,
+						LHS: ast.WrapIdentifier(&ast.Identifier{Name: "b"}),
+						RHS: ast.WrapIntegerLiteral(&ast.IntegerLiteral{Val: 1}),
+					}),
+				}},
+			})},
+		},
+		{
+			name: "for init; cond ; loop ",
+			in: `for y=2; a == func() ; x = 2. {
+				b=2
+			}`,
+			expected: ast.Stmts{ast.WrapForStmt(&ast.ForStmt{
+				Init: ast.WrapAssignmentStmt(&ast.AssignmentExpr{
+					Op: ast.EQ,
+					LHS: ast.WrapIdentifier(&ast.Identifier{
+						Name: "y",
+					}),
+					RHS: ast.WrapFloatLiteral(&ast.FloatLiteral{
+						Val: 2.,
+					}),
+				}),
+				Cond: ast.WrapConditionExpr(&ast.ConditionalExpr{
+					Op:  AstOp(EQEQ),
+					LHS: ast.WrapIdentifier(&ast.Identifier{Name: "a"}),
+					RHS: ast.WrapCallExpr(&ast.CallExpr{
+						Name: "func",
+					}),
+				}),
+				Loop: ast.WrapAssignmentStmt(&ast.AssignmentExpr{
+					Op: ast.EQ,
+					LHS: ast.WrapIdentifier(&ast.Identifier{
+						Name: "x",
+					}),
+					RHS: ast.WrapFloatLiteral(&ast.FloatLiteral{
+						Val: 2.,
+					}),
+				}),
+				Body: &ast.BlockStmt{Stmts: ast.Stmts{
+					ast.WrapAssignmentStmt(&ast.AssignmentExpr{
+						Op:  ast.EQ,
 						LHS: ast.WrapIdentifier(&ast.Identifier{Name: "b"}),
 						RHS: ast.WrapIntegerLiteral(&ast.IntegerLiteral{Val: 1}),
 					}),
@@ -978,7 +1137,8 @@ func TestParser(t *testing.T) {
 			expected: ast.Stmts{
 				ast.WrapCallExpr(&ast.CallExpr{
 					Name: "f",
-					Param: []*ast.Node{ast.WrapAssignmentExpr(&ast.AssignmentExpr{
+					Param: []*ast.Node{ast.WrapAssignmentStmt(&ast.AssignmentExpr{
+						Op:  ast.EQ,
 						LHS: ast.WrapIdentifier(&ast.Identifier{Name: "arg"}),
 						RHS: ast.WrapAttrExpr(&ast.AttrExpr{
 							Obj: ast.WrapIdentifier(&ast.Identifier{Name: "a"}),
@@ -998,14 +1158,16 @@ func TestParser(t *testing.T) {
 			name: "func_call_in_assignement_right",
 			in:   `a = fn("a", true, a1=["b", 1.1])`,
 			expected: ast.Stmts{
-				ast.WrapAssignmentExpr(&ast.AssignmentExpr{
+				ast.WrapAssignmentStmt(&ast.AssignmentExpr{
+					Op:  ast.EQ,
 					LHS: ast.WrapIdentifier(&ast.Identifier{Name: "a"}),
 					RHS: ast.WrapCallExpr(&ast.CallExpr{
 						Name: "fn",
 						Param: []*ast.Node{
 							ast.WrapStringLiteral(&ast.StringLiteral{Val: "a"}),
 							ast.WrapBoolLiteral(&ast.BoolLiteral{Val: true}),
-							ast.WrapAssignmentExpr(&ast.AssignmentExpr{
+							ast.WrapAssignmentStmt(&ast.AssignmentExpr{
+								Op:  ast.EQ,
 								LHS: ast.WrapIdentifier(&ast.Identifier{Name: "a1"}),
 								RHS: ast.WrapListInitExpr(&ast.ListInitExpr{
 									List: []*ast.Node{
@@ -1028,11 +1190,13 @@ func TestParser(t *testing.T) {
 					&ast.CallExpr{
 						Name: "f",
 						Param: []*ast.Node{
-							ast.WrapAssignmentExpr(&ast.AssignmentExpr{
+							ast.WrapAssignmentStmt(&ast.AssignmentExpr{
+								Op:  ast.EQ,
 								LHS: ast.WrapIdentifier(&ast.Identifier{Name: "arg1"}),
 								RHS: ast.WrapIntegerLiteral(&ast.IntegerLiteral{Val: 1}),
 							}),
-							ast.WrapAssignmentExpr(&ast.AssignmentExpr{
+							ast.WrapAssignmentStmt(&ast.AssignmentExpr{
+								Op:  ast.EQ,
 								LHS: ast.WrapIdentifier(&ast.Identifier{Name: "arg2"}),
 								RHS: ast.WrapIntegerLiteral(&ast.IntegerLiteral{Val: 2}),
 							}),
@@ -1055,7 +1219,8 @@ func TestParser(t *testing.T) {
 								Op:  ast.GT,
 								RHS: ast.WrapIntegerLiteral(&ast.IntegerLiteral{Val: 1}),
 							}),
-							ast.WrapAssignmentExpr(&ast.AssignmentExpr{
+							ast.WrapAssignmentStmt(&ast.AssignmentExpr{
+								Op:  ast.EQ,
 								LHS: ast.WrapIdentifier(&ast.Identifier{Name: "arg2"}),
 								RHS: ast.WrapIntegerLiteral(&ast.IntegerLiteral{Val: 2}),
 							}),
@@ -1110,7 +1275,8 @@ func TestParser(t *testing.T) {
 					},
 				}),
 				ast.WrapMapInitExpr(&ast.MapInitExpr{}),
-				ast.WrapAssignmentExpr(&ast.AssignmentExpr{
+				ast.WrapAssignmentStmt(&ast.AssignmentExpr{
+					Op:  ast.EQ,
 					LHS: ast.WrapIdentifier(&ast.Identifier{Name: "a"}),
 					RHS: ast.WrapMapInitExpr(&ast.MapInitExpr{
 						KeyValeList: [][2]*ast.Node{
