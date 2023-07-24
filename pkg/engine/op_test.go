@@ -29,9 +29,12 @@ func TestOp(t *testing.T) {
 
 	f = map_a["a"]
 
-	aaaa = 1.0 == (b = 1)
+	b = 1
 
-	a = v = a
+	aaaa = 1.0 == (b )
+
+	v = a
+	a = v
 	x7 = [1, 2.1, "3"]
 	if b == 2 {
 		x = 2

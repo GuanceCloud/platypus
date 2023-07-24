@@ -59,10 +59,11 @@ func TestRuntime(t *testing.T) {
 
 	f = map_a["nil"][-1]
 
+	b = 1
+	aaaa = 1.0 == b
 
-	aaaa = 1.0 == (b = 1)
-
-	a = v = a
+	v = a
+	a = v
 	x7 = [1, 2.1, "3"]
 	if b == 2 {
 		x = 2
@@ -346,6 +347,168 @@ func TestInExpr(t *testing.T) {
 	}, inData.data)
 }
 
+func TestUnaryAndAssignOP(t *testing.T) {
+	cases := []struct {
+		name string
+		pl   string
+		v    map[string]any
+	}{
+		{
+			name: "unary op",
+			pl: `
+			add_key("t1", !nil)
+			add_key("t2", !"")
+			add_key("t3", !-1)
+			add_key("t4", !1.)
+			add_key("t5", !false)
+			add_key("t6", !(true + false))
+			add_key("t7", !!0)
+			add_key("t8", !!!"abv")
+			add_key("t9", --!"")
+			add_key("t10", -+++-!"" )
+			add_key("t11", -+++-!"" + +1 + -1 ++++1)
+			add_key("t12", -(1.1+0))
+			add_key("t12_1", -(0.0))			
+			add_key("t13", +(1.1))
+			add_key("t14", +1)
+			add_key("t15", -true)
+			add_key("t16", +true)
+			add_key("t17", -false)
+			add_key("t18", +false)
+			v19 = {}
+			v19_1 = {"a":1}
+			add_key("t19", !{})
+			add_key("t20", !v19)
+			add_key("t21", !v19_1)
+			add_key("t21_1", ! {"a": 1})
+			
+			v22 =  []
+			v22_1 = [1]
+			add_key("t22", ![])
+			add_key("t23", !v22)
+			add_key("t24", !v22_1)
+			add_key("t24_1", ![1])
+			`,
+			v: map[string]any{
+				"t1":    true,
+				"t2":    true,
+				"t3":    false,
+				"t4":    false,
+				"t5":    true,
+				"t6":    false,
+				"t7":    false,
+				"t8":    false,
+				"t9":    int64(1),
+				"t10":   int64(1),
+				"t11":   int64(2),
+				"t12":   float64(-1.1),
+				"t12_1": float64(0),
+				"t13":   float64(1.1),
+				"t14":   int64(1),
+				"t15":   int64(-1),
+				"t16":   int64(1),
+				"t17":   int64(0),
+				"t18":   int64(0),
+				"t19":   true,
+				"t20":   true,
+				"t21":   false,
+				"t21_1": false,
+				"t22":   true,
+				"t23":   true,
+				"t24":   false,
+				"t24_1": false,
+			},
+		},
+		{
+			name: "assign",
+			pl: `
+			v1 = 1
+			v1 += 1
+			add_key(v1)
+			v2 = 1.1
+			v2 += 1
+			add_key(v2)
+			v3 = ""
+			v3 += "aaa" + "b"
+			v3 += "bb"
+			add_key(v3)
+			v4 =  [true,2,2]
+			v4[2] += 1
+			add_key(v4)
+			v4[0] += 1
+			v5 = v4[0]
+			add_key(v5)
+			v6 = 1
+			v6 -=2
+			add_key(v6)
+			v7 = 1.1
+			v7 *= 2
+			add_key(v7)
+			v8 = 10
+			v8 %= 2
+			add_key(v8)
+			v9 =  1
+			v9 -= 2.0
+			add_key(v9)
+			v10  = [1, 2,3 ,{"a": 2, "c": [5.0]}]
+			v10[3]["c"][0] /= 2
+			add_key(v10)
+			`,
+			v: map[string]any{
+				"v1":  int64(2),
+				"v2":  float64(2.1),
+				"v3":  "aaabbb",
+				"v4":  "[true,2,3]",
+				"v5":  int64(2),
+				"v6":  int64(-1),
+				"v7":  float64(2.2),
+				"v8":  int64(0),
+				"v9":  float64(-1.0),
+				"v10": "[1,2,3,{\"a\":2,\"c\":[2.5]}]",
+			},
+		},
+	}
+
+	for _, v := range cases {
+		t.Run(v.name, func(t *testing.T) {
+			stmts, err := parseScript(v.pl)
+			if err != nil {
+				t.Fatal(err)
+			}
+			script := &Script{
+				CallRef: nil,
+				FuncCall: map[string]FuncCall{
+					"test":    callexprtest,
+					"add_key": addkeytest,
+					"len":     lentest,
+				},
+				Name:      "abc",
+				Namespace: "default",
+				Category:  "",
+				FilePath:  "",
+				Content:   v.pl,
+				Ast:       stmts,
+			}
+			errR := CheckScript(script, map[string]FuncCheck{
+				"add_key": addkeycheck,
+				"len":     lencheck,
+			})
+			if errR != nil {
+				t.Fatal(*errR)
+			}
+
+			inData := &inputImpl{
+				data: map[string]any{},
+			}
+
+			errR = RunScriptWithRMapIn(script, inData, nil)
+			if errR != nil {
+				t.Fatal(errR.Error())
+			}
+			assert.Equal(t, v.v, inData.data)
+		})
+	}
+}
 func TestCondTrue(t *testing.T) {
 	cases := []struct {
 		val   any
