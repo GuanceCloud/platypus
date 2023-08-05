@@ -347,6 +347,26 @@ func TestInExpr(t *testing.T) {
 	}, inData.data)
 }
 
+type sign struct {
+}
+
+func (s *sign) ExitSignal() bool {
+	return false
+}
+
+func TestSignal(t *testing.T) {
+	s := func() Signal {
+		return (*sign)(nil)
+	}()
+
+	ctx := &Context{
+		signal: s,
+	}
+
+	sig := ctx.Signal()
+	assert.Equal(t, false, sig == nil)
+}
+
 func TestUnaryAndAssignOP(t *testing.T) {
 	cases := []struct {
 		name string
