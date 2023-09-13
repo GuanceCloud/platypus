@@ -347,6 +347,88 @@ func TestInExpr(t *testing.T) {
 	}, inData.data)
 }
 
+func TestUnaryExpr(t *testing.T) {
+	pl := `
+	if !ckfn("") {
+		add_key("abc", "abcd")
+	}
+	`
+	stmts, err := parseScript(pl)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	script := &Script{
+		CallRef: nil,
+		FuncCall: map[string]FuncCall{
+			"test":    callexprtest,
+			"add_key": addkeytest,
+			"ckfn":    ckfn,
+		},
+		Name:      "abc",
+		Namespace: "default",
+		Category:  "",
+		FilePath:  "",
+		Content:   pl,
+		Ast:       stmts,
+	}
+	errR := CheckScript(script, map[string]FuncCheck{
+		"add_key": addkeycheck,
+		"ckfn":    ckfncheck,
+	})
+	if errR != nil {
+		t.Fatal(*errR)
+	}
+
+	inData := &inputImpl{
+		data: map[string]any{},
+	}
+
+	errR = RunScriptWithRMapIn(script, inData, nil)
+	if errR != nil {
+		t.Fatal(errR.Error())
+	}
+	assert.Equal(t, map[string]any{
+		"abc": "abcd",
+	}, inData.data)
+}
+
+func TestUnaryErrExpr(t *testing.T) {
+	pl := `
+	if !ckfn("") {
+		add_key("abc", "abcd")
+	}
+	`
+	stmts, err := parseScript(pl)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	script := &Script{
+		CallRef: nil,
+		FuncCall: map[string]FuncCall{
+			"test":    callexprtest,
+			"add_key": addkeytest,
+			"ckfn":    ckfn,
+		},
+		Name:      "abc",
+		Namespace: "default",
+		Category:  "",
+		FilePath:  "",
+		Content:   pl,
+		Ast:       stmts,
+	}
+	errR := CheckScript(script, map[string]FuncCheck{
+		"add_key": addkeycheck,
+		"ckfn":    ckfnErrcheck,
+	})
+	if errR == nil {
+		t.Fatal(*errR)
+	} else {
+		t.Log(errR.Error())
+	}
+}
+
 type sign struct {
 }
 
@@ -990,6 +1072,24 @@ func lentest(ctx *Context, callExpr *ast.CallExpr) *errchain.PlError {
 		ctx.Regs.ReturnAppend(int64(len(val.(map[string]any))), ast.Int)
 	default:
 		ctx.Regs.ReturnAppend(int64(0), ast.Int)
+	}
+	return nil
+}
+
+func ckfncheck(ctx *Context, callexpr *ast.CallExpr) *errchain.PlError {
+	callexpr.PrivateData = 1
+	return nil
+}
+
+func ckfnErrcheck(ctx *Context, callexpr *ast.CallExpr) *errchain.PlError {
+	return NewRunError(ctx, "err", callexpr.NamePos)
+}
+
+func ckfn(ctx *Context, callExpr *ast.CallExpr) *errchain.PlError {
+	if callExpr.PrivateData == nil {
+		ctx.Regs.ReturnAppend(true, ast.Bool)
+	} else {
+		ctx.Regs.ReturnAppend(false, ast.Bool)
 	}
 	return nil
 }
