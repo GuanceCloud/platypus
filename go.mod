@@ -1,6 +1,6 @@
 module github.com/GuanceCloud/platypus
 
-go 1.18
+go 1.19
 
 require (
 	github.com/DataDog/datadog-agent/pkg/obfuscate v0.39.0
