@@ -9,10 +9,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/GuanceCloud/cliutils/point"
 	"github.com/GuanceCloud/platypus/pkg/engine/runtime"
-	"github.com/GuanceCloud/platypus/pkg/inimpl/guancecloud/ptinput"
-	"github.com/GuanceCloud/platypus/pkg/inimpl/guancecloud/ptinput/funcs"
+	"github.com/GuanceCloud/platypus/pkg/inimpl/guancecloud/funcs"
+	"github.com/GuanceCloud/platypus/pkg/inimpl/guancecloud/input"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -103,7 +102,8 @@ for a = 0; a < 12; a = a + 1 {
 
 	script := scripts["abc.ppl"]
 
-	pt := ptinput.NewPlPoint(point.Logging, "test", nil, nil, time.Now())
+	pt := input.GetPoint()
+	pt = input.InitPt(pt, "test", nil, nil, time.Now())
 	err := runtime.RunScriptWithRMapIn(script, pt, nil)
 	if err != nil {
 		t.Fatal(err.Error())
@@ -119,5 +119,5 @@ for a = 0; a < 12; a = a + 1 {
 		"len1":   int64(2),
 		"len2":   int64(3),
 		"list_":  "[1,2,{\"a\":[1,2,2]},{}]",
-	}, pt.Fields())
+	}, pt.Fields)
 }
