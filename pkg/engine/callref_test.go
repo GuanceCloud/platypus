@@ -8,7 +8,7 @@ package engine
 import (
 	"testing"
 
-	"github.com/GuanceCloud/platypus/pkg/inimpl/guancecloud/funcs"
+	"github.com/GuanceCloud/platypus/pkg/inimpl/guancecloud/ptinput/funcs"
 	"github.com/stretchr/testify/assert"
 )
 

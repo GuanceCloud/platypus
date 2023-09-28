@@ -9,11 +9,12 @@ import (
 	"os"
 	"time"
 
+	"github.com/GuanceCloud/cliutils/point"
 	"github.com/GuanceCloud/platypus/internal/logger"
 	"github.com/GuanceCloud/platypus/pkg/engine"
 	plruntime "github.com/GuanceCloud/platypus/pkg/engine/runtime"
-	"github.com/GuanceCloud/platypus/pkg/inimpl/guancecloud/funcs"
-	"github.com/GuanceCloud/platypus/pkg/inimpl/guancecloud/input"
+	"github.com/GuanceCloud/platypus/pkg/inimpl/guancecloud/ptinput"
+	"github.com/GuanceCloud/platypus/pkg/inimpl/guancecloud/ptinput/funcs"
 	"github.com/influxdata/influxdb1-client/models"
 	influxdb "github.com/influxdata/influxdb1-client/v2"
 	"go.uber.org/zap/zapcore"
@@ -84,7 +85,7 @@ func runScript(ctx context.Context, options *Options, script *plruntime.Script) 
 		return fmt.Errorf("read input file error: %w", err)
 	}
 
-	var measurement string
+	var name string
 	var tags map[string]string
 	var fields map[string]any
 	tn := time.Now()
@@ -103,25 +104,23 @@ func runScript(ctx context.Context, options *Options, script *plruntime.Script) 
 		}
 		fields = f
 		tags = pt.Tags()
-		measurement = pt.Name()
+		name = pt.Name()
 		tn = pt.Time()
 	case TypeText:
-		measurement = "default_name"
+		name = "default_name"
 		fields = map[string]any{"message": string(data)}
 	default:
 		return fmt.Errorf("unsupported input type: %s", options.Type)
 	}
 	var dropped bool
-	pt := input.GetPoint()
-	defer input.PutPoint(pt)
 
-	input.InitPt(pt, measurement, tags, fields, tn)
+	pt := ptinput.NewPlPoint(point.UnknownCategory, name, tags, fields, tn)
 
-	fields = pt.Fields
-	tags = pt.Tags
-	dropped = pt.Drop
-	tn = pt.Time
-	measurement = pt.Measurement
+	fields = pt.Fields()
+	tags = pt.Tags()
+	dropped = pt.Dropped()
+	tn = pt.PtTime()
+	name = pt.GetPtName()
 
 	errR := engine.RunScriptWithRMapIn(script, pt, nil)
 	if errR != nil {
@@ -139,7 +138,7 @@ func runScript(ctx context.Context, options *Options, script *plruntime.Script) 
 		encoder.SetEscapeHTML(false)
 		encoder.SetIndent("", defaultJSONIndent)
 		if err := encoder.Encode(map[string]any{
-			"measurement": measurement,
+			"measurement": name,
 			"tags":        tags,
 			"fields":      fields,
 			"time":        tn,
@@ -148,7 +147,7 @@ func runScript(ctx context.Context, options *Options, script *plruntime.Script) 
 		}
 		l.Infof("Platypus Output Data:\n%s", buf.String())
 	case OutTypeLineProtocol:
-		pt, err := influxdb.NewPoint(measurement, tags, fields, tn)
+		pt, err := influxdb.NewPoint(name, tags, fields, tn)
 		if err != nil {
 			return fmt.Errorf("encode point output error: %w", err)
 		}
