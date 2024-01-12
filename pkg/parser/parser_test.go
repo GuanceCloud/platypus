@@ -1512,3 +1512,90 @@ multiline-string
 		})
 	}
 }
+
+func TestParserEOLS(t *testing.T) {
+	cases := []string{
+		`
+
+`,
+		`
+;
+`,
+		`
+
+;;
+`,
+		`
+;
+
+`,
+		`
+
+a + 1
+`,
+		`
+
+a + 1
+;`,
+		`
+
+;
+a
+
+`,
+
+		`
+
+a
+`,
+		`
+a +  #abc
+1
+a + 1
+x in [abc]
+
+x in # dd
+[ abc]
+
+x in
+[ abc];
+
+x in [	abc
+]
+
+x[
+	a
+]
+x[a]
+x[
+	a]
+
+cALl(
+	a, v,
+	c )
+cALl(	a, v,
+		c 
+	)
+cALl(a, v,c)
+
+{ #d
+	x: call( #33
+
+	),
+	a : x , d: e,
+	c: x
+}
+{}
+a =
+b
+`,
+	}
+
+	for _, v := range cases {
+		stmts, err := ParsePipeline("", v)
+		if err != nil {
+			t.Fatal(err)
+		}
+		t.Log(stmts)
+	}
+}
