@@ -24,6 +24,7 @@ export class Formatter implements IFormatter {
         opts.tree.rootNode.children.forEach(child => {
             this.formatInlineStmt(child, ctx);
         });
+        console.log("[DEBUG]", opts.tree.rootNode.toString());
         console.log("[DEBUG]", ctx.build());
         return {
             formatted: ctx.build(),
@@ -148,7 +149,7 @@ export class Formatter implements IFormatter {
             ctx.indent();
             ctx.newline();
             node.children.slice(1, -1).forEach((child, index) => {
-                if (index % 2 !== 0) {
+                if (index % 2 !== 0 || child.isMissing()) {
                     return;
                 }
                 ctx.writeIndent();
@@ -159,7 +160,7 @@ export class Formatter implements IFormatter {
             ctx.unindent();
         } else {
             node.children.slice(1, -1).forEach((child, index) => {
-                if (index % 2 !== 0) {
+                if (index % 2 !== 0 || child.isMissing()) {
                     return;
                 }
                 if (index > 0) {
@@ -288,6 +289,24 @@ export class Formatter implements IFormatter {
     }
 
     formatStringLit(node: TParser.SyntaxNode, ctx: IContext) {
+        switch (node.children[0].type) {
+            case "quoted_string_lit":
+                this.formatQuotedStringLit(node.children[0], ctx);
+                break;
+            case "multiline_string_lit":
+                this.formatMultilineStringLit(node.children[0], ctx);
+                break;
+            default:
+                // ctx.write(node.text);
+                break;
+        }
+    }
+
+    formatQuotedStringLit(node: TParser.SyntaxNode, ctx: IContext) {
+        ctx.write(node.text);
+    }
+
+    formatMultilineStringLit(node: TParser.SyntaxNode, ctx: IContext) {
         ctx.write(node.text);
     }
 

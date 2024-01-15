@@ -232,11 +232,20 @@ module.exports = grammar({
 
     // Literal: string
     string_lit: $ => choice(
-      seq('"', '"'),
-      seq('"', field('value', $.string_content), '"'),
+      $.multiline_string_lit,
+      $.quoted_string_lit,
     ),
 
-    string_lit: $ => choice(
+    multiline_string_lit: $ => seq(
+      '`',
+      repeat(choice(
+        token.immediate(prec(1, /[^\\`]+/)),
+        $.escape_sequence,
+      )),
+      '`'
+    ),
+
+    quoted_string_lit: $ => choice(
       seq(
         '"',
         repeat(choice(
