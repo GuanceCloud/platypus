@@ -134,9 +134,22 @@ sep: SEMICOLON
 | sep EOL
 ;
 
+sem: SEMICOLON
+| sem EOL
+| sem SEMICOLON
+;
+
 start: START_STMTS stmts
 {
 	yylex.(*parser).parseResult = $2
+}
+| START_STMTS EOLS
+{
+	yylex.(*parser).parseResult = ast.Stmts{}
+}
+| START_STMTS EOLS stmts
+{
+	yylex.(*parser).parseResult = $3
 }
 | start EOF
 | error
@@ -163,7 +176,7 @@ stmts_list: stmt sep
 {
 	$$ = ast.Stmts{$1}
 }
-| sep
+| sem
 {
 	$$ = ast.Stmts{}
 }
@@ -201,36 +214,44 @@ expr: basic_literal
 value_stmt: expr
 ;
 
-assignment_stmt: expr EQ expr
+EOLS: EOL
+| EOLS EOL
+;
+
+SPACE_EOLS: EOLS
+|
+;
+
+assignment_stmt: expr EQ SPACE_EOLS expr
 {
-	$$ = yylex.(*parser).newAssignmentStmt($1, $3, $2)
+	$$ = yylex.(*parser).newAssignmentStmt($1, $4, $2)
 }
-| expr ADD_EQ expr
+| expr ADD_EQ SPACE_EOLS expr
 {
-	$$ = yylex.(*parser).newAssignmentStmt($1, $3, $2)
+	$$ = yylex.(*parser).newAssignmentStmt($1, $4, $2)
 }
-| expr SUB_EQ expr
+| expr SUB_EQ SPACE_EOLS expr
 {
-	$$ = yylex.(*parser).newAssignmentStmt($1, $3, $2)
+	$$ = yylex.(*parser).newAssignmentStmt($1, $4, $2)
 }
-| expr MUL_EQ expr
+| expr MUL_EQ SPACE_EOLS expr
 {
-	$$ = yylex.(*parser).newAssignmentStmt($1, $3, $2)
+	$$ = yylex.(*parser).newAssignmentStmt($1, $4, $2)
 }
-| expr DIV_EQ expr
+| expr DIV_EQ SPACE_EOLS expr
 {
-	$$ = yylex.(*parser).newAssignmentStmt($1, $3, $2)
+	$$ = yylex.(*parser).newAssignmentStmt($1, $4, $2)
 }
-| expr MOD_EQ expr
+| expr MOD_EQ SPACE_EOLS expr
 {
-	$$ = yylex.(*parser).newAssignmentStmt($1, $3, $2)
+	$$ = yylex.(*parser).newAssignmentStmt($1, $4, $2)
 }
 ;
 
 
-in_expr: expr IN expr
+in_expr: expr IN SPACE_EOLS expr
 {
-	$$ = yylex.(*parser).newInExpr($1, $3, $2)
+	$$ = yylex.(*parser).newInExpr($1, $4, $2)
 }
 
 break_stmt: BREAK
@@ -333,54 +354,41 @@ elif_elem: ELIF expr stmt_block
 
 
 stmt_block: empty_block
-| LEFT_BRACE stmts RIGHT_BRACE
+| LEFT_BRACE SPACE_EOLS stmts RIGHT_BRACE
 {
-	$$ = yylex.(*parser).newBlockStmt($1, $2, $3)
+	$$ = yylex.(*parser).newBlockStmt($1, $3, $4)
 }
 ;
 
-empty_block : LEFT_BRACE RIGHT_BRACE
+empty_block : LEFT_BRACE SPACE_EOLS RIGHT_BRACE
 {
-	$$ = yylex.(*parser).newBlockStmt($1, ast.Stmts{} , $2)
+	$$ = yylex.(*parser).newBlockStmt($1, ast.Stmts{} , $3)
 }
 ;
 
-call_expr: identifier LEFT_PAREN function_args RIGHT_PAREN
+call_expr: identifier LEFT_PAREN SPACE_EOLS  function_args SPACE_EOLS RIGHT_PAREN
 {
-	$$ = yylex.(*parser).newCallExpr($1, $3, $2, $4)
+	$$ = yylex.(*parser).newCallExpr($1, $4, $2, $6)
 }
-| identifier LEFT_PAREN function_args COMMA RIGHT_PAREN
+| identifier LEFT_PAREN SPACE_EOLS function_args COMMA SPACE_EOLS RIGHT_PAREN
 {
-	$$ = yylex.(*parser).newCallExpr($1, $3, $2, $5)
+	$$ = yylex.(*parser).newCallExpr($1, $4, $2, $7)
 }
-| identifier LEFT_PAREN RIGHT_PAREN
-{
-	$$ = yylex.(*parser).newCallExpr($1, nil, $2, $3)
-}
-| identifier LEFT_PAREN function_args EOLS RIGHT_PAREN
-{
-	$$ = yylex.(*parser).newCallExpr($1, $3, $2, $5)
-}
-| identifier LEFT_PAREN function_args COMMA EOLS RIGHT_PAREN
-{
-	$$ = yylex.(*parser).newCallExpr($1, $3, $2, $6)
-}
-| identifier LEFT_PAREN EOLS RIGHT_PAREN
+| identifier LEFT_PAREN SPACE_EOLS RIGHT_PAREN
 {
 	$$ = yylex.(*parser).newCallExpr($1, nil, $2, $4)
 }
 ;
 
 
-function_args: function_args COMMA expr
+function_args: function_args COMMA SPACE_EOLS expr
 {
-	$$ = append($$, $3)
+	$$ = append($$, $4)
 }
-| function_args COMMA named_arg
+| function_args COMMA SPACE_EOLS named_arg
 {
-	$$ = append($$, $3)
+	$$ = append($$, $4)
 }
-
 | named_arg
 {
 	$$ = []*ast.Node{$1}
@@ -391,9 +399,9 @@ function_args: function_args COMMA expr
 }
 ;
 
-named_arg: identifier EQ expr
+named_arg: identifier EQ SPACE_EOLS expr
 {
-	$$ = yylex.(*parser).newAssignmentStmt($1, $3, $2)
+	$$ = yylex.(*parser).newAssignmentStmt($1, $4, $2)
 }
 ;
 
@@ -413,91 +421,83 @@ unary_expr: ADD expr %prec UMINUS
 
 binary_expr: conditional_expr | arithmeticExpr ;
 
-conditional_expr: expr GTE expr
+conditional_expr: expr GTE SPACE_EOLS expr
 {
-	$$ = yylex.(*parser).newConditionalExpr($1, $3, $2)
+	$$ = yylex.(*parser).newConditionalExpr($1, $4, $2)
 }
-| expr GT expr
+| expr GT SPACE_EOLS expr
 {
-	$$ = yylex.(*parser).newConditionalExpr($1, $3, $2)
+	$$ = yylex.(*parser).newConditionalExpr($1, $4, $2)
 }
-| expr OR expr
+| expr OR SPACE_EOLS expr
 {
-	$$ = yylex.(*parser).newConditionalExpr($1, $3, $2)
+	$$ = yylex.(*parser).newConditionalExpr($1, $4, $2)
 }
-| expr AND expr
+| expr AND SPACE_EOLS expr
 {
-	$$ = yylex.(*parser).newConditionalExpr($1, $3, $2)
+	$$ = yylex.(*parser).newConditionalExpr($1, $4, $2)
 }
-| expr LT expr
+| expr LT SPACE_EOLS expr
 {
-	$$ = yylex.(*parser).newConditionalExpr($1, $3, $2)
+	$$ = yylex.(*parser).newConditionalExpr($1, $4, $2)
 }
-| expr LTE expr
+| expr LTE SPACE_EOLS expr
 {
-	$$ = yylex.(*parser).newConditionalExpr($1, $3, $2)
+	$$ = yylex.(*parser).newConditionalExpr($1, $4, $2)
 }
-| expr NEQ expr
+| expr NEQ SPACE_EOLS expr
 {
-	$$ = yylex.(*parser).newConditionalExpr($1, $3, $2)
+	$$ = yylex.(*parser).newConditionalExpr($1, $4, $2)
 }
-| expr EQEQ expr
+| expr EQEQ SPACE_EOLS expr
 {
-	$$ = yylex.(*parser).newConditionalExpr($1, $3, $2)
+	$$ = yylex.(*parser).newConditionalExpr($1, $4, $2)
 }
 ;
 
 
-arithmeticExpr: expr ADD expr
+arithmeticExpr: expr ADD SPACE_EOLS expr
 {
-	$$ = yylex.(*parser).newArithmeticExpr($1, $3, $2)
+	$$ = yylex.(*parser).newArithmeticExpr($1, $4, $2)
 }
-| expr SUB expr
+| expr SUB SPACE_EOLS expr
 {
-	$$ = yylex.(*parser).newArithmeticExpr($1, $3, $2)
+	$$ = yylex.(*parser).newArithmeticExpr($1, $4, $2)
 }
-| expr MUL expr
+| expr MUL SPACE_EOLS expr
 {
-	$$ = yylex.(*parser).newArithmeticExpr($1, $3, $2)
+	$$ = yylex.(*parser).newArithmeticExpr($1, $4, $2)
 }
-| expr DIV expr
+| expr DIV SPACE_EOLS expr
 {
-	$$ = yylex.(*parser).newArithmeticExpr($1, $3, $2)
+	$$ = yylex.(*parser).newArithmeticExpr($1, $4, $2)
 }
-| expr MOD expr
+| expr MOD SPACE_EOLS expr
 {
-	$$ = yylex.(*parser).newArithmeticExpr($1, $3, $2)
+	$$ = yylex.(*parser).newArithmeticExpr($1, $4, $2)
 }
 ;
 
 // TODO: 支持多个表达式构成的括号表达式
-paren_expr: LEFT_PAREN expr RIGHT_PAREN
+paren_expr: LEFT_PAREN SPACE_EOLS expr SPACE_EOLS RIGHT_PAREN
 {
-	$$ = yylex.(*parser).newParenExpr($1, $2, $3)
-}
-| LEFT_PAREN expr EOLS RIGHT_PAREN
-{
-	$$ = yylex.(*parser).newParenExpr($1, $2, $4)
+	$$ = yylex.(*parser).newParenExpr($1, $3, $5)
 }
 ;
 
 
-EOLS: EOL
-| EOLS EOL
-;
-
-index_expr: identifier LEFT_BRACKET expr RIGHT_BRACKET
+index_expr: identifier LEFT_BRACKET SPACE_EOLS expr SPACE_EOLS RIGHT_BRACKET
 {
-	$$ = yylex.(*parser).newIndexExpr($1, $2 ,$3, $4)
+	$$ = yylex.(*parser).newIndexExpr($1, $2 ,$4, $6)
 }
-| DOT LEFT_BRACKET expr RIGHT_BRACKET	
+| DOT LEFT_BRACKET SPACE_EOLS expr SPACE_EOLS RIGHT_BRACKET	
 // 兼容原有语法，仅作为 json 函数的第二个参数
 {
-	$$ = yylex.(*parser).newIndexExpr(nil, $2, $3, $4)
+	$$ = yylex.(*parser).newIndexExpr(nil, $2, $4, $6)
 }
-| index_expr LEFT_BRACKET expr RIGHT_BRACKET
+| index_expr LEFT_BRACKET SPACE_EOLS expr SPACE_EOLS RIGHT_BRACKET
 {
-	$$ = yylex.(*parser).newIndexExpr($1, $2, $3, $4)
+	$$ = yylex.(*parser).newIndexExpr($1, $2, $4, $6)
 }
 ;
 
@@ -535,37 +535,37 @@ list_init : list_init_start RIGHT_BRACKET
 {
 	$$ = yylex.(*parser).newListInitEndExpr($$, $2.Pos)
 }
-| list_init_start COMMA RIGHT_BRACKET
+| list_init_start COMMA SPACE_EOLS RIGHT_BRACKET
 {
-	$$ = yylex.(*parser).newListInitEndExpr($$, $2.Pos)
+	$$ = yylex.(*parser).newListInitEndExpr($$, $4.Pos)
 }
-| LEFT_BRACKET RIGHT_BRACKET
+| LEFT_BRACKET SPACE_EOLS RIGHT_BRACKET
 { 
 	$$ = yylex.(*parser).newListInitStartExpr($1.Pos)
-	$$ = yylex.(*parser).newListInitEndExpr($$, $2.Pos)
+	$$ = yylex.(*parser).newListInitEndExpr($$, $3.Pos)
 }
 ;
 
-list_init_start : LEFT_BRACKET expr
+list_init_start : LEFT_BRACKET SPACE_EOLS expr
 {
 	$$ = yylex.(*parser).newListInitStartExpr($1.Pos)
-	$$ = yylex.(*parser).newListInitAppendExpr($$, $2)
-}
-| list_init_start COMMA expr
-{
 	$$ = yylex.(*parser).newListInitAppendExpr($$, $3)
+}
+| list_init_start COMMA SPACE_EOLS expr
+{
+	$$ = yylex.(*parser).newListInitAppendExpr($$, $4)
 }
 | list_init_start EOL
 ;
 
 
-map_init : map_init_start RIGHT_BRACE
-{
-	$$ = yylex.(*parser).newMapInitEndExpr($$, $2.Pos)
-}
-|  map_init_start COMMA RIGHT_BRACE
+map_init : map_init_start SPACE_EOLS RIGHT_BRACE
 {
 	$$ = yylex.(*parser).newMapInitEndExpr($$, $3.Pos)
+}
+|  map_init_start COMMA SPACE_EOLS RIGHT_BRACE
+{
+	$$ = yylex.(*parser).newMapInitEndExpr($$, $4.Pos)
 }
 | empty_block
 { 
@@ -574,16 +574,15 @@ map_init : map_init_start RIGHT_BRACE
 }
 ;
 
-map_init_start: LEFT_BRACE expr COLON expr
+map_init_start: LEFT_BRACE SPACE_EOLS expr COLON SPACE_EOLS expr
 { 
 	$$ = yylex.(*parser).newMapInitStartExpr($1.Pos)
-	$$ = yylex.(*parser).newMapInitAppendExpr($$, $2, $4)
+	$$ = yylex.(*parser).newMapInitAppendExpr($$, $3, $6)
 }
-| map_init_start COMMA expr COLON expr
+| map_init_start COMMA SPACE_EOLS expr COLON SPACE_EOLS expr
 {
-	$$ = yylex.(*parser).newMapInitAppendExpr($1, $3, $5)
+	$$ = yylex.(*parser).newMapInitAppendExpr($1, $4, $7)
 }
-| map_init_start EOL
 ;
 
 

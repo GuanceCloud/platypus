@@ -17,6 +17,8 @@ import (
 
 func TestOp(t *testing.T) {
 	pl := `
+
+
 	b = 1 + 1
 	a = (b + 2) == 4 || False
 	c = a * 3 + +100 + -10 +
@@ -51,25 +53,30 @@ func TestOp(t *testing.T) {
 	ddd = ""
 
 	# 无序遍历 key
-	# for x in {'a': 1, "b":2, "c":3} {
+	# for x in {'a': 1, "b":2, "c":3} { #fff
 	# 	ddd = ddd + x
 	# }
 
 	# add_key(ddd)
 
 	abc = {
+
 		"a": [1,2,3],
 		"d": "a",
 		"1": 2,
-		"d": nil
+		"d": nil,
 	}
 	add_key(abc)
 	abc["a"][-1] = 5
 	add_key(abc)
-` + ";`aa dw.` = abc;" + "add_key(`aa dw.`)" + `
+` + ";`aa dw.` = abc;" + "add_key(`aa dw.`)" + ` #2222
 for x in [1,2,3 ] {
 	for y in [1,3,4] {
-		if y == 3 {
+
+		;;;
+
+		if y == # ??? 
+		3 { #fff
 			break
 		}
 		continue
