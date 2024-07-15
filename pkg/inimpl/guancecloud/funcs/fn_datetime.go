@@ -57,7 +57,7 @@ func DateTime(ctx *runtime.Context, funcExpr *ast.CallExpr) *errchain.PlError {
 
 	switch funcExpr.Param[1].NodeType { //nolint:exhaustive
 	case ast.TypeStringLiteral:
-		precision = funcExpr.Param[1].StringLiteral.Val
+		precision = funcExpr.Param[1].StringLiteral().Val
 	default:
 		return runtime.NewRunError(ctx, fmt.Sprintf(
 			"param `precision` expect StringLiteral, got %s",
@@ -66,7 +66,7 @@ func DateTime(ctx *runtime.Context, funcExpr *ast.CallExpr) *errchain.PlError {
 
 	switch funcExpr.Param[2].NodeType { //nolint:exhaustive
 	case ast.TypeStringLiteral:
-		fmts = funcExpr.Param[2].StringLiteral.Val
+		fmts = funcExpr.Param[2].StringLiteral().Val
 	default:
 		return runtime.NewRunError(ctx, fmt.Sprintf(
 			"param `fmt` expect StringLiteral, got %s",

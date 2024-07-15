@@ -58,7 +58,7 @@ func Replace(ctx *runtime.Context, funcExpr *ast.CallExpr) *errchain.PlError {
 
 	switch funcExpr.Param[1].NodeType { //nolint:exhaustive
 	case ast.TypeStringLiteral:
-		pattern = funcExpr.Param[1].StringLiteral.Val
+		pattern = funcExpr.Param[1].StringLiteral().Val
 	default:
 		return runtime.NewRunError(ctx, fmt.Sprintf("expect StringLiteral, got %s",
 			funcExpr.Param[1].NodeType), funcExpr.Param[1].StartPos())
@@ -66,7 +66,7 @@ func Replace(ctx *runtime.Context, funcExpr *ast.CallExpr) *errchain.PlError {
 
 	switch funcExpr.Param[2].NodeType { //nolint:exhaustive
 	case ast.TypeStringLiteral:
-		dz = funcExpr.Param[2].StringLiteral.Val
+		dz = funcExpr.Param[2].StringLiteral().Val
 	default:
 		return runtime.NewRunError(ctx, fmt.Sprintf("expect StringLiteral, got %s",
 			funcExpr.Param[2].NodeType), funcExpr.Param[2].StartPos())

@@ -50,7 +50,7 @@ func Trim(ctx *runtime.Context, funcExpr *ast.CallExpr) *errchain.PlError {
 	if len(funcExpr.Param) == 2 {
 		switch funcExpr.Param[1].NodeType { //nolint:exhaustive
 		case ast.TypeStringLiteral:
-			cutset = funcExpr.Param[1].StringLiteral.Val
+			cutset = funcExpr.Param[1].StringLiteral().Val
 		default:
 			return runtime.NewRunError(ctx, fmt.Sprintf("param type expect StringLiteral, got `%s'",
 				funcExpr.Param[1].NodeType), funcExpr.Param[1].StartPos())

@@ -25,11 +25,11 @@ func CastChecking(ctx *runtime.Context, funcExpr *ast.CallExpr) *errchain.PlErro
 
 	switch funcExpr.Param[1].NodeType { //nolint:exhaustive
 	case ast.TypeStringLiteral:
-		switch funcExpr.Param[1].StringLiteral.Val {
+		switch funcExpr.Param[1].StringLiteral().Val {
 		case "bool", "int", "float", "str", "string":
 		default:
 			return runtime.NewRunError(ctx, fmt.Sprintf("unsupported data type: %s",
-				funcExpr.Param[1].StringLiteral.Val), funcExpr.Param[1].StartPos())
+				funcExpr.Param[1].StringLiteral().Val), funcExpr.Param[1].StartPos())
 		}
 	default:
 		return runtime.NewRunError(ctx, fmt.Sprintf("param type expect StringLiteral, got `%s'",
@@ -53,7 +53,7 @@ func Cast(ctx *runtime.Context, funcExpr *ast.CallExpr) *errchain.PlError {
 
 	switch funcExpr.Param[1].NodeType { //nolint:exhaustive
 	case ast.TypeStringLiteral:
-		castType = funcExpr.Param[1].StringLiteral.Val
+		castType = funcExpr.Param[1].StringLiteral().Val
 	default:
 		return runtime.NewRunError(ctx, fmt.Sprintf("param type expect StringLiteral, got `%s'",
 			funcExpr.Param[1].NodeType), funcExpr.Param[1].StartPos())

@@ -42,7 +42,7 @@ func GrokChecking(ctx *runtime.Context, funcExpr *ast.CallExpr) *errchain.PlErro
 	var pattern string
 	switch funcExpr.Param[1].NodeType { //nolint:exhaustive
 	case ast.TypeStringLiteral:
-		pattern = funcExpr.Param[1].StringLiteral.Val
+		pattern = funcExpr.Param[1].StringLiteral().Val
 	default:
 		return runtime.NewRunError(ctx, fmt.Sprintf(
 			"expect StringLiteral, got %s",
@@ -81,7 +81,7 @@ func Grok(ctx *runtime.Context, funcExpr *ast.CallExpr) *errchain.PlError {
 	if len(funcExpr.Param) == 3 {
 		switch funcExpr.Param[2].NodeType { //nolint:exhaustive
 		case ast.TypeBoolLiteral:
-			trimSpace = funcExpr.Param[2].BoolLiteral.Val
+			trimSpace = funcExpr.Param[2].BoolLiteral().Val
 		default:
 			ctx.Regs.ReturnAppend(false, ast.Bool)
 			return runtime.NewRunError(ctx, fmt.Sprintf("param key expect BoolLiteral, got `%s'",

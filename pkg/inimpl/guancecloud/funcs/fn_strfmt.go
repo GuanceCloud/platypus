@@ -48,7 +48,7 @@ func Strfmt(ctx *runtime.Context, funcExpr *ast.CallExpr) *errchain.PlError {
 
 	switch funcExpr.Param[1].NodeType { //nolint:exhaustive
 	case ast.TypeStringLiteral:
-		fmts = funcExpr.Param[1].StringLiteral.Val
+		fmts = funcExpr.Param[1].StringLiteral().Val
 	default:
 		return runtime.NewRunError(ctx, fmt.Sprintf(
 			"param fmt expect StringLiteral, got `%s'",

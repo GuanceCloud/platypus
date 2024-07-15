@@ -52,7 +52,7 @@ func SetMeasurement(ctx *runtime.Context, funcExpr *ast.CallExpr) *errchain.PlEr
 
 	if len(funcExpr.Param) == 2 &&
 		funcExpr.Param[1].NodeType == ast.TypeBoolLiteral {
-		if funcExpr.Param[1].BoolLiteral.Val {
+		if funcExpr.Param[1].BoolLiteral().Val {
 			switch funcExpr.Param[0].NodeType { //nolint:exhaustive
 			case ast.TypeIdentifier, ast.TypeAttrExpr:
 				if key, err := getKeyName(funcExpr.Param[0]); err == nil {
