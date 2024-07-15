@@ -47,10 +47,10 @@ func RunStmtCheck(ctx *Context, ctxCheck *ContextCheck, node *ast.Node) *errchai
 		// skip
 	case ast.TypeNilLiteral:
 		// skip
-	case ast.TypeListInitExpr:
-		return RunListInitExprCheck(ctx, ctxCheck, node.ListInitExpr())
-	case ast.TypeMapInitExpr:
-		return RunMapInitExprCheck(ctx, ctxCheck, node.MapInitExpr())
+	case ast.TypeListLiteral:
+		return RunListInitExprCheck(ctx, ctxCheck, node.ListLiteral())
+	case ast.TypeMapLiteral:
+		return RunMapInitExprCheck(ctx, ctxCheck, node.MapLiteral())
 
 	case ast.TypeParenExpr:
 		return RunParenExprCheck(ctx, ctxCheck, node.ParenExpr())
@@ -87,7 +87,7 @@ func RunStmtCheck(ctx *Context, ctxCheck *ContextCheck, node *ast.Node) *errchai
 	return nil
 }
 
-func RunListInitExprCheck(ctx *Context, ctxCheck *ContextCheck, expr *ast.ListInitExpr) *errchain.PlError {
+func RunListInitExprCheck(ctx *Context, ctxCheck *ContextCheck, expr *ast.ListLiteral) *errchain.PlError {
 	for _, v := range expr.List {
 		if err := RunStmtCheck(ctx, ctxCheck, v); err != nil {
 			return err.ChainAppend(ctx.name, expr.LBracket)
@@ -96,12 +96,12 @@ func RunListInitExprCheck(ctx *Context, ctxCheck *ContextCheck, expr *ast.ListIn
 	return nil
 }
 
-func RunMapInitExprCheck(ctx *Context, ctxCheck *ContextCheck, expr *ast.MapInitExpr) *errchain.PlError {
+func RunMapInitExprCheck(ctx *Context, ctxCheck *ContextCheck, expr *ast.MapLiteral) *errchain.PlError {
 	for _, v := range expr.KeyValeList {
 		switch v[0].NodeType { //nolint:exhaustive
 		case ast.TypeFloatLiteral, ast.TypeIntegerLiteral,
 			ast.TypeBoolLiteral, ast.TypeNilLiteral,
-			ast.TypeListInitExpr, ast.TypeMapInitExpr:
+			ast.TypeListLiteral, ast.TypeMapLiteral:
 			return NewRunError(ctx, "map key expect string",
 				ast.NodeStartPos(v[0]))
 		default:

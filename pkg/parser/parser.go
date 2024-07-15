@@ -184,60 +184,60 @@ func (p *parser) newParenExpr(lParen Item, node *ast.Node, rParen Item) *ast.Nod
 	})
 }
 
-func (p *parser) newListInitStartExpr(pos plToken.Pos) *ast.Node {
-	return ast.WrapListInitExpr(&ast.ListInitExpr{
+func (p *parser) newListLiteralStart(pos plToken.Pos) *ast.Node {
+	return ast.WrapListInitExpr(&ast.ListLiteral{
 		List:     []*ast.Node{},
 		LBracket: p.posCache.LnCol(pos),
 	})
 }
 
-func (p *parser) newListInitAppendExpr(initExpr *ast.Node, elem *ast.Node) *ast.Node {
-	if initExpr.NodeType != ast.TypeListInitExpr {
+func (p *parser) newListLiteralAppendExpr(initExpr *ast.Node, elem *ast.Node) *ast.Node {
+	if initExpr.NodeType != ast.TypeListLiteral {
 		p.addParseErrf(p.yyParser.lval.item.PositionRange(),
-			"%s object is not ListInitExpr", initExpr.NodeType)
+			"%s object is not ListLiteral", initExpr.NodeType)
 		return nil
 	}
 
-	initExpr.ListInitExpr().List = append(initExpr.ListInitExpr().List, elem)
+	initExpr.ListLiteral().List = append(initExpr.ListLiteral().List, elem)
 	return initExpr
 }
 
-func (p *parser) newListInitEndExpr(initExpr *ast.Node, pos plToken.Pos) *ast.Node {
-	if initExpr.NodeType != ast.TypeListInitExpr {
+func (p *parser) newListLiteralEnd(initExpr *ast.Node, pos plToken.Pos) *ast.Node {
+	if initExpr.NodeType != ast.TypeListLiteral {
 		p.addParseErrf(p.yyParser.lval.item.PositionRange(),
-			"%s object is not ListInitExpr", initExpr.NodeType)
+			"%s object is not ListLiteral", initExpr.NodeType)
 		return nil
 	}
-	initExpr.ListInitExpr().RBracket = p.posCache.LnCol(pos)
+	initExpr.ListLiteral().RBracket = p.posCache.LnCol(pos)
 	return initExpr
 }
 
-func (p *parser) newMapInitStartExpr(pos plToken.Pos) *ast.Node {
-	return ast.WrapMapInitExpr(&ast.MapInitExpr{
+func (p *parser) newMapLiteralStart(pos plToken.Pos) *ast.Node {
+	return ast.WrapMapLiteral(&ast.MapLiteral{
 		KeyValeList: [][2]*ast.Node{},
 		LBrace:      p.posCache.LnCol(pos),
 	})
 }
 
-func (p *parser) newMapInitAppendExpr(initExpr *ast.Node, keyNode *ast.Node, valueNode *ast.Node) *ast.Node {
-	if initExpr.NodeType != ast.TypeMapInitExpr {
+func (p *parser) newMapLiteralAppendExpr(initExpr *ast.Node, keyNode *ast.Node, valueNode *ast.Node) *ast.Node {
+	if initExpr.NodeType != ast.TypeMapLiteral {
 		p.addParseErrf(p.yyParser.lval.item.PositionRange(),
-			"%s object is not MapInitExpr", initExpr.NodeType)
+			"%s object is not MapLiteral", initExpr.NodeType)
 		return nil
 	}
 
-	initExpr.MapInitExpr().KeyValeList = append(initExpr.MapInitExpr().KeyValeList,
+	initExpr.MapLiteral().KeyValeList = append(initExpr.MapLiteral().KeyValeList,
 		[2]*ast.Node{keyNode, valueNode})
 	return initExpr
 }
 
-func (p *parser) newMapInitEndExpr(initExpr *ast.Node, pos plToken.Pos) *ast.Node {
-	if initExpr.NodeType != ast.TypeMapInitExpr {
+func (p *parser) newMapLiteralEnd(initExpr *ast.Node, pos plToken.Pos) *ast.Node {
+	if initExpr.NodeType != ast.TypeMapLiteral {
 		p.addParseErrf(p.yyParser.lval.item.PositionRange(),
-			"%s object is not MapInitExpr", initExpr.NodeType)
+			"%s object is not MapLiteral", initExpr.NodeType)
 		return nil
 	}
-	initExpr.MapInitExpr().RBrace = p.posCache.LnCol(pos)
+	initExpr.MapLiteral().RBrace = p.posCache.LnCol(pos)
 	return initExpr
 }
 

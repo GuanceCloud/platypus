@@ -368,16 +368,16 @@ func RunStmt(ctx *Context, node *ast.Node) (any, ast.DType, *errchain.PlError) {
 		return RunCallExpr(ctx, node.CallExpr())
 	case ast.TypeInExpr:
 		return RunInExpr(ctx, node.InExpr())
-	case ast.TypeListInitExpr:
-		return RunListInitExpr(ctx, node.ListInitExpr())
+	case ast.TypeListLiteral:
+		return RunListInitExpr(ctx, node.ListLiteral())
 	case ast.TypeIdentifier:
 		if v, err := ctx.GetKey(node.Identifier().Name); err != nil {
 			return nil, ast.Nil, nil
 		} else {
 			return v.Value, v.DType, nil
 		}
-	case ast.TypeMapInitExpr:
-		return RunMapInitExpr(ctx, node.MapInitExpr())
+	case ast.TypeMapLiteral:
+		return RunMapInitExpr(ctx, node.MapLiteral())
 	// use for map, slice and array
 	case ast.TypeIndexExpr:
 		return RunIndexExprGet(ctx, node.IndexExpr())
@@ -515,7 +515,7 @@ func RunUnaryExpr(ctx *Context, expr *ast.UnaryExpr) (any, ast.DType, *errchain.
 	}
 }
 
-func RunListInitExpr(ctx *Context, expr *ast.ListInitExpr) (any, ast.DType, *errchain.PlError) {
+func RunListInitExpr(ctx *Context, expr *ast.ListLiteral) (any, ast.DType, *errchain.PlError) {
 	ret := []any{}
 	for _, v := range expr.List {
 		v, _, err := RunStmt(ctx, v)
@@ -527,7 +527,7 @@ func RunListInitExpr(ctx *Context, expr *ast.ListInitExpr) (any, ast.DType, *err
 	return ret, ast.List, nil
 }
 
-func RunMapInitExpr(ctx *Context, expr *ast.MapInitExpr) (any, ast.DType, *errchain.PlError) {
+func RunMapInitExpr(ctx *Context, expr *ast.MapLiteral) (any, ast.DType, *errchain.PlError) {
 	ret := map[string]any{}
 
 	for _, v := range expr.KeyValeList {
