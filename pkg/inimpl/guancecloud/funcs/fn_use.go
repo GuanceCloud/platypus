@@ -43,11 +43,11 @@ func Use(ctx *runtime.Context, funcExpr *ast.CallExpr) *errchain.PlError {
 			if s, ok := funcExpr.PrivateData.(*runtime.Script); ok {
 				refScript = s
 			} else {
-				l.Debugf("unknown error: %s", funcExpr.Param[0].StringLiteral.Val)
+				l.Debugf("unknown error: %s", funcExpr.Param[0].StringLiteral().Val)
 				return nil
 			}
 		} else {
-			l.Debugf("script not found: %s", funcExpr.Param[0].StringLiteral.Val)
+			l.Debugf("script not found: %s", funcExpr.Param[0].StringLiteral().Val)
 			return nil
 		}
 	default:

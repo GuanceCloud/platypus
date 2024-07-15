@@ -58,7 +58,7 @@ func DefaultTime(ctx *runtime.Context, funcExpr *ast.CallExpr) *errchain.PlError
 	if len(funcExpr.Param) > 1 {
 		switch funcExpr.Param[1].NodeType { //nolint:exhaustive
 		case ast.TypeStringLiteral:
-			tz = funcExpr.Param[1].StringLiteral.Val
+			tz = funcExpr.Param[1].StringLiteral().Val
 		default:
 			err = fmt.Errorf("param key expect StringLiteral, got %s",
 				funcExpr.Param[1].NodeType)
@@ -85,6 +85,7 @@ func DefaultTime(ctx *runtime.Context, funcExpr *ast.CallExpr) *errchain.PlError
 }
 
 func usePointTime(ctx *runtime.Context, key string, err error) {
+	_ = key
 	_ = addKey2PtWithVal(ctx.InData(), runtime.PlRunInfoField, fmt.Sprintf("time convert failed: %v", err),
 		ast.String, input.KindPtDefault)
 

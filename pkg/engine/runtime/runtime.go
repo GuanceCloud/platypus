@@ -249,7 +249,7 @@ func RunForInStmt(ctx *Context, stmt *ast.ForInStmt) (any, ast.DType, *errchain.
 			if stmt.Varb.NodeType != ast.TypeIdentifier {
 				return nil, ast.Invalid, err
 			}
-			_ = ctx.SetVarb(stmt.Varb.Identifier.Name, char, ast.String)
+			_ = ctx.SetVarb(stmt.Varb.Identifier().Name, char, ast.String)
 			if stmt.Body != nil {
 				if err := RunStmts(ctx, stmt.Body.Stmts); err != nil {
 					return nil, ast.Invalid, err
@@ -273,7 +273,7 @@ func RunForInStmt(ctx *Context, stmt *ast.ForInStmt) (any, ast.DType, *errchain.
 		}
 		for x := range iter {
 			ctx.stackCur.Clear()
-			_ = ctx.SetVarb(stmt.Varb.Identifier.Name, x, ast.String)
+			_ = ctx.SetVarb(stmt.Varb.Identifier().Name, x, ast.String)
 			if stmt.Body != nil {
 				if err := RunStmts(ctx, stmt.Body.Stmts); err != nil {
 					return nil, ast.Invalid, err
@@ -300,7 +300,7 @@ func RunForInStmt(ctx *Context, stmt *ast.ForInStmt) (any, ast.DType, *errchain.
 				return nil, ast.Invalid, NewRunError(ctx,
 					"inner type error", stmt.Iter.StartPos())
 			}
-			_ = ctx.SetVarb(stmt.Varb.Identifier.Name, x, dtype)
+			_ = ctx.SetVarb(stmt.Varb.Identifier().Name, x, dtype)
 			if stmt.Body != nil {
 				if err := RunStmts(ctx, stmt.Body.Stmts); err != nil {
 					return nil, ast.Invalid, err
@@ -355,62 +355,62 @@ func RunStmt(ctx *Context, node *ast.Node) (any, ast.DType, *errchain.PlError) {
 	}
 	switch node.NodeType { //nolint:exhaustive
 	case ast.TypeParenExpr:
-		return RunParenExpr(ctx, node.ParenExpr)
+		return RunParenExpr(ctx, node.ParenExpr())
 	case ast.TypeArithmeticExpr:
-		return RunArithmeticExpr(ctx, node.ArithmeticExpr)
+		return RunArithmeticExpr(ctx, node.ArithmeticExpr())
 	case ast.TypeConditionalExpr:
-		return RunConditionExpr(ctx, node.ConditionalExpr)
+		return RunConditionExpr(ctx, node.ConditionalExpr())
 	case ast.TypeUnaryExpr:
-		return RunUnaryExpr(ctx, node.UnaryExpr)
+		return RunUnaryExpr(ctx, node.UnaryExpr())
 	case ast.TypeAssignmentExpr:
-		return RunAssignmentExpr(ctx, node.AssignmentExpr)
+		return RunAssignmentExpr(ctx, node.AssignmentExpr())
 	case ast.TypeCallExpr:
-		return RunCallExpr(ctx, node.CallExpr)
+		return RunCallExpr(ctx, node.CallExpr())
 	case ast.TypeInExpr:
-		return RunInExpr(ctx, node.InExpr)
+		return RunInExpr(ctx, node.InExpr())
 	case ast.TypeListInitExpr:
-		return RunListInitExpr(ctx, node.ListInitExpr)
+		return RunListInitExpr(ctx, node.ListInitExpr())
 	case ast.TypeIdentifier:
-		if v, err := ctx.GetKey(node.Identifier.Name); err != nil {
+		if v, err := ctx.GetKey(node.Identifier().Name); err != nil {
 			return nil, ast.Nil, nil
 		} else {
 			return v.Value, v.DType, nil
 		}
 	case ast.TypeMapInitExpr:
-		return RunMapInitExpr(ctx, node.MapInitExpr)
+		return RunMapInitExpr(ctx, node.MapInitExpr())
 	// use for map, slice and array
 	case ast.TypeIndexExpr:
-		return RunIndexExprGet(ctx, node.IndexExpr)
+		return RunIndexExprGet(ctx, node.IndexExpr())
 
 	// TODO
 	case ast.TypeAttrExpr:
 		return nil, ast.Void, nil
 
 	case ast.TypeBoolLiteral:
-		return node.BoolLiteral.Val, ast.Bool, nil
+		return node.BoolLiteral().Val, ast.Bool, nil
 
 	case ast.TypeIntegerLiteral:
-		return node.IntegerLiteral.Val, ast.Int, nil
+		return node.IntegerLiteral().Val, ast.Int, nil
 
 	case ast.TypeFloatLiteral:
-		return node.FloatLiteral.Val, ast.Float, nil
+		return node.FloatLiteral().Val, ast.Float, nil
 
 	case ast.TypeStringLiteral:
-		return node.StringLiteral.Val, ast.String, nil
+		return node.StringLiteral().Val, ast.String, nil
 
 	case ast.TypeNilLiteral:
 		return nil, ast.Nil, nil
 
 	case ast.TypeIfelseStmt:
-		return RunIfElseStmt(ctx, node.IfelseStmt)
+		return RunIfElseStmt(ctx, node.IfelseStmt())
 	case ast.TypeForStmt:
-		return RunForStmt(ctx, node.ForStmt)
+		return RunForStmt(ctx, node.ForStmt())
 	case ast.TypeForInStmt:
-		return RunForInStmt(ctx, node.ForInStmt)
+		return RunForInStmt(ctx, node.ForInStmt())
 	case ast.TypeBreakStmt:
-		return RunBreakStmt(ctx, node.BreakStmt)
+		return RunBreakStmt(ctx, node.BreakStmt())
 	case ast.TypeContinueStmt:
-		return RunContinueStmt(ctx, node.ContinueStmt)
+		return RunContinueStmt(ctx, node.ContinueStmt())
 	default:
 		return nil, ast.Invalid, NewRunError(ctx, fmt.Sprintf(
 			"unsupported ast node: %s", reflect.TypeOf(node).String()), node.StartPos())
@@ -845,6 +845,7 @@ func runAssignArith(ctx *Context, l, r *Varb, op ast.Op, pos token.LnColPos) (
 	return v, dtype, nil
 }
 
+// RunAssignmentExpr runs assignment expression, but actually it is a stmt
 func RunAssignmentExpr(ctx *Context, expr *ast.AssignmentExpr) (any, ast.DType, *errchain.PlError) {
 	v, dtype, err := RunStmt(ctx, expr.RHS)
 	if err != nil {
@@ -856,7 +857,7 @@ func RunAssignmentExpr(ctx *Context, expr *ast.AssignmentExpr) (any, ast.DType, 
 	case ast.TypeIdentifier:
 		switch expr.Op {
 		case ast.EQ:
-			_ = ctx.SetVarb(expr.LHS.Identifier.Name, v, dtype)
+			_ = ctx.SetVarb(expr.LHS.Identifier().Name, v, dtype)
 			return v, dtype, nil
 
 		case ast.SUBEQ,
@@ -864,14 +865,14 @@ func RunAssignmentExpr(ctx *Context, expr *ast.AssignmentExpr) (any, ast.DType, 
 			ast.MULEQ,
 			ast.DIVEQ,
 			ast.MODEQ:
-			lVarb, err := ctx.GetKey(expr.LHS.Identifier.Name)
+			lVarb, err := ctx.GetKey(expr.LHS.Identifier().Name)
 			if err != nil {
 				return nil, ast.Nil, nil
 			}
 			if v, dt, errR := runAssignArith(ctx, lVarb, rVarb, expr.Op, expr.OpPos); errR != nil {
 				return nil, ast.Void, errR
 			} else {
-				_ = ctx.SetVarb(expr.LHS.Identifier.Name, v, dt)
+				_ = ctx.SetVarb(expr.LHS.Identifier().Name, v, dt)
 				return v, dt, nil
 			}
 
@@ -882,29 +883,29 @@ func RunAssignmentExpr(ctx *Context, expr *ast.AssignmentExpr) (any, ast.DType, 
 	case ast.TypeIndexExpr:
 		switch expr.Op {
 		case ast.EQ:
-			varb, err := ctx.GetKey(expr.LHS.IndexExpr.Obj.Name)
+			varb, err := ctx.GetKey(expr.LHS.IndexExpr().Obj.Name)
 			if err != nil {
-				return nil, ast.Invalid, NewRunError(ctx, err.Error(), expr.LHS.IndexExpr.Obj.Start)
+				return nil, ast.Invalid, NewRunError(ctx, err.Error(), expr.LHS.IndexExpr().Obj.Start)
 			}
-			return changeListOrMapValue(ctx, varb.Value, expr.LHS.IndexExpr.Index,
+			return changeListOrMapValue(ctx, varb.Value, expr.LHS.IndexExpr().Index,
 				v, dtype)
 		case ast.ADDEQ,
 			ast.SUBEQ,
 			ast.MULEQ,
 			ast.DIVEQ,
 			ast.MODEQ:
-			varb, err := ctx.GetKey(expr.LHS.IndexExpr.Obj.Name)
+			varb, err := ctx.GetKey(expr.LHS.IndexExpr().Obj.Name)
 			if err != nil {
-				return nil, ast.Invalid, NewRunError(ctx, err.Error(), expr.LHS.IndexExpr.Obj.Start)
+				return nil, ast.Invalid, NewRunError(ctx, err.Error(), expr.LHS.IndexExpr().Obj.Start)
 			}
-			if v, dt, errR := searchListAndMap(ctx, varb.Value, expr.LHS.IndexExpr.Index); err != nil {
+			if v, dt, errR := searchListAndMap(ctx, varb.Value, expr.LHS.IndexExpr().Index); errR != nil {
 				return nil, ast.Invalid, errR
 			} else {
 				v, dt, err := runAssignArith(ctx, &Varb{Value: v, DType: dt}, rVarb, expr.Op, expr.OpPos)
 				if err != nil {
 					return nil, ast.Invalid, err
 				}
-				return changeListOrMapValue(ctx, varb.Value, expr.LHS.IndexExpr.Index,
+				return changeListOrMapValue(ctx, varb.Value, expr.LHS.IndexExpr().Index,
 					v, dt)
 			}
 		default:

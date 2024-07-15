@@ -423,7 +423,7 @@ func TestUnaryErrExpr(t *testing.T) {
 		"ckfn":    ckfnErrcheck,
 	})
 	if errR == nil {
-		t.Fatal(*errR)
+		t.Fatal(errR)
 	} else {
 		t.Log(errR.Error())
 	}
@@ -1011,9 +1011,9 @@ func addkeytest(ctx *Context, callExpr *ast.CallExpr) *errchain.PlError {
 	var key string
 	switch callExpr.Param[0].NodeType {
 	case ast.TypeIdentifier:
-		key = callExpr.Param[0].Identifier.Name
+		key = callExpr.Param[0].Identifier().Name
 	case ast.TypeStringLiteral:
-		key = callExpr.Param[0].StringLiteral.Val
+		key = callExpr.Param[0].StringLiteral().Val
 	default:
 		return NewRunError(ctx, "key type", callExpr.NamePos)
 	}

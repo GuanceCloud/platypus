@@ -36,7 +36,6 @@ func TestUse(t *testing.T) {
 		Fields: map[string]interface{}{
 			"b": int64(1),
 		},
-		Time: timenow,
 		Drop: false,
 	}
 

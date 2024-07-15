@@ -48,40 +48,40 @@ func RunStmtCheck(ctx *Context, ctxCheck *ContextCheck, node *ast.Node) *errchai
 	case ast.TypeNilLiteral:
 		// skip
 	case ast.TypeListInitExpr:
-		return RunListInitExprCheck(ctx, ctxCheck, node.ListInitExpr)
+		return RunListInitExprCheck(ctx, ctxCheck, node.ListInitExpr())
 	case ast.TypeMapInitExpr:
-		return RunMapInitExprCheck(ctx, ctxCheck, node.MapInitExpr)
+		return RunMapInitExprCheck(ctx, ctxCheck, node.MapInitExpr())
 
 	case ast.TypeParenExpr:
-		return RunParenExprCheck(ctx, ctxCheck, node.ParenExpr)
+		return RunParenExprCheck(ctx, ctxCheck, node.ParenExpr())
 
 	case ast.TypeAttrExpr:
-		return RunAttrExprCheck(ctx, ctxCheck, node.AttrExpr)
+		return RunAttrExprCheck(ctx, ctxCheck, node.AttrExpr())
 	case ast.TypeIndexExpr:
-		return RunIndexExprGetCheck(ctx, ctxCheck, node.IndexExpr)
+		return RunIndexExprGetCheck(ctx, ctxCheck, node.IndexExpr())
 
 	case ast.TypeArithmeticExpr:
-		return RunArithmeticExprCheck(ctx, ctxCheck, node.ArithmeticExpr)
+		return RunArithmeticExprCheck(ctx, ctxCheck, node.ArithmeticExpr())
 	case ast.TypeConditionalExpr:
-		return RunConditionExprCheck(ctx, ctxCheck, node.ConditionalExpr)
+		return RunConditionExprCheck(ctx, ctxCheck, node.ConditionalExpr())
 	case ast.TypeUnaryExpr:
-		return RunUnaryExprCheck(ctx, ctxCheck, node.UnaryExpr)
+		return RunUnaryExprCheck(ctx, ctxCheck, node.UnaryExpr())
 	case ast.TypeAssignmentExpr:
-		return RunAssignmentExprCheck(ctx, ctxCheck, node.AssignmentExpr)
+		return RunAssignmentExprCheck(ctx, ctxCheck, node.AssignmentExpr())
 
 	case ast.TypeCallExpr:
-		return RunCallExprCheck(ctx, ctxCheck, node.CallExpr)
+		return RunCallExprCheck(ctx, ctxCheck, node.CallExpr())
 
 	case ast.TypeIfelseStmt:
-		return RunIfElseStmtCheck(ctx, ctxCheck, node.IfelseStmt)
+		return RunIfElseStmtCheck(ctx, ctxCheck, node.IfelseStmt())
 	case ast.TypeForStmt:
-		return RunForStmtCheck(ctx, ctxCheck, node.ForStmt)
+		return RunForStmtCheck(ctx, ctxCheck, node.ForStmt())
 	case ast.TypeForInStmt:
-		return RunForInStmtCheck(ctx, ctxCheck, node.ForInStmt)
+		return RunForInStmtCheck(ctx, ctxCheck, node.ForInStmt())
 	case ast.TypeContinueStmt:
-		return RunContinueStmtCheck(ctx, ctxCheck, node.ContinueStmt)
+		return RunContinueStmtCheck(ctx, ctxCheck, node.ContinueStmt())
 	case ast.TypeBreakStmt:
-		return RunBreakStmtCheck(ctx, ctxCheck, node.BreakStmt)
+		return RunBreakStmtCheck(ctx, ctxCheck, node.BreakStmt())
 	}
 
 	return nil

@@ -68,7 +68,7 @@ func XML(ctx *runtime.Context, funcExpr *ast.CallExpr) *errchain.PlError {
 	// XPath expression
 	switch funcExpr.Param[1].NodeType { //nolint:exhaustive
 	case ast.TypeStringLiteral:
-		xpathExpr = funcExpr.Param[1].StringLiteral.Val
+		xpathExpr = funcExpr.Param[1].StringLiteral().Val
 	default:
 		return runtime.NewRunError(ctx, fmt.Sprintf("expect StringLiteStringLiteral:ral, got %s",
 			reflect.TypeOf(funcExpr.Param[1]).String()), funcExpr.Param[1].StartPos())
