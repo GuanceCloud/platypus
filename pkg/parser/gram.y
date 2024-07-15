@@ -100,16 +100,12 @@ NIL NULL IF ELIF ELSE
 	attr_expr
 	in_expr
 	expr
-	map_init
-	map_init_start
-	list_init
-	list_init_start
+	map_literal
+	map_literal_start
+	list_literal
+	list_literal_start
 	basic_literal
 	for_stmt_elem
-	/* bool_literal */
-	/* string_literal */
-	/* nil_literal */
-	/* number_literal */
 	value_stmt
 	//columnref
 
@@ -199,8 +195,8 @@ stmt: ifelse_stmt
 
 /* expression */
 expr: basic_literal 
-| list_init 
-| map_init 
+| list_literal 
+| map_literal 
 | paren_expr
 | call_expr
 | unary_expr
@@ -531,57 +527,57 @@ attr_expr: identifier DOT index_expr
 ;
 
 
-list_init : list_init_start RIGHT_BRACKET
+list_literal : list_literal_start RIGHT_BRACKET
 {
-	$$ = yylex.(*parser).newListInitEndExpr($$, $2.Pos)
+	$$ = yylex.(*parser).newListLiteralEnd($$, $2.Pos)
 }
-| list_init_start COMMA SPACE_EOLS RIGHT_BRACKET
+| list_literal_start COMMA SPACE_EOLS RIGHT_BRACKET
 {
-	$$ = yylex.(*parser).newListInitEndExpr($$, $4.Pos)
+	$$ = yylex.(*parser).newListLiteralEnd($$, $4.Pos)
 }
 | LEFT_BRACKET SPACE_EOLS RIGHT_BRACKET
 { 
-	$$ = yylex.(*parser).newListInitStartExpr($1.Pos)
-	$$ = yylex.(*parser).newListInitEndExpr($$, $3.Pos)
+	$$ = yylex.(*parser).newListLiteralStart($1.Pos)
+	$$ = yylex.(*parser).newListLiteralEnd($$, $3.Pos)
 }
 ;
 
-list_init_start : LEFT_BRACKET SPACE_EOLS expr
+list_literal_start : LEFT_BRACKET SPACE_EOLS expr
 {
-	$$ = yylex.(*parser).newListInitStartExpr($1.Pos)
-	$$ = yylex.(*parser).newListInitAppendExpr($$, $3)
+	$$ = yylex.(*parser).newListLiteralStart($1.Pos)
+	$$ = yylex.(*parser).newListLiteralAppendExpr($$, $3)
 }
-| list_init_start COMMA SPACE_EOLS expr
+| list_literal_start COMMA SPACE_EOLS expr
 {
-	$$ = yylex.(*parser).newListInitAppendExpr($$, $4)
+	$$ = yylex.(*parser).newListLiteralAppendExpr($$, $4)
 }
-| list_init_start EOL
+| list_literal_start EOL
 ;
 
 
-map_init : map_init_start SPACE_EOLS RIGHT_BRACE
+map_literal : map_literal_start SPACE_EOLS RIGHT_BRACE
 {
-	$$ = yylex.(*parser).newMapInitEndExpr($$, $3.Pos)
+	$$ = yylex.(*parser).newMapLiteralEnd($$, $3.Pos)
 }
-|  map_init_start COMMA SPACE_EOLS RIGHT_BRACE
+|  map_literal_start COMMA SPACE_EOLS RIGHT_BRACE
 {
-	$$ = yylex.(*parser).newMapInitEndExpr($$, $4.Pos)
+	$$ = yylex.(*parser).newMapLiteralEnd($$, $4.Pos)
 }
 | empty_block
 { 
-	$$ = yylex.(*parser).newMapInitStartExpr($1.LBracePos.Pos)
-	$$ = yylex.(*parser).newMapInitEndExpr($$, $1.RBracePos.Pos)
+	$$ = yylex.(*parser).newMapLiteralStart($1.LBracePos.Pos)
+	$$ = yylex.(*parser).newMapLiteralEnd($$, $1.RBracePos.Pos)
 }
 ;
 
-map_init_start: LEFT_BRACE SPACE_EOLS expr COLON SPACE_EOLS expr
+map_literal_start: LEFT_BRACE SPACE_EOLS expr COLON SPACE_EOLS expr
 { 
-	$$ = yylex.(*parser).newMapInitStartExpr($1.Pos)
-	$$ = yylex.(*parser).newMapInitAppendExpr($$, $3, $6)
+	$$ = yylex.(*parser).newMapLiteralStart($1.Pos)
+	$$ = yylex.(*parser).newMapLiteralAppendExpr($$, $3, $6)
 }
-| map_init_start COMMA SPACE_EOLS expr COLON SPACE_EOLS expr
+| map_literal_start COMMA SPACE_EOLS expr COLON SPACE_EOLS expr
 {
-	$$ = yylex.(*parser).newMapInitAppendExpr($1, $4, $7)
+	$$ = yylex.(*parser).newMapLiteralAppendExpr($1, $4, $7)
 }
 ;
 

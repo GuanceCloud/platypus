@@ -89,7 +89,7 @@ func TestExprSeparation(t *testing.T) {
 			}
 			`,
 			expected: ast.Stmts{
-				ast.WrapListInitExpr(&ast.ListInitExpr{
+				ast.WrapListInitExpr(&ast.ListLiteral{
 					List: []*ast.Node{
 						ast.WrapIntegerLiteral(&ast.IntegerLiteral{Val: 1}),
 						ast.WrapIntegerLiteral(&ast.IntegerLiteral{Val: 3}),
@@ -99,7 +99,7 @@ func TestExprSeparation(t *testing.T) {
 					},
 				}),
 				ast.WrapListInitExpr(
-					&ast.ListInitExpr{
+					&ast.ListLiteral{
 						List: []*ast.Node{
 							ast.WrapIntegerLiteral(&ast.IntegerLiteral{Val: 1}),
 							ast.WrapIntegerLiteral(&ast.IntegerLiteral{Val: 3}),
@@ -110,7 +110,7 @@ func TestExprSeparation(t *testing.T) {
 					}),
 
 				ast.WrapListInitExpr(
-					&ast.ListInitExpr{
+					&ast.ListLiteral{
 						List: []*ast.Node{
 							ast.WrapIntegerLiteral(&ast.IntegerLiteral{Val: 1}),
 							ast.WrapIntegerLiteral(&ast.IntegerLiteral{Val: 3}),
@@ -118,7 +118,7 @@ func TestExprSeparation(t *testing.T) {
 							ast.WrapBoolLiteral(&ast.BoolLiteral{Val: true}),
 							ast.WrapFloatLiteral(&ast.FloatLiteral{Val: 1.}),
 							ast.WrapListInitExpr(
-								&ast.ListInitExpr{
+								&ast.ListLiteral{
 									List: []*ast.Node{
 										ast.WrapIntegerLiteral(&ast.IntegerLiteral{Val: 1}),
 										ast.WrapIntegerLiteral(&ast.IntegerLiteral{Val: 3}),
@@ -127,7 +127,7 @@ func TestExprSeparation(t *testing.T) {
 										ast.WrapFloatLiteral(&ast.FloatLiteral{Val: 1.}),
 									},
 								}),
-							ast.WrapMapInitExpr(&ast.MapInitExpr{}),
+							ast.WrapMapLiteral(&ast.MapLiteral{}),
 						},
 					}),
 				ast.WrapAssignmentStmt(&ast.AssignmentExpr{
@@ -438,7 +438,7 @@ func TestParserFor(t *testing.T) {
 			expected: ast.Stmts{
 				ast.WrapForInStmt(&ast.ForInStmt{
 					Varb: ast.WrapIdentifier(&ast.Identifier{Name: "x"}),
-					Iter: ast.WrapListInitExpr(&ast.ListInitExpr{
+					Iter: ast.WrapListInitExpr(&ast.ListLiteral{
 						List: []*ast.Node{
 							ast.WrapIntegerLiteral(&ast.IntegerLiteral{Val: 1}),
 							ast.WrapFloatLiteral(&ast.FloatLiteral{Val: 2.}),
@@ -1115,7 +1115,7 @@ func TestParser(t *testing.T) {
 			expected: ast.Stmts{
 				ast.WrapCallExpr(&ast.CallExpr{
 					Name: "f",
-					Param: []*ast.Node{ast.WrapListInitExpr(&ast.ListInitExpr{
+					Param: []*ast.Node{ast.WrapListInitExpr(&ast.ListLiteral{
 						List: []*ast.Node{
 							ast.WrapIntegerLiteral(&ast.IntegerLiteral{Val: 1}),
 							ast.WrapFloatLiteral(&ast.FloatLiteral{Val: 2.0}),
@@ -1169,7 +1169,7 @@ func TestParser(t *testing.T) {
 							ast.WrapAssignmentStmt(&ast.AssignmentExpr{
 								Op:  ast.EQ,
 								LHS: ast.WrapIdentifier(&ast.Identifier{Name: "a1"}),
-								RHS: ast.WrapListInitExpr(&ast.ListInitExpr{
+								RHS: ast.WrapListInitExpr(&ast.ListLiteral{
 									List: []*ast.Node{
 										ast.WrapStringLiteral(&ast.StringLiteral{Val: "b"}),
 										ast.WrapFloatLiteral(&ast.FloatLiteral{Val: 1.1}),
@@ -1274,11 +1274,11 @@ func TestParser(t *testing.T) {
 						}),
 					},
 				}),
-				ast.WrapMapInitExpr(&ast.MapInitExpr{}),
+				ast.WrapMapLiteral(&ast.MapLiteral{}),
 				ast.WrapAssignmentStmt(&ast.AssignmentExpr{
 					Op:  ast.EQ,
 					LHS: ast.WrapIdentifier(&ast.Identifier{Name: "a"}),
-					RHS: ast.WrapMapInitExpr(&ast.MapInitExpr{
+					RHS: ast.WrapMapLiteral(&ast.MapLiteral{
 						KeyValeList: [][2]*ast.Node{
 							{
 								ast.WrapStringLiteral(&ast.StringLiteral{Val: "1"}),

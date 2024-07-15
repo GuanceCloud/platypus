@@ -27,8 +27,9 @@ const (
 	TypeBoolLiteral
 	TypeNilLiteral
 
-	TypeListInitExpr
-	TypeMapInitExpr
+	TypeListLiteral
+	TypeMapLiteral
+
 	TypeInExpr
 
 	TypeParenExpr
@@ -70,9 +71,9 @@ func (t NodeType) String() string {
 		return "BoolLiteral"
 	case TypeNilLiteral:
 		return "NilLiteral"
-	case TypeListInitExpr:
+	case TypeListLiteral:
 		return "ListInitExpr"
-	case TypeMapInitExpr:
+	case TypeMapLiteral:
 		return "MapInitExpr"
 	case TypeParenExpr:
 		return "ParenExpr"
@@ -169,11 +170,11 @@ func (n *Node) BoolLiteral() *BoolLiteral {
 func (n *Node) NilLiteral() *NilLiteral {
 	return n.elem.(*NilLiteral)
 }
-func (n *Node) ListInitExpr() *ListInitExpr {
-	return n.elem.(*ListInitExpr)
+func (n *Node) ListLiteral() *ListLiteral {
+	return n.elem.(*ListLiteral)
 }
-func (n *Node) MapInitExpr() *MapInitExpr {
-	return n.elem.(*MapInitExpr)
+func (n *Node) MapLiteral() *MapLiteral {
+	return n.elem.(*MapLiteral)
 }
 func (n *Node) ParenExpr() *ParenExpr {
 	return n.elem.(*ParenExpr)
@@ -267,16 +268,16 @@ func WrapNilLiteral(node *NilLiteral) *Node {
 	}
 }
 
-func WrapListInitExpr(node *ListInitExpr) *Node {
+func WrapListInitExpr(node *ListLiteral) *Node {
 	return &Node{
-		NodeType: TypeListInitExpr,
+		NodeType: TypeListLiteral,
 		elem:     node,
 	}
 }
 
-func WrapMapInitExpr(node *MapInitExpr) *Node {
+func WrapMapLiteral(node *MapLiteral) *Node {
 	return &Node{
-		NodeType: TypeMapInitExpr,
+		NodeType: TypeMapLiteral,
 		elem:     node,
 	}
 }
@@ -406,10 +407,10 @@ func NodeStartPos(node *Node) token.LnColPos {
 	case TypeNilLiteral:
 		return node.NilLiteral().Start
 
-	case TypeListInitExpr:
-		return node.ListInitExpr().LBracket
-	case TypeMapInitExpr:
-		return node.MapInitExpr().LBrace
+	case TypeListLiteral:
+		return node.ListLiteral().LBracket
+	case TypeMapLiteral:
+		return node.MapLiteral().LBrace
 
 	case TypeParenExpr:
 		return node.ParenExpr().LParen
