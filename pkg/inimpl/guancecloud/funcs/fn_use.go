@@ -13,7 +13,7 @@ import (
 	"github.com/GuanceCloud/platypus/pkg/errchain"
 )
 
-func UseChecking(ctx *runtime.Context, funcExpr *ast.CallExpr) *errchain.PlError {
+func UseChecking(ctx *runtime.Task, funcExpr *ast.CallExpr) *errchain.PlError {
 	if len(funcExpr.Param) != 1 {
 		return runtime.NewRunError(ctx, fmt.Sprintf(
 			"func %s expects 1 args", funcExpr.Name), funcExpr.NamePos)
@@ -30,7 +30,7 @@ func UseChecking(ctx *runtime.Context, funcExpr *ast.CallExpr) *errchain.PlError
 	return nil
 }
 
-func Use(ctx *runtime.Context, funcExpr *ast.CallExpr) *errchain.PlError {
+func Use(ctx *runtime.Task, funcExpr *ast.CallExpr) *errchain.PlError {
 	if len(funcExpr.Param) != 1 {
 		return runtime.NewRunError(ctx, fmt.Sprintf(
 			"func %s expects 1 args", funcExpr.Name), funcExpr.NamePos)

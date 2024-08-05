@@ -14,7 +14,7 @@ import (
 	"github.com/GuanceCloud/platypus/pkg/inimpl/guancecloud/input"
 )
 
-func CastChecking(ctx *runtime.Context, funcExpr *ast.CallExpr) *errchain.PlError {
+func CastChecking(ctx *runtime.Task, funcExpr *ast.CallExpr) *errchain.PlError {
 	if len(funcExpr.Param) != 2 {
 		return runtime.NewRunError(ctx, fmt.Sprintf(
 			"func `%s' expected 2 args", funcExpr.Name), funcExpr.NamePos)
@@ -38,7 +38,7 @@ func CastChecking(ctx *runtime.Context, funcExpr *ast.CallExpr) *errchain.PlErro
 	return nil
 }
 
-func Cast(ctx *runtime.Context, funcExpr *ast.CallExpr) *errchain.PlError {
+func Cast(ctx *runtime.Task, funcExpr *ast.CallExpr) *errchain.PlError {
 	if len(funcExpr.Param) != 2 {
 		return runtime.NewRunError(ctx, fmt.Sprintf(
 			"func `%s' expected 2 args", funcExpr.Name), funcExpr.NamePos)

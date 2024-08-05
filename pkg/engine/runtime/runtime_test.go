@@ -441,7 +441,7 @@ func TestSignal(t *testing.T) {
 		return (*sign)(nil)
 	}()
 
-	ctx := &Context{
+	ctx := &Task{
 		signal: s,
 	}
 
@@ -1003,11 +1003,11 @@ func parseScript(content string) (ast.Stmts, error) {
 	return parser.ParsePipeline("", content)
 }
 
-func callexprtest(ctx *Context, callExpr *ast.CallExpr) *errchain.PlError {
+func callexprtest(ctx *Task, callExpr *ast.CallExpr) *errchain.PlError {
 	return nil
 }
 
-func addkeytest(ctx *Context, callExpr *ast.CallExpr) *errchain.PlError {
+func addkeytest(ctx *Task, callExpr *ast.CallExpr) *errchain.PlError {
 	var key string
 	switch callExpr.Param[0].NodeType {
 	case ast.TypeIdentifier:
@@ -1054,11 +1054,11 @@ func addkeytest(ctx *Context, callExpr *ast.CallExpr) *errchain.PlError {
 	return nil
 }
 
-func addkeycheck(ctx *Context, callExpr *ast.CallExpr) *errchain.PlError {
+func addkeycheck(ctx *Task, callExpr *ast.CallExpr) *errchain.PlError {
 	return nil
 }
 
-func lentest(ctx *Context, callExpr *ast.CallExpr) *errchain.PlError {
+func lentest(ctx *Task, callExpr *ast.CallExpr) *errchain.PlError {
 	val, dtype, err := RunStmt(ctx, callExpr.Param[0])
 	if err != nil {
 		return err
@@ -1076,16 +1076,16 @@ func lentest(ctx *Context, callExpr *ast.CallExpr) *errchain.PlError {
 	return nil
 }
 
-func ckfncheck(ctx *Context, callexpr *ast.CallExpr) *errchain.PlError {
+func ckfncheck(ctx *Task, callexpr *ast.CallExpr) *errchain.PlError {
 	callexpr.PrivateData = 1
 	return nil
 }
 
-func ckfnErrcheck(ctx *Context, callexpr *ast.CallExpr) *errchain.PlError {
+func ckfnErrcheck(ctx *Task, callexpr *ast.CallExpr) *errchain.PlError {
 	return NewRunError(ctx, "err", callexpr.NamePos)
 }
 
-func ckfn(ctx *Context, callExpr *ast.CallExpr) *errchain.PlError {
+func ckfn(ctx *Task, callExpr *ast.CallExpr) *errchain.PlError {
 	if callExpr.PrivateData == nil {
 		ctx.Regs.ReturnAppend(true, ast.Bool)
 	} else {
@@ -1094,6 +1094,6 @@ func ckfn(ctx *Context, callExpr *ast.CallExpr) *errchain.PlError {
 	return nil
 }
 
-func lencheck(ctx *Context, callexpr *ast.CallExpr) *errchain.PlError {
+func lencheck(ctx *Task, callexpr *ast.CallExpr) *errchain.PlError {
 	return nil
 }

@@ -14,7 +14,7 @@ import (
 	"github.com/GuanceCloud/platypus/pkg/errchain"
 )
 
-func AddPatternChecking(ctx *runtime.Context, funcExpr *ast.CallExpr) *errchain.PlError {
+func AddPatternChecking(ctx *runtime.Task, funcExpr *ast.CallExpr) *errchain.PlError {
 	if len(funcExpr.Param) != 2 {
 		return runtime.NewRunError(ctx, fmt.Sprintf(
 			"func %s expected 2 args", funcExpr.Name), funcExpr.NamePos)
@@ -45,6 +45,6 @@ func AddPatternChecking(ctx *runtime.Context, funcExpr *ast.CallExpr) *errchain.
 	return nil
 }
 
-func AddPattern(ctx *runtime.Context, funcExpr *ast.CallExpr) *errchain.PlError {
+func AddPattern(ctx *runtime.Task, funcExpr *ast.CallExpr) *errchain.PlError {
 	return nil
 }

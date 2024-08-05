@@ -59,7 +59,7 @@ func RunScriptWithRMapIn(proc *plruntime.Script, data plruntime.InputWithRMap, s
 	return plruntime.RunScriptWithRMapIn(proc, data, signal)
 }
 
-func RunScriptRef(ctx *plruntime.Context, proc *plruntime.Script) *errchain.PlError {
+func RunScriptRef(ctx *plruntime.Task, proc *plruntime.Script) *errchain.PlError {
 	return plruntime.RefRunScript(ctx, proc)
 }
 

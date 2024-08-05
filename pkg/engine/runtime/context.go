@@ -7,7 +7,9 @@ package runtime
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
+	"reflect"
 	"sync"
 
 	"github.com/GuanceCloud/grok"
@@ -39,7 +41,7 @@ type Signal interface {
 	ExitSignal() bool
 }
 
-type Context struct {
+type Task struct {
 	Regs PlReg
 
 	stackHeader *PlProcStack
@@ -64,15 +66,58 @@ type Context struct {
 
 	name    string
 	content string
+
+	withValue map[any]any
+
 	// namespace string
 	// filepath  string
 }
 
-func (ctx *Context) Name() string {
+func (ctx *Task) Name() string {
 	return ctx.name
 }
 
-func (ctx *Context) InData() any {
+var (
+	ErrNilKey           = errors.New("key is nil")
+	ErrKeyNotComparable = errors.New("key is not comparable")
+	ErrKeyExists        = errors.New("key exists")
+)
+
+func (ctx *Task) WithVal(key, val any, force bool) error {
+	if key == nil {
+		return ErrNilKey
+	}
+	if !reflect.TypeOf(key).Comparable() {
+		return ErrKeyNotComparable
+	}
+	if ctx.withValue == nil {
+		ctx.withValue = map[any]any{
+			key: val,
+		}
+		return nil
+	}
+
+	if _, ok := ctx.withValue[key]; !ok {
+		ctx.withValue[key] = val
+	} else {
+		if force {
+			ctx.withValue[key] = val
+		} else {
+			return ErrKeyExists
+		}
+	}
+
+	return nil
+}
+
+func (ctx *Task) Val(key any) any {
+	if ctx.withValue == nil {
+		return nil
+	}
+	return ctx.withValue[key]
+}
+
+func (ctx *Task) InData() any {
 	switch ctx.inType {
 	case InRMap:
 		return ctx.inRMap
@@ -81,13 +126,13 @@ func (ctx *Context) InData() any {
 	}
 }
 
-func (ctx *Context) Signal() Signal {
+func (ctx *Task) Signal() Signal {
 	return ctx.signal
 }
 
-func InitCtxWithoutMap(ctx *Context, inWithoutMap InputWithoutMap, funcs map[string]FuncCall,
+func InitCtxWithoutMap(ctx *Task, inWithoutMap InputWithoutMap, funcs map[string]FuncCall,
 	callRef []*ast.CallExpr, signal Signal, name, content string,
-) *Context {
+) *Task {
 	ctx.Regs.Reset()
 
 	ctx.inType = InWithoutMap
@@ -109,9 +154,9 @@ func InitCtxWithoutMap(ctx *Context, inWithoutMap InputWithoutMap, funcs map[str
 	return ctx
 }
 
-func InitCtxWithRMap(ctx *Context, inWithRMap InputWithRMap, funcs map[string]FuncCall,
+func InitCtxWithRMap(ctx *Task, inWithRMap InputWithRMap, funcs map[string]FuncCall,
 	callRef []*ast.CallExpr, signal Signal, name, content string,
-) *Context {
+) *Task {
 	ctx.Regs.Reset()
 
 	ctx.inType = InRMap
@@ -133,9 +178,9 @@ func InitCtxWithRMap(ctx *Context, inWithRMap InputWithRMap, funcs map[string]Fu
 	return ctx
 }
 
-func InitCtxForCheck(ctx *Context, funcs map[string]FuncCall, funcsCheck map[string]FuncCheck,
+func InitCtxForCheck(ctx *Task, funcs map[string]FuncCall, funcsCheck map[string]FuncCheck,
 	name, content string,
-) *Context {
+) *Task {
 	ctx.stackHeader = &PlProcStack{
 		data: map[string]*Varb{},
 	}
@@ -158,7 +203,7 @@ func InitCtxForCheck(ctx *Context, funcs map[string]FuncCall, funcsCheck map[str
 	return ctx
 }
 
-func (ctx *Context) SetVarb(key string, value any, dtype ast.DType) error {
+func (ctx *Task) SetVarb(key string, value any, dtype ast.DType) error {
 	if key == "_" {
 		key = ploriginkey
 	}
@@ -167,18 +212,18 @@ func (ctx *Context) SetVarb(key string, value any, dtype ast.DType) error {
 	return nil
 }
 
-func (ctx *Context) SetExit() {
+func (ctx *Task) SetExit() {
 	ctx.procExit = true
 }
 
-func (ctx *Context) SetCallRef(expr *ast.CallExpr) {
+func (ctx *Task) SetCallRef(expr *ast.CallExpr) {
 	if ctx.callRCef == nil {
 		ctx.callRCef = []*ast.CallExpr{}
 	}
 	ctx.callRCef = append(ctx.callRCef, expr)
 }
 
-func (ctx *Context) GetKey(key string) (*Varb, error) {
+func (ctx *Task) GetKey(key string) (*Varb, error) {
 	if key == "_" {
 		key = ploriginkey
 	}
@@ -199,7 +244,7 @@ func (ctx *Context) GetKey(key string) (*Varb, error) {
 	return nil, fmt.Errorf("key not found")
 }
 
-func (ctx *Context) GetKeyConv2Str(key string) (string, error) {
+func (ctx *Task) GetKeyConv2Str(key string) (string, error) {
 	if key == "_" {
 		key = ploriginkey
 	}
@@ -218,7 +263,7 @@ func (ctx *Context) GetKeyConv2Str(key string) (string, error) {
 	return "", fmt.Errorf("nil")
 }
 
-func (ctx *Context) GetFuncCall(key string) (FuncCall, bool) {
+func (ctx *Task) GetFuncCall(key string) (FuncCall, bool) {
 	if ctx.funcCall == nil {
 		return nil, false
 	}
@@ -226,7 +271,7 @@ func (ctx *Context) GetFuncCall(key string) (FuncCall, bool) {
 	return v, ok
 }
 
-func (ctx *Context) GetFuncCheck(key string) (FuncCheck, bool) {
+func (ctx *Task) GetFuncCheck(key string) (FuncCheck, bool) {
 	if ctx.funcCheck == nil {
 		return nil, false
 	}
@@ -234,7 +279,7 @@ func (ctx *Context) GetFuncCheck(key string) (FuncCheck, bool) {
 	return v, ok
 }
 
-func (ctx *Context) StackEnterNew() {
+func (ctx *Task) StackEnterNew() {
 	next := &PlProcStack{
 		data:   map[string]*Varb{},
 		before: ctx.stackCur,
@@ -243,18 +288,18 @@ func (ctx *Context) StackEnterNew() {
 	ctx.stackCur = next
 }
 
-func (ctx *Context) StackExitCur() {
+func (ctx *Task) StackExitCur() {
 	ctx.stackCur.data = nil
 	ctx.stackCur.checkPattern = nil
 
 	ctx.stackCur = ctx.stackCur.before
 }
 
-func (ctx *Context) StackClear() {
+func (ctx *Task) StackClear() {
 	ctx.stackCur.Clear()
 }
 
-func (ctx *Context) GetPattern(pattern string) (*grok.GrokPattern, bool) {
+func (ctx *Task) GetPattern(pattern string) (*grok.GrokPattern, bool) {
 	v, ok := ctx.stackCur.GetPattern(pattern)
 	if ok {
 		return v, ok
@@ -268,18 +313,18 @@ func (ctx *Context) GetPattern(pattern string) (*grok.GrokPattern, bool) {
 	return nil, false
 }
 
-func (ctx *Context) SetPattern(patternAlias string, gPattern *grok.GrokPattern) {
+func (ctx *Task) SetPattern(patternAlias string, gPattern *grok.GrokPattern) {
 	ctx.stackCur.SetPattern(patternAlias, gPattern)
 }
 
-func (ctx *Context) StmtRetrun() bool {
+func (ctx *Task) StmtRetrun() bool {
 	if ctx.ProcExit() || ctx.loopBreak || ctx.loopContinue {
 		return true
 	}
 	return false
 }
 
-func (ctx *Context) ProcExit() bool {
+func (ctx *Task) ProcExit() bool {
 	if !ctx.procExit && ctx.signal != nil {
 		if ctx.signal.ExitSignal() {
 			ctx.procExit = true
@@ -290,12 +335,12 @@ func (ctx *Context) ProcExit() bool {
 
 var ctxPool sync.Pool = sync.Pool{
 	New: func() any {
-		return &Context{}
+		return &Task{}
 	},
 }
 
-func GetContext() *Context {
-	ctx, _ := ctxPool.Get().(*Context)
+func GetContext() *Task {
+	ctx, _ := ctxPool.Get().(*Task)
 
 	ctx.stackHeader = &PlProcStack{
 		data: map[string]*Varb{},
@@ -304,7 +349,7 @@ func GetContext() *Context {
 	return ctx
 }
 
-func PutContext(ctx *Context) {
+func PutContext(ctx *Task) {
 	ctx.stackHeader = nil
 	ctx.stackCur = nil
 
