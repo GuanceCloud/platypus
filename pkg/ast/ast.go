@@ -72,9 +72,9 @@ func (t NodeType) String() string {
 	case TypeNilLiteral:
 		return "NilLiteral"
 	case TypeListLiteral:
-		return "ListInitExpr"
+		return "ListLiteral"
 	case TypeMapLiteral:
-		return "MapInitExpr"
+		return "MapLiteral"
 	case TypeParenExpr:
 		return "ParenExpr"
 	case TypeAttrExpr:
