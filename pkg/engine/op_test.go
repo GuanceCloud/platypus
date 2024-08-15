@@ -9,7 +9,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/GuanceCloud/platypus/pkg/engine/runtime"
 	"github.com/GuanceCloud/platypus/pkg/inimpl/guancecloud/funcs"
 	"github.com/GuanceCloud/platypus/pkg/inimpl/guancecloud/input"
 	"github.com/stretchr/testify/assert"
@@ -111,7 +110,7 @@ for a = 0; a < 12; a = a + 1 {
 
 	pt := input.GetPoint()
 	pt = input.InitPt(pt, "test", nil, nil, time.Now())
-	err := runtime.RunScriptWithRMapIn(script, pt, nil)
+	err := script.Run(pt, nil)
 	if err != nil {
 		t.Fatal(err.Error())
 	}

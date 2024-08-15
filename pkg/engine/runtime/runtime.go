@@ -22,60 +22,75 @@ type (
 	FuncCall  func(*Task, *ast.CallExpr) *errchain.PlError
 )
 
-func RunScriptWithoutMapIn(proc *Script, data InputWithoutMap, signal Signal) *errchain.PlError {
-	if proc == nil {
+type Script struct {
+	CallRef []*ast.CallExpr
+
+	FuncCall map[string]FuncCall
+
+	Name      string
+	Namespace string
+	Category  string
+	FilePath  string
+
+	Content string // deprecated
+
+	Ast ast.Stmts
+}
+
+type Signal interface {
+	ExitSignal() bool
+}
+
+func WithVal(key string, val any) TaskFn {
+	return func(ctx *Task) {
+		_ = ctx.WithVal(key, val, false)
+	}
+}
+
+type TaskFn func(ctx *Task)
+
+func (s *Script) Run(data Input, signal Signal, fn ...TaskFn) *errchain.PlError {
+	if s == nil {
 		return nil
 	}
 
 	ctx := GetContext()
 	defer PutContext(ctx)
 
-	ctx = InitCtxWithoutMap(ctx, data, proc.FuncCall, proc.CallRef, signal, proc.Name, proc.Content)
-	return RunStmts(ctx, proc.Ast)
-}
-
-func RunScriptWithRMapIn(proc *Script, data InputWithRMap, signal Signal) *errchain.PlError {
-	if proc == nil {
-		return nil
+	for _, fn := range fn {
+		fn(ctx)
 	}
 
-	ctx := GetContext()
-	defer PutContext(ctx)
-
-	ctx = InitCtxWithRMap(ctx, data, proc.FuncCall, proc.CallRef, signal, proc.Name, proc.Content)
-	return RunStmts(ctx, proc.Ast)
+	ctx = InitCtx(ctx, data, s, signal)
+	return RunStmts(ctx, s.Ast)
 }
 
-func RefRunScript(ctx *Task, proc *Script) *errchain.PlError {
-	if proc == nil {
+func (s *Script) RefRun(ctx *Task) *errchain.PlError {
+	if s == nil {
 		return nil
 	}
 
 	newctx := GetContext()
 	defer PutContext(newctx)
 
-	switch ctx.inType {
-	case InRMap:
-		InitCtxWithRMap(newctx, ctx.inRMap, proc.FuncCall, proc.CallRef, ctx.signal, proc.Name, proc.Content)
-	case InWithoutMap:
-		InitCtxWithoutMap(newctx, ctx.inWithoutMap, proc.FuncCall, proc.CallRef, ctx.signal, proc.Name, proc.Content)
-	default:
-		// TODO
+	InitCtx(newctx, ctx.input, s, ctx.signal)
+
+	return RunStmts(newctx, s.Ast)
+}
+
+func (s *Script) Check(funcsCheck map[string]FuncCheck) *errchain.PlError {
+	if s == nil {
 		return nil
 	}
 
-	return RunStmts(newctx, proc.Ast)
-}
-
-func CheckScript(proc *Script, funcsCheck map[string]FuncCheck) *errchain.PlError {
 	ctx := GetContext()
 	defer PutContext(ctx)
-	InitCtxForCheck(ctx, proc.FuncCall, funcsCheck, proc.Name, proc.Content)
-	if err := RunStmtsCheck(ctx, &ContextCheck{}, proc.Ast); err != nil {
+	InitCtxForCheck(ctx, s, funcsCheck)
+	if err := RunStmtsCheck(ctx, &ContextCheck{}, s.Ast); err != nil {
 		return err
 	}
 
-	proc.CallRef = ctx.callRCef
+	s.CallRef = ctx.callRef
 	return nil
 }
 

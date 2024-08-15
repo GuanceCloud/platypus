@@ -56,7 +56,7 @@ func Use(ctx *runtime.Task, funcExpr *ast.CallExpr) *errchain.PlError {
 			funcExpr.Param[0].NodeType), funcExpr.Param[0].StartPos())
 	}
 
-	err := runtime.RefRunScript(ctx, refScript)
+	err := refScript.RefRun(ctx)
 	if err != nil {
 		return err.ChainAppend(ctx.Name(), funcExpr.NamePos)
 	}

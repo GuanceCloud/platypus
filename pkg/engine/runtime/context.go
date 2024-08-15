@@ -22,25 +22,6 @@ const (
 	PlRunInfoField = "pl_msg"
 )
 
-type Script struct {
-	CallRef []*ast.CallExpr
-
-	FuncCall map[string]FuncCall
-
-	Name      string
-	Namespace string
-	Category  string
-	FilePath  string
-
-	Content string
-
-	Ast ast.Stmts
-}
-
-type Signal interface {
-	ExitSignal() bool
-}
-
 type Task struct {
 	Regs PlReg
 
@@ -50,9 +31,7 @@ type Task struct {
 	funcCall  map[string]FuncCall
 	funcCheck map[string]FuncCheck
 
-	inType       InType
-	inRMap       InputWithRMap
-	inWithoutMap InputWithoutMap
+	input Input
 
 	// for 循环结束后需要清理此标志
 	loopBreak    bool
@@ -62,15 +41,11 @@ type Task struct {
 
 	procExit bool
 
-	callRCef []*ast.CallExpr
+	callRef []*ast.CallExpr
 
-	name    string
-	content string
+	name string
 
 	withValue map[any]any
-
-	// namespace string
-	// filepath  string
 }
 
 func (ctx *Task) Name() string {
@@ -118,69 +93,34 @@ func (ctx *Task) Val(key any) any {
 }
 
 func (ctx *Task) InData() any {
-	switch ctx.inType {
-	case InRMap:
-		return ctx.inRMap
-	default:
-		return ctx.inWithoutMap
-	}
+	return ctx.input
 }
 
 func (ctx *Task) Signal() Signal {
 	return ctx.signal
 }
 
-func InitCtxWithoutMap(ctx *Task, inWithoutMap InputWithoutMap, funcs map[string]FuncCall,
-	callRef []*ast.CallExpr, signal Signal, name, content string,
-) *Task {
+func InitCtx(ctx *Task, input Input, script *Script, signal Signal) *Task {
 	ctx.Regs.Reset()
 
-	ctx.inType = InWithoutMap
-	ctx.inWithoutMap = inWithoutMap
+	ctx.input = input
 
-	ctx.funcCall = funcs
+	ctx.funcCall = script.FuncCall
 	ctx.funcCheck = nil
 
-	ctx.callRCef = callRef
+	ctx.callRef = script.CallRef
 	ctx.loopBreak = false
 	ctx.loopContinue = false
 
 	ctx.signal = signal
 	ctx.procExit = false
 
-	ctx.name = name
-	ctx.content = content
+	ctx.name = script.Name
 
 	return ctx
 }
 
-func InitCtxWithRMap(ctx *Task, inWithRMap InputWithRMap, funcs map[string]FuncCall,
-	callRef []*ast.CallExpr, signal Signal, name, content string,
-) *Task {
-	ctx.Regs.Reset()
-
-	ctx.inType = InRMap
-	ctx.inRMap = inWithRMap
-
-	ctx.funcCall = funcs
-	ctx.funcCheck = nil
-
-	ctx.callRCef = callRef
-	ctx.loopBreak = false
-	ctx.loopContinue = false
-
-	ctx.signal = signal
-	ctx.procExit = false
-
-	ctx.name = name
-	ctx.content = content
-
-	return ctx
-}
-
-func InitCtxForCheck(ctx *Task, funcs map[string]FuncCall, funcsCheck map[string]FuncCheck,
-	name, content string,
-) *Task {
+func InitCtxForCheck(ctx *Task, script *Script, checkFn map[string]FuncCheck) *Task {
 	ctx.stackHeader = &PlProcStack{
 		data: map[string]*Varb{},
 	}
@@ -188,18 +128,16 @@ func InitCtxForCheck(ctx *Task, funcs map[string]FuncCall, funcsCheck map[string
 
 	ctx.Regs.Reset()
 
-	ctx.funcCall = funcs
-	ctx.funcCheck = funcsCheck
+	ctx.funcCall = script.FuncCall
+	ctx.funcCheck = checkFn
 
-	ctx.callRCef = []*ast.CallExpr{}
+	ctx.callRef = []*ast.CallExpr{}
 	ctx.loopBreak = false
 	ctx.loopContinue = false
 
 	ctx.procExit = false
 
-	ctx.name = name
-	ctx.content = content
-
+	ctx.name = script.Name
 	return ctx
 }
 
@@ -217,10 +155,10 @@ func (ctx *Task) SetExit() {
 }
 
 func (ctx *Task) SetCallRef(expr *ast.CallExpr) {
-	if ctx.callRCef == nil {
-		ctx.callRCef = []*ast.CallExpr{}
+	if ctx.callRef == nil {
+		ctx.callRef = []*ast.CallExpr{}
 	}
-	ctx.callRCef = append(ctx.callRCef, expr)
+	ctx.callRef = append(ctx.callRef, expr)
 }
 
 func (ctx *Task) GetKey(key string) (*Varb, error) {
@@ -231,14 +169,11 @@ func (ctx *Task) GetKey(key string) (*Varb, error) {
 		return v, nil
 	}
 
-	switch ctx.inType {
-	case InRMap:
-		if v, t, err := ctx.inRMap.Get(key); err == nil {
-			return &Varb{
-				Value: v,
-				DType: t,
-			}, nil
-		}
+	if v, t, err := ctx.input.Get(key); err == nil {
+		return &Varb{
+			Value: v,
+			DType: t,
+		}, nil
 	}
 
 	return nil, fmt.Errorf("key not found")
@@ -253,11 +188,8 @@ func (ctx *Task) GetKeyConv2Str(key string) (string, error) {
 		return Conv2String(v.Value, v.DType)
 	}
 
-	switch ctx.inType {
-	case InRMap:
-		if v, t, err := ctx.inRMap.Get(key); err == nil {
-			return Conv2String(v, t)
-		}
+	if v, t, err := ctx.input.Get(key); err == nil {
+		return Conv2String(v, t)
 	}
 
 	return "", fmt.Errorf("nil")
@@ -350,24 +282,7 @@ func GetContext() *Task {
 }
 
 func PutContext(ctx *Task) {
-	ctx.stackHeader = nil
-	ctx.stackCur = nil
-
-	ctx.funcCall = nil
-	ctx.funcCheck = nil
-
-	ctx.inRMap = nil
-	ctx.inRMap = nil
-	ctx.inWithoutMap = nil
-	ctx.inType = InNoSet
-
-	ctx.loopBreak = false
-	ctx.loopContinue = false
-
-	ctx.procExit = false
-
-	ctx.callRCef = nil
-
+	*ctx = Task{}
 	ctxPool.Put(ctx)
 }
 
