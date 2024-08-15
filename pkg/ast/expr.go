@@ -292,7 +292,8 @@ type CallExpr struct {
 
 	Name string
 
-	Param []*Node
+	Param           []*Node
+	ParamNormalized []*Node
 
 	PrivateData interface{}
 

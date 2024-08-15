@@ -14,7 +14,7 @@ import (
 	"github.com/GuanceCloud/platypus/pkg/token"
 )
 
-func GetkeyChecking(ctx *runtime.Context, funcExpr *ast.CallExpr) *errchain.PlError {
+func GetkeyChecking(ctx *runtime.Task, funcExpr *ast.CallExpr) *errchain.PlError {
 	if len(funcExpr.Param) != 1 {
 		return runtime.NewRunError(ctx, fmt.Sprintf(
 			"func %s expected 1 args", funcExpr.Name), funcExpr.NamePos)
@@ -27,7 +27,7 @@ func GetkeyChecking(ctx *runtime.Context, funcExpr *ast.CallExpr) *errchain.PlEr
 	return nil
 }
 
-func Getkey(ctx *runtime.Context, funcExpr *ast.CallExpr) *errchain.PlError {
+func Getkey(ctx *runtime.Task, funcExpr *ast.CallExpr) *errchain.PlError {
 	if funcExpr == nil {
 		return runtime.NewRunError(ctx, "unreachable", token.InvalidLnColPos)
 	}

@@ -15,7 +15,7 @@ import (
 	"github.com/GuanceCloud/platypus/pkg/inimpl/guancecloud/input"
 )
 
-func DefaultTimeChecking(ctx *runtime.Context, funcExpr *ast.CallExpr) *errchain.PlError {
+func DefaultTimeChecking(ctx *runtime.Task, funcExpr *ast.CallExpr) *errchain.PlError {
 	if len(funcExpr.Param) < 1 {
 		return runtime.NewRunError(ctx, fmt.Sprintf(
 			"func %s Expect at least one arg", funcExpr.Name), funcExpr.NamePos)
@@ -37,7 +37,7 @@ func DefaultTimeChecking(ctx *runtime.Context, funcExpr *ast.CallExpr) *errchain
 	return nil
 }
 
-func DefaultTime(ctx *runtime.Context, funcExpr *ast.CallExpr) *errchain.PlError {
+func DefaultTime(ctx *runtime.Task, funcExpr *ast.CallExpr) *errchain.PlError {
 	if len(funcExpr.Param) < 1 {
 		return runtime.NewRunError(ctx, fmt.Sprintf(
 			"func %s expect at least one arg", funcExpr.Name), funcExpr.NamePos)
@@ -84,7 +84,7 @@ func DefaultTime(ctx *runtime.Context, funcExpr *ast.CallExpr) *errchain.PlError
 	return nil
 }
 
-func usePointTime(ctx *runtime.Context, key string, err error) {
+func usePointTime(ctx *runtime.Task, key string, err error) {
 	_ = key
 	_ = addKey2PtWithVal(ctx.InData(), runtime.PlRunInfoField, fmt.Sprintf("time convert failed: %v", err),
 		ast.String, input.KindPtDefault)

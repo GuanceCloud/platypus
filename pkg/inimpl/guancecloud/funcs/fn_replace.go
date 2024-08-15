@@ -16,7 +16,7 @@ import (
 	"github.com/GuanceCloud/platypus/pkg/inimpl/guancecloud/input"
 )
 
-func ReplaceChecking(ctx *runtime.Context, funcExpr *ast.CallExpr) *errchain.PlError {
+func ReplaceChecking(ctx *runtime.Task, funcExpr *ast.CallExpr) *errchain.PlError {
 	if len(funcExpr.Param) != 3 {
 		return runtime.NewRunError(ctx, fmt.Sprintf(
 			"func %s expects 3 args", funcExpr.Name), funcExpr.NamePos)
@@ -43,7 +43,7 @@ func ReplaceChecking(ctx *runtime.Context, funcExpr *ast.CallExpr) *errchain.PlE
 	return nil
 }
 
-func Replace(ctx *runtime.Context, funcExpr *ast.CallExpr) *errchain.PlError {
+func Replace(ctx *runtime.Task, funcExpr *ast.CallExpr) *errchain.PlError {
 	if len(funcExpr.Param) != 3 {
 		return runtime.NewRunError(ctx, fmt.Sprintf(
 			"func %s expects 3 args", funcExpr.Name), funcExpr.NamePos)

@@ -14,7 +14,7 @@ import (
 	"github.com/spf13/cast"
 )
 
-func PrintfChecking(ctx *runtime.Context, funcExpr *ast.CallExpr) *errchain.PlError {
+func PrintfChecking(ctx *runtime.Task, funcExpr *ast.CallExpr) *errchain.PlError {
 	if len(funcExpr.Param) < 1 {
 		return runtime.NewRunError(ctx, "function `%s' requires at least one argument", funcExpr.NamePos)
 	}
@@ -24,7 +24,7 @@ func PrintfChecking(ctx *runtime.Context, funcExpr *ast.CallExpr) *errchain.PlEr
 	return nil
 }
 
-func Printf(ctx *runtime.Context, funcExpr *ast.CallExpr) *errchain.PlError {
+func Printf(ctx *runtime.Task, funcExpr *ast.CallExpr) *errchain.PlError {
 	outdata := make([]interface{}, 0)
 
 	if len(funcExpr.Param) < 1 {
@@ -52,7 +52,7 @@ func Printf(ctx *runtime.Context, funcExpr *ast.CallExpr) *errchain.PlError {
 	return nil
 }
 
-func getArgStr(ctx *runtime.Context, node *ast.Node) string {
+func getArgStr(ctx *runtime.Task, node *ast.Node) string {
 	if node == nil {
 		return ""
 	}

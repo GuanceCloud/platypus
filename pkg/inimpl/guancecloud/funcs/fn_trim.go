@@ -15,7 +15,7 @@ import (
 	"github.com/GuanceCloud/platypus/pkg/inimpl/guancecloud/input"
 )
 
-func TrimChecking(ctx *runtime.Context, funcExpr *ast.CallExpr) *errchain.PlError {
+func TrimChecking(ctx *runtime.Task, funcExpr *ast.CallExpr) *errchain.PlError {
 	if len(funcExpr.Param) < 1 || len(funcExpr.Param) > 2 {
 		return runtime.NewRunError(ctx, fmt.Sprintf(
 			"func `%s' expected 1 or 2 args", funcExpr.Name), funcExpr.NamePos)
@@ -34,7 +34,7 @@ func TrimChecking(ctx *runtime.Context, funcExpr *ast.CallExpr) *errchain.PlErro
 	return nil
 }
 
-func Trim(ctx *runtime.Context, funcExpr *ast.CallExpr) *errchain.PlError {
+func Trim(ctx *runtime.Task, funcExpr *ast.CallExpr) *errchain.PlError {
 	key, err := getKeyName(funcExpr.Param[0])
 	if err != nil {
 		return runtime.NewRunError(ctx, err.Error(), funcExpr.Param[0].StartPos())

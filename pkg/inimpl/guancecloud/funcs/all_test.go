@@ -42,6 +42,6 @@ func runScript(proc *runtime.Script, measurement string,
 
 	input.InitPt(pt, measurement, tags, fields, tn)
 
-	_ = engine.RunScriptWithRMapIn(proc, pt, nil)
+	_ = proc.Run(pt, nil)
 	return pt.Measurement, pt.Tags, pt.Fields, pt.Time, pt.Drop, nil
 }

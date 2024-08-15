@@ -17,7 +17,7 @@ import (
 	"github.com/antchfx/xmlquery"
 )
 
-func XMLChecking(ctx *runtime.Context, funcExpr *ast.CallExpr) *errchain.PlError {
+func XMLChecking(ctx *runtime.Task, funcExpr *ast.CallExpr) *errchain.PlError {
 	if len(funcExpr.Param) != 3 {
 		return runtime.NewRunError(ctx, fmt.Sprintf(
 			"func %s expects 3 args", funcExpr.Name), funcExpr.NamePos)
@@ -48,7 +48,7 @@ func XMLChecking(ctx *runtime.Context, funcExpr *ast.CallExpr) *errchain.PlError
 	return nil
 }
 
-func XML(ctx *runtime.Context, funcExpr *ast.CallExpr) *errchain.PlError {
+func XML(ctx *runtime.Task, funcExpr *ast.CallExpr) *errchain.PlError {
 	var (
 		xmlKey, fieldName string
 		xpathExpr         string

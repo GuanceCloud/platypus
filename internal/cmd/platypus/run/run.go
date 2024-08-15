@@ -123,7 +123,7 @@ func runScript(ctx context.Context, options *Options, script *plruntime.Script) 
 	tn = pt.Time
 	measurement = pt.Measurement
 
-	errR := engine.RunScriptWithRMapIn(script, pt, nil)
+	errR := script.Run(pt, nil)
 	if errR != nil {
 		return fmt.Errorf("run script error: %w", errR)
 	}

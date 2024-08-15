@@ -170,7 +170,7 @@ add_key(len2, len("123"))
 		Content:   pl,
 		Ast:       stmts,
 	}
-	errR := CheckScript(script, map[string]FuncCheck{
+	errR := script.Check(map[string]FuncCheck{
 		"add_key": addkeycheck,
 		"len":     lencheck,
 	})
@@ -182,7 +182,7 @@ add_key(len2, len("123"))
 		data: map[string]any{},
 	}
 
-	errR = RunScriptWithRMapIn(script, inData, nil)
+	errR = script.Run(inData, nil)
 	if errR != nil {
 		t.Fatal(errR.Error())
 	}
@@ -258,7 +258,7 @@ add_key("a", a)
 				Content:   c.s,
 				Ast:       stmts,
 			}
-			errR := CheckScript(script, map[string]FuncCheck{
+			errR := script.Check(map[string]FuncCheck{
 				"add_key": addkeycheck,
 			})
 			if errR != nil {
@@ -269,7 +269,7 @@ add_key("a", a)
 				data: map[string]any{},
 			}
 
-			errR = RunScriptWithRMapIn(script, inData, nil)
+			errR = script.Run(inData, nil)
 			if errR != nil {
 				t.Fatal(errR.Error())
 			}
@@ -316,7 +316,7 @@ func TestInExpr(t *testing.T) {
 		Content:   pl,
 		Ast:       stmts,
 	}
-	errR := CheckScript(script, map[string]FuncCheck{
+	errR := script.Check(map[string]FuncCheck{
 		"add_key": addkeycheck,
 		"len":     lencheck,
 	})
@@ -328,7 +328,7 @@ func TestInExpr(t *testing.T) {
 		data: map[string]any{},
 	}
 
-	errR = RunScriptWithRMapIn(script, inData, nil)
+	errR = script.Run(inData, nil)
 	if errR != nil {
 		t.Fatal(errR.Error())
 	}
@@ -372,7 +372,7 @@ func TestUnaryExpr(t *testing.T) {
 		Content:   pl,
 		Ast:       stmts,
 	}
-	errR := CheckScript(script, map[string]FuncCheck{
+	errR := script.Check(map[string]FuncCheck{
 		"add_key": addkeycheck,
 		"ckfn":    ckfncheck,
 	})
@@ -384,7 +384,7 @@ func TestUnaryExpr(t *testing.T) {
 		data: map[string]any{},
 	}
 
-	errR = RunScriptWithRMapIn(script, inData, nil)
+	errR = script.Run(inData, nil)
 	if errR != nil {
 		t.Fatal(errR.Error())
 	}
@@ -418,7 +418,7 @@ func TestUnaryErrExpr(t *testing.T) {
 		Content:   pl,
 		Ast:       stmts,
 	}
-	errR := CheckScript(script, map[string]FuncCheck{
+	errR := script.Check(map[string]FuncCheck{
 		"add_key": addkeycheck,
 		"ckfn":    ckfnErrcheck,
 	})
@@ -441,7 +441,7 @@ func TestSignal(t *testing.T) {
 		return (*sign)(nil)
 	}()
 
-	ctx := &Context{
+	ctx := &Task{
 		signal: s,
 	}
 
@@ -591,7 +591,7 @@ func TestUnaryAndAssignOP(t *testing.T) {
 				Content:   v.pl,
 				Ast:       stmts,
 			}
-			errR := CheckScript(script, map[string]FuncCheck{
+			errR := script.Check(map[string]FuncCheck{
 				"add_key": addkeycheck,
 				"len":     lencheck,
 			})
@@ -603,7 +603,7 @@ func TestUnaryAndAssignOP(t *testing.T) {
 				data: map[string]any{},
 			}
 
-			errR = RunScriptWithRMapIn(script, inData, nil)
+			errR = script.Run(inData, nil)
 			if errR != nil {
 				t.Fatal(errR.Error())
 			}
@@ -1003,11 +1003,11 @@ func parseScript(content string) (ast.Stmts, error) {
 	return parser.ParsePipeline("", content)
 }
 
-func callexprtest(ctx *Context, callExpr *ast.CallExpr) *errchain.PlError {
+func callexprtest(ctx *Task, callExpr *ast.CallExpr) *errchain.PlError {
 	return nil
 }
 
-func addkeytest(ctx *Context, callExpr *ast.CallExpr) *errchain.PlError {
+func addkeytest(ctx *Task, callExpr *ast.CallExpr) *errchain.PlError {
 	var key string
 	switch callExpr.Param[0].NodeType {
 	case ast.TypeIdentifier:
@@ -1023,30 +1023,27 @@ func addkeytest(ctx *Context, callExpr *ast.CallExpr) *errchain.PlError {
 		if err != nil {
 			return err
 		}
-		if ctx.inType == InRMap {
-			if v, ok := ctx.inRMap.(*inputImpl); ok {
-				switch dtype {
-				case ast.Map, ast.List:
-					if res, err := json.Marshal(val); err == nil {
-						v.data[key] = string(res)
-					}
-				default:
-					v.data[key] = val
+		if v, ok := ctx.input.(*inputImpl); ok {
+			switch dtype {
+			case ast.Map, ast.List:
+				if res, err := json.Marshal(val); err == nil {
+					v.data[key] = string(res)
 				}
+			default:
+				v.data[key] = val
 			}
 		}
+
 	}
 	if varb, err := ctx.GetKey(key); err == nil {
-		if ctx.inType == InRMap {
-			if v, ok := ctx.inRMap.(*inputImpl); ok {
-				switch varb.DType {
-				case ast.Map, ast.List:
-					if res, err := json.Marshal(varb.Value); err == nil {
-						v.data[key] = string(res)
-					}
-				default:
-					v.data[key] = varb.Value
+		if v, ok := ctx.input.(*inputImpl); ok {
+			switch varb.DType {
+			case ast.Map, ast.List:
+				if res, err := json.Marshal(varb.Value); err == nil {
+					v.data[key] = string(res)
 				}
+			default:
+				v.data[key] = varb.Value
 			}
 		}
 	}
@@ -1054,11 +1051,11 @@ func addkeytest(ctx *Context, callExpr *ast.CallExpr) *errchain.PlError {
 	return nil
 }
 
-func addkeycheck(ctx *Context, callExpr *ast.CallExpr) *errchain.PlError {
+func addkeycheck(ctx *Task, callExpr *ast.CallExpr) *errchain.PlError {
 	return nil
 }
 
-func lentest(ctx *Context, callExpr *ast.CallExpr) *errchain.PlError {
+func lentest(ctx *Task, callExpr *ast.CallExpr) *errchain.PlError {
 	val, dtype, err := RunStmt(ctx, callExpr.Param[0])
 	if err != nil {
 		return err
@@ -1076,16 +1073,16 @@ func lentest(ctx *Context, callExpr *ast.CallExpr) *errchain.PlError {
 	return nil
 }
 
-func ckfncheck(ctx *Context, callexpr *ast.CallExpr) *errchain.PlError {
+func ckfncheck(ctx *Task, callexpr *ast.CallExpr) *errchain.PlError {
 	callexpr.PrivateData = 1
 	return nil
 }
 
-func ckfnErrcheck(ctx *Context, callexpr *ast.CallExpr) *errchain.PlError {
+func ckfnErrcheck(ctx *Task, callexpr *ast.CallExpr) *errchain.PlError {
 	return NewRunError(ctx, "err", callexpr.NamePos)
 }
 
-func ckfn(ctx *Context, callExpr *ast.CallExpr) *errchain.PlError {
+func ckfn(ctx *Task, callExpr *ast.CallExpr) *errchain.PlError {
 	if callExpr.PrivateData == nil {
 		ctx.Regs.ReturnAppend(true, ast.Bool)
 	} else {
@@ -1094,6 +1091,6 @@ func ckfn(ctx *Context, callExpr *ast.CallExpr) *errchain.PlError {
 	return nil
 }
 
-func lencheck(ctx *Context, callexpr *ast.CallExpr) *errchain.PlError {
+func lencheck(ctx *Task, callexpr *ast.CallExpr) *errchain.PlError {
 	return nil
 }
