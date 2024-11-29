@@ -1480,6 +1480,73 @@ multiline-string
 				}),
 			},
 		},
+		{
+			name: "valid slice with identifier",
+			in:   `a[1:3]`,
+			expected: ast.Stmts{
+				ast.WrapSliceExpr(&ast.SliceExpr{
+					Obj: ast.WrapIdentifier(&ast.Identifier{Name: "a"}),
+					Start: ast.WrapIntegerLiteral(&ast.IntegerLiteral{
+						Val: 1,
+					}),
+					End: ast.WrapIntegerLiteral(&ast.IntegerLiteral{
+						Val: 3,
+					}),
+				}),
+			},
+		},
+		{
+			name: "valid slice with string",
+			in:   `"hello"[1:3]`,
+			expected: ast.Stmts{
+				ast.WrapSliceExpr(&ast.SliceExpr{
+					Obj: ast.WrapStringLiteral(&ast.StringLiteral{Val: "hello"}),
+					Start: ast.WrapIntegerLiteral(&ast.IntegerLiteral{
+						Val: 1,
+					}),
+					End: ast.WrapIntegerLiteral(&ast.IntegerLiteral{
+						Val: 3,
+					}),
+				}),
+			},
+		},
+		{
+			name: "valid slice with list",
+			in:   `[1, 2, 3, 4][1:3]`,
+			expected: ast.Stmts{
+				ast.WrapSliceExpr(&ast.SliceExpr{
+					Obj: ast.WrapListInitExpr(&ast.ListLiteral{
+						List: []*ast.Node{
+							ast.WrapIntegerLiteral(&ast.IntegerLiteral{Val: 1}),
+							ast.WrapIntegerLiteral(&ast.IntegerLiteral{Val: 2}),
+							ast.WrapIntegerLiteral(&ast.IntegerLiteral{Val: 3}),
+							ast.WrapIntegerLiteral(&ast.IntegerLiteral{Val: 4}),
+						},
+					}),
+					Start: ast.WrapIntegerLiteral(&ast.IntegerLiteral{
+						Val: 1,
+					}),
+					End: ast.WrapIntegerLiteral(&ast.IntegerLiteral{
+						Val: 3,
+					}),
+				}),
+			},
+		},
+		{
+			name: "invalid slice with invalid object type",
+			in:   `true[1:3]`,
+			fail: true,
+		},
+		{
+			name: "invalid slice with invalid start type",
+			in:   `a["1":3]`,
+			fail: true,
+		},
+		{
+			name: "invalid slice with invalid end type",
+			in:   `a[1:"3"]`,
+			fail: true,
+		},
 	}
 
 	// for idx := len(cases) - 1; idx >= 0; idx-- {
@@ -1569,7 +1636,9 @@ x[
 x[a]
 x[
 	a]
-
+x[a:b]
+"hello"[a:b]
+[1,2,3,4][a:b]
 cALl(
 	a, v,
 	c )

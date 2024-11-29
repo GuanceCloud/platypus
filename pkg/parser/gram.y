@@ -98,6 +98,7 @@ NIL NULL IF ELIF ELSE
 	paren_expr
 	index_expr
 	attr_expr
+	slice_expr
 	in_expr
 	expr
 	map_literal
@@ -202,6 +203,7 @@ expr: basic_literal
 | unary_expr
 | binary_expr
 | attr_expr
+| slice_expr
 | index_expr
 | in_expr
 | identifier
@@ -495,6 +497,10 @@ index_expr: identifier LEFT_BRACKET SPACE_EOLS expr SPACE_EOLS RIGHT_BRACKET
 {
 	$$ = yylex.(*parser).newIndexExpr($1, $2, $4, $6)
 }
+| identifier LEFT_BRACKET  expr  RIGHT_BRACKET
+{
+	$$ = yylex.(*parser).newIndexExpr($1, $2, $3, $4)
+}
 ;
 
 
@@ -526,6 +532,32 @@ attr_expr: identifier DOT index_expr
 }
 ;
 
+// TODO: 支持切片语法 a[start:end]
+slice_expr: identifier LEFT_BRACKET expr COLON expr RIGHT_BRACKET
+{
+	$$ = yylex.(*parser).newSliceExpr($1, $3, $5, $2, $6)
+}
+| identifier LEFT_BRACKET SPACE_EOLS expr COLON SPACE_EOLS expr RIGHT_BRACKET
+{
+	$$ = yylex.(*parser).newSliceExpr($1, $4, $7, $2, $8)
+}
+| basic_literal LEFT_BRACKET expr COLON expr RIGHT_BRACKET
+{
+	$$ = yylex.(*parser).newSliceExpr($1, $3, $5, $2, $6)
+}
+| basic_literal LEFT_BRACKET SPACE_EOLS expr COLON SPACE_EOLS expr RIGHT_BRACKET
+{
+	$$ = yylex.(*parser).newSliceExpr($1, $4, $7, $2, $8)
+}
+| list_literal LEFT_BRACKET expr COLON expr RIGHT_BRACKET
+{
+	$$ = yylex.(*parser).newSliceExpr($1, $3, $5, $2, $6)
+}
+| list_literal LEFT_BRACKET SPACE_EOLS expr COLON SPACE_EOLS expr RIGHT_BRACKET
+{
+	$$ = yylex.(*parser).newSliceExpr($1, $4, $7, $2, $8)
+}
+;
 
 list_literal : list_literal_start RIGHT_BRACKET
 {
