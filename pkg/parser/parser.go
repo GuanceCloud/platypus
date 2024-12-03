@@ -521,13 +521,13 @@ func (p *parser) newCallExpr(fn *ast.Node, args []*ast.Node, lParen, rParen Item
 
 	return ast.WrapCallExpr(f)
 }
-func (p *parser) newSliceExpr(obj *ast.Node, start *ast.Node, end *ast.Node, lbracket Item, rbracket Item) *ast.Node {
+func (p *parser) newSliceExpr(obj *ast.Node, start *ast.Node, end *ast.Node, step *ast.Node, Colon2 *ast.Node, lbracket Item, rbracket Item) *ast.Node {
 	if obj == nil {
 		p.addParseErrf(p.yyParser.lval.item.PositionRange(), "invalid slice expression: object is nil")
 		return nil
 	}
 	switch obj.NodeType {
-	case ast.TypeIdentifier, ast.TypeStringLiteral, ast.TypeListLiteral:
+	case ast.TypeIdentifier, ast.TypeStringLiteral, ast.TypeListLiteral, ast.TypeSliceExpr:
 	default:
 		p.addParseErrf(p.yyParser.lval.item.PositionRange(),
 			fmt.Sprintf("invalid slice object type %s", obj.NodeType))
@@ -553,11 +553,21 @@ func (p *parser) newSliceExpr(obj *ast.Node, start *ast.Node, end *ast.Node, lbr
 			return nil
 		}
 	}
-
+	if step != nil {
+		switch step.NodeType {
+		case ast.TypeIdentifier, ast.TypeIntegerLiteral, ast.TypeFloatLiteral:
+		default:
+			p.addParseErrf(p.yyParser.lval.item.PositionRange(),
+				fmt.Sprintf("invalid slice step type %s", step.NodeType))
+			return nil
+		}
+	}
 	return ast.WrapSliceExpr(&ast.SliceExpr{
 		Obj:      obj,
 		Start:    start,
 		End:      end,
+		Step:     step,
+		Colon2:   Colon2,
 		LBracket: p.posCache.LnCol(lbracket.Pos),
 		RBracket: p.posCache.LnCol(rbracket.Pos),
 	})

@@ -319,8 +319,9 @@ type SliceExpr struct {
 	Obj      *Node
 	Start    *Node
 	End      *Node
+	Step     *Node
+	Colon2   *Node
 	LBracket token.LnColPos
-	Colon    token.LnColPos
 	RBracket token.LnColPos
 }
 
@@ -329,15 +330,21 @@ func (e *SliceExpr) IsExpr() bool {
 }
 
 func (e *SliceExpr) String() string {
-	startStr := "nil"
+	startStr := ""
 	if e.Start != nil {
 		startStr = e.Start.String()
 	}
-	endStr := "nil"
+	endStr := ""
 	if e.End != nil {
 		endStr = e.End.String()
 	}
-	return fmt.Sprintf("%s[%s:%s]", e.Obj.String(), startStr, endStr)
+	stepStr := ""
+	if e.Step != nil {
+		stepStr = ":" + e.Step.String()
+	} else if e.Colon2 != nil {
+		stepStr = ":"
+	}
+	return fmt.Sprintf("%s[%s:%s%s]", e.Obj.String(), startStr, endStr, stepStr)
 }
 
 type AssignmentExpr struct {

@@ -99,6 +99,7 @@ NIL NULL IF ELIF ELSE
 	index_expr
 	attr_expr
 	slice_expr
+	slice_expr_start
 	in_expr
 	expr
 	map_literal
@@ -497,10 +498,6 @@ index_expr: identifier LEFT_BRACKET SPACE_EOLS expr SPACE_EOLS RIGHT_BRACKET
 {
 	$$ = yylex.(*parser).newIndexExpr($1, $2, $4, $6)
 }
-| identifier LEFT_BRACKET  expr  RIGHT_BRACKET
-{
-	$$ = yylex.(*parser).newIndexExpr($1, $2, $3, $4)
-}
 ;
 
 
@@ -532,30 +529,116 @@ attr_expr: identifier DOT index_expr
 }
 ;
 
-// TODO: 支持切片语法 a[start:end]
-slice_expr: identifier LEFT_BRACKET expr COLON expr RIGHT_BRACKET
+slice_expr_start
+: basic_literal 
 {
-	$$ = yylex.(*parser).newSliceExpr($1, $3, $5, $2, $6)
+    $$ = $1
 }
-| identifier LEFT_BRACKET SPACE_EOLS expr COLON SPACE_EOLS expr RIGHT_BRACKET
+| list_literal
 {
-	$$ = yylex.(*parser).newSliceExpr($1, $4, $7, $2, $8)
+    $$ = $1
 }
-| basic_literal LEFT_BRACKET expr COLON expr RIGHT_BRACKET
+| slice_expr
 {
-	$$ = yylex.(*parser).newSliceExpr($1, $3, $5, $2, $6)
+    $$ = $1
 }
-| basic_literal LEFT_BRACKET SPACE_EOLS expr COLON SPACE_EOLS expr RIGHT_BRACKET
+;
+
+slice_expr: identifier LEFT_BRACKET SPACE_EOLS expr COLON SPACE_EOLS expr COLON SPACE_EOLS expr RIGHT_BRACKET   //a[1:3:2]
 {
-	$$ = yylex.(*parser).newSliceExpr($1, $4, $7, $2, $8)
+	$$ = yylex.(*parser).newSliceExpr($1, $4, $7, $10, $1, $2, $11)
 }
-| list_literal LEFT_BRACKET expr COLON expr RIGHT_BRACKET
+| identifier LEFT_BRACKET SPACE_EOLS expr COLON SPACE_EOLS expr COLON SPACE_EOLS RIGHT_BRACKET					//a[1:3:]
 {
-	$$ = yylex.(*parser).newSliceExpr($1, $3, $5, $2, $6)
+	$$ = yylex.(*parser).newSliceExpr($1, $4, $7, nil, $1, $2, $10)
 }
-| list_literal LEFT_BRACKET SPACE_EOLS expr COLON SPACE_EOLS expr RIGHT_BRACKET
+| identifier LEFT_BRACKET SPACE_EOLS expr COLON SPACE_EOLS COLON SPACE_EOLS expr RIGHT_BRACKET					//a[1::2]
 {
-	$$ = yylex.(*parser).newSliceExpr($1, $4, $7, $2, $8)
+	$$ = yylex.(*parser).newSliceExpr($1, $4, nil, $9, $1, $2, $10)
+}
+| identifier LEFT_BRACKET SPACE_EOLS expr COLON SPACE_EOLS COLON SPACE_EOLS RIGHT_BRACKET						//a[1::]
+{
+	$$ = yylex.(*parser).newSliceExpr($1, $4, nil, nil, $1, $2, $9)
+}
+| identifier LEFT_BRACKET SPACE_EOLS COLON SPACE_EOLS expr COLON SPACE_EOLS expr RIGHT_BRACKET					//a[:3:2]
+{
+	$$ = yylex.(*parser).newSliceExpr($1, nil, $6, $9, $1, $2, $10)
+}
+| identifier LEFT_BRACKET SPACE_EOLS COLON SPACE_EOLS expr COLON SPACE_EOLS RIGHT_BRACKET						//a[:3:]
+{
+	$$ = yylex.(*parser).newSliceExpr($1, nil, $6, nil, $1, $2, $9)
+}
+| identifier LEFT_BRACKET SPACE_EOLS COLON SPACE_EOLS COLON SPACE_EOLS expr RIGHT_BRACKET						//a[::2]
+{
+	$$ = yylex.(*parser).newSliceExpr($1, nil, nil, $8, $1, $2, $9)
+}
+| identifier LEFT_BRACKET SPACE_EOLS COLON SPACE_EOLS COLON SPACE_EOLS RIGHT_BRACKET							//a[::]
+{
+	$$ = yylex.(*parser).newSliceExpr($1, nil, nil, nil, $1, $2, $8)
+}
+| identifier LEFT_BRACKET SPACE_EOLS expr COLON SPACE_EOLS expr RIGHT_BRACKET									//a[1:3]
+{
+	$$ = yylex.(*parser).newSliceExpr($1, $4, $7, nil, nil, $2, $8)
+}
+| identifier LEFT_BRACKET SPACE_EOLS COLON SPACE_EOLS expr RIGHT_BRACKET										//a[:3]
+{
+	$$ = yylex.(*parser).newSliceExpr($1, nil, $6, nil, nil, $2, $7)
+}
+| identifier LEFT_BRACKET SPACE_EOLS expr COLON SPACE_EOLS RIGHT_BRACKET										//a[1:]
+{
+	$$ = yylex.(*parser).newSliceExpr($1, $4, nil, nil, nil, $2, $7)
+}
+| identifier LEFT_BRACKET SPACE_EOLS COLON SPACE_EOLS RIGHT_BRACKET												//a[:]
+{
+	$$ = yylex.(*parser).newSliceExpr($1, nil, nil, nil, nil, $2, $6)
+}
+| slice_expr_start LEFT_BRACKET SPACE_EOLS expr COLON SPACE_EOLS expr COLON SPACE_EOLS expr RIGHT_BRACKET   
+{
+	$$ = yylex.(*parser).newSliceExpr($1, $4, $7, $10, $1, $2, $11)
+}
+| slice_expr_start LEFT_BRACKET SPACE_EOLS expr COLON SPACE_EOLS expr COLON SPACE_EOLS RIGHT_BRACKET					
+{
+	$$ = yylex.(*parser).newSliceExpr($1, $4, $7, nil, $1, $2, $10)
+}
+| slice_expr_start LEFT_BRACKET SPACE_EOLS expr COLON SPACE_EOLS COLON SPACE_EOLS expr RIGHT_BRACKET					
+{
+	$$ = yylex.(*parser).newSliceExpr($1, $4, nil, $9, $1, $2, $10)
+}
+| slice_expr_start LEFT_BRACKET SPACE_EOLS expr COLON SPACE_EOLS COLON SPACE_EOLS RIGHT_BRACKET					
+{
+	$$ = yylex.(*parser).newSliceExpr($1, $4, nil, nil, $1, $2, $9)
+}
+| slice_expr_start LEFT_BRACKET SPACE_EOLS COLON SPACE_EOLS expr COLON SPACE_EOLS expr RIGHT_BRACKET					
+{
+	$$ = yylex.(*parser).newSliceExpr($1, nil, $6, $9,$1, $2, $10)
+}
+| slice_expr_start LEFT_BRACKET SPACE_EOLS COLON SPACE_EOLS expr COLON SPACE_EOLS RIGHT_BRACKET						
+{
+	$$ = yylex.(*parser).newSliceExpr($1, nil, $6, nil, $1, $2, $9)
+}
+| slice_expr_start LEFT_BRACKET SPACE_EOLS COLON SPACE_EOLS COLON SPACE_EOLS expr RIGHT_BRACKET						
+{
+	$$ = yylex.(*parser).newSliceExpr($1, nil, nil, $8, $1, $2, $9)
+}
+| slice_expr_start LEFT_BRACKET SPACE_EOLS COLON SPACE_EOLS COLON SPACE_EOLS RIGHT_BRACKET							
+{
+	$$ = yylex.(*parser).newSliceExpr($1, nil, nil, nil, $1, $2, $8)
+}
+| slice_expr_start LEFT_BRACKET SPACE_EOLS expr COLON SPACE_EOLS expr RIGHT_BRACKET									
+{
+	$$ = yylex.(*parser).newSliceExpr($1, $4, $7, nil, nil, $2, $8)
+}
+| slice_expr_start LEFT_BRACKET SPACE_EOLS COLON SPACE_EOLS expr RIGHT_BRACKET										
+{
+	$$ = yylex.(*parser).newSliceExpr($1, nil, $6, nil, nil, $2, $7)
+}
+| slice_expr_start LEFT_BRACKET SPACE_EOLS expr COLON SPACE_EOLS RIGHT_BRACKET										
+{
+	$$ = yylex.(*parser).newSliceExpr($1, $4, nil, nil, nil, $2, $7)
+}
+| slice_expr_start LEFT_BRACKET SPACE_EOLS COLON SPACE_EOLS RIGHT_BRACKET											
+{
+	$$ = yylex.(*parser).newSliceExpr($1, nil, nil, nil, nil, $2, $6)
 }
 ;
 
