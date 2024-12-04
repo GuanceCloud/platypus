@@ -1533,7 +1533,7 @@ multiline-string
 					Start:  nil,
 					End:    nil,
 					Step:   nil,
-					Colon2: ast.WrapIdentifier(&ast.Identifier{Name: "a"}),
+					Colon2: true,
 				}),
 			},
 		},
