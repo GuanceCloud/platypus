@@ -1480,6 +1480,139 @@ multiline-string
 				}),
 			},
 		},
+		{
+			name: "valid slice with identifier",
+			in:   `a[1:3]`,
+			expected: ast.Stmts{
+				ast.WrapSliceExpr(&ast.SliceExpr{
+					Obj: ast.WrapIdentifier(&ast.Identifier{Name: "a"}),
+					Start: ast.WrapIntegerLiteral(&ast.IntegerLiteral{
+						Val: 1,
+					}),
+					End: ast.WrapIntegerLiteral(&ast.IntegerLiteral{
+						Val: 3,
+					}),
+				}),
+			},
+		},
+		{
+			name: "valid slice default start and end",
+			in:   `a[:]`,
+			expected: ast.Stmts{
+				ast.WrapSliceExpr(&ast.SliceExpr{
+					Obj:   ast.WrapIdentifier(&ast.Identifier{Name: "a"}),
+					Start: nil,
+					End:   nil,
+				}),
+			},
+		},
+		{
+			name: "valid slice with step",
+			in:   `a[1:3:2]`,
+			expected: ast.Stmts{
+				ast.WrapSliceExpr(&ast.SliceExpr{
+					Obj: ast.WrapIdentifier(&ast.Identifier{Name: "a"}),
+					Start: ast.WrapIntegerLiteral(&ast.IntegerLiteral{
+						Val: 1,
+					}),
+					End: ast.WrapIntegerLiteral(&ast.IntegerLiteral{
+						Val: 3,
+					}),
+					Step: ast.WrapIntegerLiteral(&ast.IntegerLiteral{
+						Val: 2,
+					}),
+				}),
+			},
+		},
+		{
+			name: "valid slice with double colon but empty step",
+			in:   `a[::]`,
+			expected: ast.Stmts{
+				ast.WrapSliceExpr(&ast.SliceExpr{
+					Obj:    ast.WrapIdentifier(&ast.Identifier{Name: "a"}),
+					Start:  nil,
+					End:    nil,
+					Step:   nil,
+					Colon2: ast.WrapIdentifier(&ast.Identifier{Name: "a"}),
+				}),
+			},
+		},
+		{
+			name: "valid slice with string",
+			in:   `"hello"[:3]`,
+			expected: ast.Stmts{
+				ast.WrapSliceExpr(&ast.SliceExpr{
+					Obj:   ast.WrapStringLiteral(&ast.StringLiteral{Val: "hello"}),
+					Start: nil,
+					End: ast.WrapIntegerLiteral(&ast.IntegerLiteral{
+						Val: 3,
+					}),
+				}),
+			},
+		},
+		{
+			name: "valid slice with list",
+			in:   `[1, 2, 3, 4][1:]`,
+			expected: ast.Stmts{
+				ast.WrapSliceExpr(&ast.SliceExpr{
+					Obj: ast.WrapListInitExpr(&ast.ListLiteral{
+						List: []*ast.Node{
+							ast.WrapIntegerLiteral(&ast.IntegerLiteral{Val: 1}),
+							ast.WrapIntegerLiteral(&ast.IntegerLiteral{Val: 2}),
+							ast.WrapIntegerLiteral(&ast.IntegerLiteral{Val: 3}),
+							ast.WrapIntegerLiteral(&ast.IntegerLiteral{Val: 4}),
+						},
+					}),
+					Start: ast.WrapIntegerLiteral(&ast.IntegerLiteral{
+						Val: 1,
+					}),
+					End: nil,
+				}),
+			},
+		},
+		{
+			name: "valid nested slice with identifier",
+			in:   `a[1:3][0:2]`,
+			expected: ast.Stmts{
+				ast.WrapSliceExpr(&ast.SliceExpr{
+					Obj: ast.WrapSliceExpr(&ast.SliceExpr{
+						Obj: ast.WrapIdentifier(&ast.Identifier{Name: "a"}),
+						Start: ast.WrapIntegerLiteral(&ast.IntegerLiteral{
+							Val: 1,
+						}),
+						End: ast.WrapIntegerLiteral(&ast.IntegerLiteral{
+							Val: 3,
+						}),
+					}),
+					Start: ast.WrapIntegerLiteral(&ast.IntegerLiteral{
+						Val: 0,
+					}),
+					End: ast.WrapIntegerLiteral(&ast.IntegerLiteral{
+						Val: 2,
+					}),
+				}),
+			},
+		},
+		{
+			name: "invalid slice with invalid object type",
+			in:   `true[1:3]`,
+			fail: true,
+		},
+		{
+			name: "invalid slice with invalid start type",
+			in:   `a["1":3]`,
+			fail: true,
+		},
+		{
+			name: "invalid slice with invalid end type",
+			in:   `a[1:"3"]`,
+			fail: true,
+		},
+		{
+			name: "invalid slice with no object",
+			in:   `[1:3]`,
+			fail: true,
+		},
 	}
 
 	// for idx := len(cases) - 1; idx >= 0; idx-- {
@@ -1589,6 +1722,14 @@ cALl(a, v,c)
 a =
 b
 `,
+		`
+x[-1:3]
+x[:][1:3]
+x[1:2:3]
+x[1:2:]
+x[::1]
+"hello"[a:b]
+[1,2,3,4][a:b]`,
 	}
 
 	for _, v := range cases {

@@ -392,7 +392,160 @@ func TestUnaryExpr(t *testing.T) {
 		"abc": "abcd",
 	}, inData.data)
 }
+func TestSliceExpr(t *testing.T) {
+	cases := []struct {
+		name string
+		pl   string
+		v    map[string]any
+		fail bool
+	}{
+		{
+			name: "valid slice string with positive step",
+			pl: `
+			s = "hello"
+			v1 = s[1:4:2]
+			v2 = s[1:4]
+			v3 = s[1:]
+			v4 = s[:]
+			v5 = s[-1:10]
+			v6 = s[10:-1]
+			v7 = s[-10:]
+			v8 = s[::2]
+			add_key("v1", v1)
+			add_key("v2", v2)
+			add_key("v3", v3)
+			add_key("v4", v4)
+			add_key("v5", v5)
+			add_key("v6", v6)
+			add_key("v7", v7)			
+			add_key("v8", v8)
+			`,
+			v: map[string]any{
+				"v1": "el",
+				"v2": "ell",
+				"v3": "ello",
+				"v4": "hello",
+				"v5": "o",
+				"v6": "",
+				"v7": "hello",
+				"v8": "hlo",
+			},
+		},
+		{
+			name: "valid slice string with negative step",
+			pl: `
+			s = "hello"
+			v1 = s[4:1:-1]
+			v2 = s[::-2]
+			v3 = s[10:-10:-1] 
+			v4 = s[-10:1:-1]
+			v5 = s[-1:-6:-1]
+			add_key("v1", v1)
+			add_key("v2", v2)
+			add_key("v3", v3)
+			add_key("v4", v4)
+			add_key("v5", v5)
+			`,
+			v: map[string]any{
+				"v1": "oll",
+				"v2": "olh",
+				"v3": "olleh",
+				"v4": "",
+				"v5": "olleh",
+			},
+		},
+		{
+			name: "nested slice string",
+			pl: `
+			s = "hello"
+			v1 = s[10:-10:-1][::-2]
+			v2 = s[-1:-6:-1][::2]
+			add_key("v1", v1)
+			add_key("v2", v2)
+			`,
+			v: map[string]any{
+				"v1": "hlo",
+				"v2": "olh",
+			},
+		},
+		{
+			name: "valid slice list with positive step",
+			pl: `
+			l = [1, 2, 3, 4, 5]
+			v1 = l[1:4:2]
+			v2 = l[1:10]
+			add_key("v1", v1)
+			add_key("v2", v2)
+			`,
+			v: map[string]any{
+				"v1": "[2,4]",
+				"v2": "[2,3,4,5]",
+			},
+		},
+		{
+			name: "slice list with negative step",
+			pl: `
+			l = [1, 2, 3, 4, 5]
+			v1 = l[4:1:-1]
+			add_key("v1", v1)
+			`,
+			v: map[string]any{
+				"v1": "[5,4,3]",
+			},
+		},
+		{
+			name: "slice with invalid step",
+			pl: `
+			s = "hello"
+			result = s[1:4:0]
+			add_key("result", result)
+			`,
+			fail: true,
+		},
+	}
 
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			stmts, err := parseScript(c.pl)
+			if err != nil {
+				if c.fail {
+					return
+				}
+				t.Fatal(err)
+			}
+
+			script := &Script{
+				CallRef: nil,
+				FuncCall: map[string]FuncCall{
+					"add_key": addkeytest,
+				},
+				Name:      "abc",
+				Namespace: "default",
+				Content:   c.pl,
+				Ast:       stmts,
+			}
+			errR := script.Check(map[string]FuncCheck{
+				"add_key": addkeycheck,
+			})
+			if errR != nil {
+				t.Fatal(*errR)
+			}
+
+			inData := &inputImpl{
+				data: map[string]any{},
+			}
+
+			errR = script.Run(inData, nil)
+			if errR != nil {
+				if c.fail {
+					return
+				}
+				t.Fatal(errR.Error())
+			}
+			assert.Equal(t, c.v, inData.data)
+		})
+	}
+}
 func TestUnaryErrExpr(t *testing.T) {
 	pl := `
 	if !ckfn("") {
