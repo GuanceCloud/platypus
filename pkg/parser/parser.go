@@ -521,7 +521,7 @@ func (p *parser) newCallExpr(fn *ast.Node, args []*ast.Node, lParen, rParen Item
 
 	return ast.WrapCallExpr(f)
 }
-func (p *parser) newSliceExpr(obj *ast.Node, start *ast.Node, end *ast.Node, step *ast.Node, Colon2 *ast.Node, lbracket Item, rbracket Item) *ast.Node {
+func (p *parser) newSliceExpr(obj *ast.Node, start *ast.Node, end *ast.Node, step *ast.Node, colon2 bool, lbracket Item, rbracket Item) *ast.Node {
 	if obj == nil {
 		p.addParseErrf(p.yyParser.lval.item.PositionRange(), "invalid slice expression: object is nil")
 		return nil
@@ -567,7 +567,7 @@ func (p *parser) newSliceExpr(obj *ast.Node, start *ast.Node, end *ast.Node, ste
 		Start:    start,
 		End:      end,
 		Step:     step,
-		Colon2:   Colon2,
+		Colon2:   colon2,
 		LBracket: p.posCache.LnCol(lbracket.Pos),
 		RBracket: p.posCache.LnCol(rbracket.Pos),
 	})

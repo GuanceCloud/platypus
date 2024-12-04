@@ -320,7 +320,7 @@ type SliceExpr struct {
 	Start    *Node
 	End      *Node
 	Step     *Node
-	Colon2   *Node
+	Colon2   bool
 	LBracket token.LnColPos
 	RBracket token.LnColPos
 }
@@ -341,7 +341,7 @@ func (e *SliceExpr) String() string {
 	stepStr := ""
 	if e.Step != nil {
 		stepStr = ":" + e.Step.String()
-	} else if e.Colon2 != nil {
+	} else if e.Colon2 {
 		stepStr = ":"
 	}
 	return fmt.Sprintf("%s[%s:%s%s]", e.Obj.String(), startStr, endStr, stepStr)
