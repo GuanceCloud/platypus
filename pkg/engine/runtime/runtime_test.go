@@ -296,6 +296,8 @@ func TestInExpr(t *testing.T) {
 	x = 1
 	y = [1]
 	add_key("t4", x in y)
+
+	add_key("t5", x in function(tags=false))
 	`
 	stmts, err := parseScript(pl)
 	if err != nil {
@@ -308,6 +310,11 @@ func TestInExpr(t *testing.T) {
 			"test":    callexprtest,
 			"add_key": addkeytest,
 			"len":     lentest,
+			"function": func(ctx *Task, callExpr *ast.CallExpr) *errchain.PlError {
+				// 模拟函数返回 [1, 2, 3, 4]
+				ctx.Regs.ReturnAppend([]any{int64(1), int64(2), int64(3), int64(4)}, ast.List)
+				return nil
+			},
 		},
 		Name:      "abc",
 		Namespace: "default",
@@ -319,6 +326,12 @@ func TestInExpr(t *testing.T) {
 	errR := script.Check(map[string]FuncCheck{
 		"add_key": addkeycheck,
 		"len":     lencheck,
+		"function": func(ctx *Task, callExpr *ast.CallExpr) *errchain.PlError {
+			if len(callExpr.Param) != 1 {
+				return NewRunError(ctx, "function expects 2 argument", callExpr.NamePos)
+			}
+			return nil
+		},
 	})
 	if errR != nil {
 		t.Fatal(*errR)
@@ -344,6 +357,7 @@ func TestInExpr(t *testing.T) {
 		"t3_2": false,
 
 		"t4": true,
+		"t5": true,
 	}, inData.data)
 }
 
