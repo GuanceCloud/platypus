@@ -1046,7 +1046,7 @@ func RunSliceExpr(ctx *Task, expr *ast.SliceExpr) (any, ast.DType, *errchain.PlE
 
 	if step != nil {
 		if stepT != ast.Int {
-			return nil, ast.Invalid, NewRunError(ctx, "invalid step type", expr.Step.StartPos())
+			return nil, ast.Invalid, NewRunError(ctx, "step type must be integer", expr.Step.StartPos())
 		}
 		stepInt = cast.ToInt(step)
 		if stepInt == 0 {
@@ -1058,7 +1058,7 @@ func RunSliceExpr(ctx *Task, expr *ast.SliceExpr) (any, ast.DType, *errchain.PlE
 
 	if start != nil {
 		if startT != ast.Int {
-			return nil, ast.Invalid, NewRunError(ctx, "invalid start type", expr.Start.StartPos())
+			return nil, ast.Invalid, NewRunError(ctx, "start type must be integer", expr.Start.StartPos())
 		}
 		startInt = cast.ToInt(start)
 		if startInt < 0 {
@@ -1072,7 +1072,7 @@ func RunSliceExpr(ctx *Task, expr *ast.SliceExpr) (any, ast.DType, *errchain.PlE
 
 	if end != nil {
 		if endT != ast.Int {
-			return nil, ast.Invalid, NewRunError(ctx, "invalid end type", expr.End.StartPos())
+			return nil, ast.Invalid, NewRunError(ctx, "end type must be integer", expr.End.StartPos())
 		}
 		endInt = cast.ToInt(end)
 		if endInt < 0 {
