@@ -542,6 +542,10 @@ slice_expr_start
 {
     $$ = $1
 }
+| call_expr
+{
+    $$ = $1
+}
 ;
 
 slice_expr: identifier LEFT_BRACKET SPACE_EOLS expr COLON SPACE_EOLS expr COLON SPACE_EOLS expr RIGHT_BRACKET   //a[1:3:2]

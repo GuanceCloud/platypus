@@ -1702,7 +1702,7 @@ x[
 x[a]
 x[
 	a]
-
+x in pt_kvs_keys(fields=false,tags=true)
 cALl(
 	a, v,
 	c )
@@ -1729,6 +1729,8 @@ x[1:2:3]
 x[1:2:]
 x[::1]
 "hello"[a:b]
+x[x[1]:1]
+func(a, b, c)[func(a, b, c):b]
 [1,2,3,4][a:b]`,
 	}
 
