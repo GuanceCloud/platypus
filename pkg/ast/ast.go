@@ -10,11 +10,19 @@ import (
 	"fmt"
 	"sort"
 	"strings"
+	"sync"
 
 	"github.com/GuanceCloud/platypus/pkg/token"
 )
 
 type NodeType uint
+
+var (
+	dagCache = struct {
+		sync.RWMutex
+		m map[string]*DAGNode
+	}{m: make(map[string]*DAGNode)}
+)
 
 const (
 	// expr.
@@ -146,6 +154,7 @@ type Node struct {
 	// node type
 	NodeType NodeType
 	elem     AstNode
+	DagNode  *DAGNode
 }
 
 func (n *Node) String() string {
@@ -233,107 +242,296 @@ func (n *Node) StartPos() token.LnColPos {
 }
 
 func WrapIdentifier(node *Identifier) *Node {
+	fingerprint := fmt.Sprintf("id %s", node.Name)
+	if cached, exists := getCachedNode(fingerprint); exists {
+		return &Node{
+			NodeType: TypeIdentifier,
+			elem:     node,
+			DagNode:  cached,
+		}
+	}
+	dagNode := NewDAGNode(node.Name, node)
+	cacheNode(fingerprint, dagNode)
 	return &Node{
 		NodeType: TypeIdentifier,
 		elem:     node,
+		DagNode:  dagNode,
 	}
 }
 
 func WrapStringLiteral(node *StringLiteral) *Node {
+	fingerprint := fmt.Sprintf("str %s", node.Val)
+	if cached, exists := getCachedNode(fingerprint); exists {
+		return &Node{
+			NodeType: TypeStringLiteral,
+			elem:     node,
+			DagNode:  cached,
+		}
+	}
+	dagNode := NewDAGNode(node.Val, node)
+	cacheNode(fingerprint, dagNode)
 	return &Node{
 		NodeType: TypeStringLiteral,
 		elem:     node,
+		DagNode:  dagNode,
 	}
 }
 
 func WrapIntegerLiteral(node *IntegerLiteral) *Node {
+	fingerprint := fmt.Sprintf("int %d", node.Val)
+	if cached, exists := getCachedNode(fingerprint); exists {
+		return &Node{
+			NodeType: TypeIntegerLiteral,
+			elem:     node,
+			DagNode:  cached,
+		}
+	}
+	dagNode := NewDAGNode(node.String(), node)
+	cacheNode(fingerprint, dagNode)
 	return &Node{
 		NodeType: TypeIntegerLiteral,
 		elem:     node,
+		DagNode:  dagNode,
 	}
 }
 
 func WrapFloatLiteral(node *FloatLiteral) *Node {
+	fingerprint := fmt.Sprintf("float %f", node.Val)
+	if cached, exists := getCachedNode(fingerprint); exists {
+		return &Node{
+			NodeType: TypeFloatLiteral,
+			elem:     node,
+			DagNode:  cached,
+		}
+	}
+	dagNode := NewDAGNode(node.String(), node)
+	cacheNode(fingerprint, dagNode)
 	return &Node{
 		NodeType: TypeFloatLiteral,
 		elem:     node,
+		DagNode:  dagNode,
 	}
 }
 
 func WrapBoolLiteral(node *BoolLiteral) *Node {
+	fingerprint := fmt.Sprintf("bool %t", node.Val)
+	if cached, exists := getCachedNode(fingerprint); exists {
+		return &Node{
+			NodeType: TypeBoolLiteral,
+			elem:     node,
+			DagNode:  cached,
+		}
+	}
+	dagNode := NewDAGNode(node.String(), node)
+	cacheNode(fingerprint, dagNode)
 	return &Node{
 		NodeType: TypeBoolLiteral,
 		elem:     node,
+		DagNode:  dagNode,
 	}
 }
 
 func WrapNilLiteral(node *NilLiteral) *Node {
+	fingerprint := "nil"
+	if cached, exists := getCachedNode(fingerprint); exists {
+		return &Node{
+			NodeType: TypeNilLiteral,
+			elem:     node,
+			DagNode:  cached,
+		}
+	}
+	dagNode := NewDAGNode("nil", node)
 	return &Node{
 		NodeType: TypeNilLiteral,
 		elem:     node,
+		DagNode:  dagNode,
 	}
 }
 
 func WrapListInitExpr(node *ListLiteral) *Node {
+	fingerprint := fmt.Sprintf("list %s", node.String())
+	if cached, exists := getCachedNode(fingerprint); exists {
+		return &Node{
+			NodeType: TypeListLiteral,
+			elem:     node,
+			DagNode:  cached,
+		}
+	}
+	dagNode := NewDAGNode(node.String(), node)
+	cacheNode(fingerprint, dagNode)
 	return &Node{
 		NodeType: TypeListLiteral,
 		elem:     node,
+		DagNode:  dagNode,
 	}
 }
 
 func WrapMapLiteral(node *MapLiteral) *Node {
+	fingerprint := fmt.Sprintf("map %s", node.String())
+	if cached, exists := getCachedNode(fingerprint); exists {
+		return &Node{
+			NodeType: TypeMapLiteral,
+			elem:     node,
+			DagNode:  cached,
+		}
+	}
+	dagNode := NewDAGNode(node.String(), node)
+	cacheNode(fingerprint, dagNode)
 	return &Node{
 		NodeType: TypeMapLiteral,
 		elem:     node,
+		DagNode:  dagNode,
 	}
 }
 
 func WrapParenExpr(node *ParenExpr) *Node {
+	fingerprint := fmt.Sprintf("paren %s", node.String())
+	if cached, exists := getCachedNode(fingerprint); exists {
+		return &Node{
+			NodeType: TypeParenExpr,
+			elem:     node,
+			DagNode:  cached,
+		}
+	}
+	dagNode := NewDAGNode(node.String(), node)
+	cacheNode(fingerprint, dagNode)
 	return &Node{
 		NodeType: TypeParenExpr,
 		elem:     node,
+		DagNode:  dagNode,
 	}
 }
 
 func WrapAttrExpr(node *AttrExpr) *Node {
+	fingerprint := fmt.Sprintf("attr %s", node.String())
+	if cached, exists := getCachedNode(fingerprint); exists {
+		return &Node{
+			NodeType: TypeAttrExpr,
+			elem:     node,
+			DagNode:  cached,
+		}
+	}
+	dagNode := NewDAGNode(node.String(), node)
+	cacheNode(fingerprint, dagNode)
 	return &Node{
 		NodeType: TypeAttrExpr,
 		elem:     node,
+		DagNode:  dagNode,
 	}
 }
 
 func WrapIndexExpr(node *IndexExpr) *Node {
+	fingerprint := fmt.Sprintf("index %s", node.String())
+	if cached, exists := getCachedNode(fingerprint); exists {
+		return &Node{
+			NodeType: TypeIndexExpr,
+			elem:     node,
+			DagNode:  cached,
+		}
+	}
+	dagNode := NewDAGNode(fingerprint, node)
+	cacheNode(fingerprint, dagNode)
 	return &Node{
 		NodeType: TypeIndexExpr,
 		elem:     node,
+		DagNode:  dagNode,
 	}
 }
 
 func WrapArithmeticExpr(node *ArithmeticExpr) *Node {
+	lhsHash := node.LHS.Hash()
+	rhsHash := node.RHS.Hash()
+	fingerprint := fmt.Sprintf("%s %s %s", lhsHash, node.Op, rhsHash)
+	if cached, exists := getCachedNode(fingerprint); exists {
+		return &Node{
+			NodeType: TypeArithmeticExpr,
+			elem:     node,
+			DagNode:  cached,
+		}
+	}
+	dagNode := NewDAGNode(fingerprint, node)
+	if node.LHS.DagNode != nil {
+		dagNode.AddChild(node.LHS.DagNode)
+	}
+	if node.RHS.DagNode != nil {
+		dagNode.AddChild(node.RHS.DagNode)
+	}
+	cacheNode(fingerprint, dagNode)
 	return &Node{
 		NodeType: TypeArithmeticExpr,
 		elem:     node,
+		DagNode:  dagNode,
 	}
 }
 
 func WrapConditionExpr(node *ConditionalExpr) *Node {
+	lhsHash := node.LHS.Hash()
+	rhsHash := node.RHS.Hash()
+	fingerprint := fmt.Sprintf("%s %s %s", lhsHash, node.Op, rhsHash)
+	if cached, exists := getCachedNode(fingerprint); exists {
+		return &Node{
+			NodeType: TypeConditionalExpr,
+			elem:     node,
+			DagNode:  cached,
+		}
+	}
+	dagNode := NewDAGNode(fingerprint, node)
+	if node.LHS.DagNode != nil {
+		dagNode.AddChild(node.LHS.DagNode)
+	}
+	if node.RHS.DagNode != nil {
+		dagNode.AddChild(node.RHS.DagNode)
+	}
+	cacheNode(fingerprint, dagNode)
 	return &Node{
 		NodeType: TypeConditionalExpr,
 		elem:     node,
+		DagNode:  dagNode,
 	}
 }
 
 func WrapInExpr(node *InExpr) *Node {
+	lhsHash := node.LHS.Hash()
+	rhsHash := node.RHS.Hash()
+	fingerprint := fmt.Sprintf("%s %s %s", lhsHash, node.Op, rhsHash)
+	if cached, exists := getCachedNode(fingerprint); exists {
+		return &Node{
+			NodeType: TypeInExpr,
+			elem:     node,
+			DagNode:  cached,
+		}
+	}
+	dagNode := NewDAGNode(fingerprint, node)
+	if node.LHS.DagNode != nil {
+		dagNode.AddChild(node.LHS.DagNode)
+	}
+	if node.RHS.DagNode != nil {
+		dagNode.AddChild(node.RHS.DagNode)
+	}
+	cacheNode(fingerprint, dagNode)
 	return &Node{
 		NodeType: TypeInExpr,
 		elem:     node,
+		DagNode:  dagNode,
 	}
 }
 
 func WrapUnaryExpr(node *UnaryExpr) *Node {
+	rhsHash := node.RHS.Hash()
+	fingerprint := fmt.Sprintf("%s %s", node.Op, rhsHash)
+	if cached, exists := getCachedNode(fingerprint); exists {
+		return &Node{
+			NodeType: TypeUnaryExpr,
+			elem:     node,
+			DagNode:  cached,
+		}
+	}
+	dagNode := NewDAGNode(node.String(), node)
+
 	return &Node{
 		NodeType: TypeUnaryExpr,
 		elem:     node,
+		DagNode:  dagNode,
 	}
 }
 
@@ -467,4 +665,56 @@ func NodeStartPos(node *Node) token.LnColPos {
 		return node.BreakStmt().Start
 	}
 	return token.InvalidLnColPos
+}
+
+func getCachedNode(fingerprint string) (*DAGNode, bool) {
+	dagCache.RLock()
+	defer dagCache.RUnlock()
+	node, exists := dagCache.m[fingerprint]
+	return node, exists
+}
+
+func cacheNode(fingerprint string, node *DAGNode) {
+	dagCache.Lock()
+	defer dagCache.Unlock()
+	dagCache.m[fingerprint] = node
+}
+
+func (n *Node) Hash() string {
+	if n.DagNode != nil {
+		return n.DagNode.ID
+	}
+	switch n.NodeType {
+	case TypeIdentifier:
+		return n.Identifier().Name
+	case TypeStringLiteral:
+		return n.StringLiteral().Val
+	case TypeIntegerLiteral:
+		return n.IntegerLiteral().String()
+	case TypeFloatLiteral:
+		return n.FloatLiteral().String()
+	case TypeBoolLiteral:
+		return n.BoolLiteral().String()
+	case TypeNilLiteral:
+		return "nil"
+	case TypeListLiteral:
+		return n.ListLiteral().String()
+	case TypeMapLiteral:
+		return n.MapLiteral().String()
+	case TypeParenExpr:
+		return n.ParenExpr().String()
+	case TypeAttrExpr:
+		return n.AttrExpr().String()
+	case TypeIndexExpr:
+		return n.IndexExpr().String()
+	case TypeUnaryExpr:
+		return n.UnaryExpr().String()
+	case TypeArithmeticExpr:
+		return n.ArithmeticExpr().String()
+	case TypeConditionalExpr:
+		return n.ConditionalExpr().String()
+	case TypeAssignmentExpr:
+		return n.AssignmentExpr().String()
+	}
+	return ""
 }

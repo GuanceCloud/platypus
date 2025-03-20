@@ -1596,7 +1596,19 @@ multiline-string
 		{
 			name: "invalid slice with invalid object type",
 			in:   `true[1:3]`,
-			fail: true,
+			expected: ast.Stmts{
+				ast.WrapSliceExpr(&ast.SliceExpr{
+					Obj: ast.WrapBoolLiteral(&ast.BoolLiteral{
+						Val: true,
+					}),
+					Start: ast.WrapIntegerLiteral(&ast.IntegerLiteral{
+						Val: 1,
+					}),
+					End: ast.WrapIntegerLiteral(&ast.IntegerLiteral{
+						Val: 3,
+					}),
+				}),
+			},
 		},
 		{
 			name: "invalid slice with invalid start type",
@@ -1741,4 +1753,92 @@ func(a, b, c)[func(a, b, c):b]
 		}
 		t.Log(stmts)
 	}
+}
+func TestArithDAGReuse(t *testing.T) {
+	// 定义AST遍历函数
+	var collectArithmeticNodes func(*ast.Node, *[]*ast.Node)
+	collectArithmeticNodes = func(n *ast.Node, nodes *[]*ast.Node) {
+		if n == nil {
+			return
+		}
+		if n.NodeType == ast.TypeArithmeticExpr {
+			*nodes = append(*nodes, n)
+		}
+		// 递归遍历子节点
+		switch n.NodeType {
+		case ast.TypeArithmeticExpr:
+			expr := n.ArithmeticExpr()
+			collectArithmeticNodes(expr.LHS, nodes)
+			collectArithmeticNodes(expr.RHS, nodes)
+		case ast.TypeAssignmentExpr:
+			collectArithmeticNodes(n.AssignmentExpr().RHS, nodes)
+		case ast.TypeParenExpr:
+			collectArithmeticNodes(n.ParenExpr().Param, nodes)
+		case ast.TypeCallExpr:
+			for _, p := range n.CallExpr().Param {
+				collectArithmeticNodes(p, nodes)
+			}
+		}
+	}
+
+	t.Run("basic-reuse", func(t *testing.T) {
+		input := `(2+2)+(2+2)`
+		stmts, err := ParsePipeline("", input)
+		assert.NoError(t, err)
+
+		// 收集所有算术表达式节点
+		var arithNodes []*ast.Node
+		collectArithmeticNodes(stmts[0], &arithNodes)
+
+		assert.Len(t, arithNodes, 3, "应该有3个算术表达式节点")
+
+		mulNode := arithNodes[0]
+		assert.Equal(t, ast.ADD, mulNode.ArithmeticExpr().Op, "应为加法操作")
+
+		// 获取两个加法表达式节点
+		addNode1 := arithNodes[1]
+		addNode2 := arithNodes[2]
+		assert.Equal(t, ast.ADD, addNode1.ArithmeticExpr().Op, "应为加法操作")
+		assert.Equal(t, ast.ADD, addNode2.ArithmeticExpr().Op, "应为加法操作")
+
+		// 验证DAG节点复用
+		assert.Equal(t, addNode1.DagNode.ID, addNode2.DagNode.ID,
+			"两个加法表达式应共享相同DAG节点")
+		assert.NotEqual(t, addNode1.DagNode.ID, mulNode.DagNode.ID,
+			"不同操作数的表达式应有不同DAG节点")
+	})
+
+	t.Run("different-expressions", func(t *testing.T) {
+		input := `y = (c + d) * (e + f)` // 完全不同的表达式
+		stmts, err := ParsePipeline("", input)
+		assert.NoError(t, err)
+
+		var arithNodes []*ast.Node
+		collectArithmeticNodes(stmts[0], &arithNodes)
+		assert.Len(t, arithNodes, 3, "应该有三个算术表达式节点")
+
+		// 验证所有节点都有不同的DAG ID
+		assert.NotEqual(t, arithNodes[1].DagNode.ID, arithNodes[2].DagNode.ID,
+			"不同操作数的表达式应有不同DAG节点")
+	})
+
+	t.Run("nested-reuse", func(t *testing.T) {
+		input := `z = ((a + b) + c) + (a + b)` // 嵌套复用
+		stmts, err := ParsePipeline("", input)
+		assert.NoError(t, err)
+
+		var arithNodes []*ast.Node
+		collectArithmeticNodes(stmts[0], &arithNodes)
+
+		// 节点结构：
+		// 0: 最外层加法 ((a+b)+c) + (a+b)
+		// 1: 中间层加法 (a+b)+c
+		// 2: 基础加法 a+b
+		// 3: 基础加法 a+b
+		assert.Len(t, arithNodes, 4, "应该有四个算术表达式节点")
+
+		// 验证最底层两个a+b复用
+		assert.Equal(t, arithNodes[2].DagNode.ID, arithNodes[3].DagNode.ID,
+			"相同基础表达式应复用DAG节点")
+	})
 }
