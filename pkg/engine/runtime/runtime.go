@@ -41,15 +41,15 @@ type Signal interface {
 	ExitSignal() bool
 }
 
-func WithVal(key string, val any) TaskFn {
+type Opt func(ctx *Task)
+
+func WithPrivate(v map[string]any) Opt {
 	return func(ctx *Task) {
-		_ = ctx.WithVal(key, val, false)
+		ctx.private = v
 	}
 }
 
-type TaskFn func(ctx *Task)
-
-func (s *Script) Run(data Input, signal Signal, fn ...TaskFn) *errchain.PlError {
+func (s *Script) Run(data Input, signal Signal, fn ...Opt) *errchain.PlError {
 	if s == nil {
 		return nil
 	}
