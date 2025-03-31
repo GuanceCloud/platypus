@@ -9,7 +9,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"reflect"
 	"sync"
 
 	"github.com/GuanceCloud/grok"
@@ -23,6 +22,8 @@ const (
 )
 
 type Task struct {
+	private map[string]any
+
 	Regs PlReg
 
 	stackHeader *PlProcStack
@@ -44,8 +45,6 @@ type Task struct {
 	callRef []*ast.CallExpr
 
 	name string
-
-	withValue map[any]any
 }
 
 func (ctx *Task) Name() string {
@@ -58,38 +57,9 @@ var (
 	ErrKeyExists        = errors.New("key exists")
 )
 
-func (ctx *Task) WithVal(key, val any, force bool) error {
-	if key == nil {
-		return ErrNilKey
-	}
-	if !reflect.TypeOf(key).Comparable() {
-		return ErrKeyNotComparable
-	}
-	if ctx.withValue == nil {
-		ctx.withValue = map[any]any{
-			key: val,
-		}
-		return nil
-	}
-
-	if _, ok := ctx.withValue[key]; !ok {
-		ctx.withValue[key] = val
-	} else {
-		if force {
-			ctx.withValue[key] = val
-		} else {
-			return ErrKeyExists
-		}
-	}
-
-	return nil
-}
-
-func (ctx *Task) Val(key any) any {
-	if ctx.withValue == nil {
-		return nil
-	}
-	return ctx.withValue[key]
+func (ctx *Task) PValue(k string) (any, bool) {
+	v, ok := ctx.private[k]
+	return v, ok
 }
 
 func (ctx *Task) InData() any {
