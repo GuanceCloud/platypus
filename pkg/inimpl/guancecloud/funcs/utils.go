@@ -217,7 +217,7 @@ func reIndexFuncArgs(fnStmt *ast.CallExpr, keyList []string, reqParm int) error 
 			if beforPosArg {
 				beforPosArg = false
 			}
-			kname, err := getKeyName(arg.AssignmentExpr().LHS)
+			kname, err := getKeyName(arg.AssignmentExpr().LHS[0])
 			if err != nil {
 				return err
 			}
@@ -225,7 +225,7 @@ func reIndexFuncArgs(fnStmt *ast.CallExpr, keyList []string, reqParm int) error 
 			if !ok {
 				return fmt.Errorf("argument %s does not exist", kname)
 			}
-			ret[kIndex] = arg.AssignmentExpr().RHS
+			ret[kIndex] = arg.AssignmentExpr().RHS[0]
 		} else {
 			if !beforPosArg {
 				return fmt.Errorf("positional arguments cannot follow keyword arguments")

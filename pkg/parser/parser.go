@@ -400,7 +400,7 @@ func (p *parser) newUnaryExpr(op Item, r *ast.Node) *ast.Node {
 	})
 }
 
-func (p *parser) newAssignmentStmt(l, r *ast.Node, op Item) *ast.Node {
+func (p *parser) newAssignmentStmt(l, r []*ast.Node, op Item) *ast.Node {
 	return ast.WrapAssignmentStmt(&ast.AssignmentExpr{
 		LHS:   l,
 		Op:    AstOp(op.Typ),
