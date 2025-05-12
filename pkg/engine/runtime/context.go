@@ -26,8 +26,8 @@ type Task struct {
 
 	Regs PlReg
 
-	stackHeader *PlProcStack
-	stackCur    *PlProcStack
+	stackHeader *Stack
+	stackCur    *Stack
 
 	funcCall  map[string]FuncCall
 	funcCheck map[string]FuncCheck
@@ -91,8 +91,8 @@ func InitCtx(ctx *Task, input Input, script *Script, signal Signal) *Task {
 }
 
 func InitCtxForCheck(ctx *Task, script *Script, checkFn map[string]FuncCheck) *Task {
-	ctx.stackHeader = &PlProcStack{
-		data: map[string]*Varb{},
+	ctx.stackHeader = &Stack{
+		Data: map[string]*Varb{},
 	}
 	ctx.stackCur = ctx.stackHeader
 
@@ -182,19 +182,19 @@ func (ctx *Task) GetFuncCheck(key string) (FuncCheck, bool) {
 }
 
 func (ctx *Task) StackEnterNew() {
-	next := &PlProcStack{
-		data:   map[string]*Varb{},
-		before: ctx.stackCur,
+	next := &Stack{
+		Data:   map[string]*Varb{},
+		Before: ctx.stackCur,
 	}
 
 	ctx.stackCur = next
 }
 
 func (ctx *Task) StackExitCur() {
-	ctx.stackCur.data = nil
-	ctx.stackCur.checkPattern = nil
+	ctx.stackCur.Data = nil
+	ctx.stackCur.CheckPattern = nil
 
-	ctx.stackCur = ctx.stackCur.before
+	ctx.stackCur = ctx.stackCur.Before
 }
 
 func (ctx *Task) StackClear() {
@@ -244,8 +244,8 @@ var ctxPool sync.Pool = sync.Pool{
 func GetContext() *Task {
 	ctx, _ := ctxPool.Get().(*Task)
 
-	ctx.stackHeader = &PlProcStack{
-		data: map[string]*Varb{},
+	ctx.stackHeader = &Stack{
+		Data: map[string]*Varb{},
 	}
 	ctx.stackCur = ctx.stackHeader
 	return ctx

@@ -3,7 +3,7 @@
 // This product includes software developed at Guance Cloud (https://www.guance.com/).
 // Copyright 2021-present Guance, Inc.
 
-package runtime
+package runtimev2
 
 import (
 	"fmt"
@@ -176,7 +176,7 @@ func RunIndexExprGetCheck(ctx *Task, ctxCheck *ContextCheck, expr *ast.IndexExpr
 }
 
 func RunCallExprCheck(ctx *Task, ctxCheck *ContextCheck, expr *ast.CallExpr) *errchain.PlError {
-	_, ok := ctx.GetFuncCall(expr.Name)
+	_, ok := ctx.GetFn(expr.Name)
 	if !ok {
 		return NewRunError(ctx, fmt.Sprintf(
 			"unsupported func: `%v`", expr.Name), expr.NamePos)
@@ -186,10 +186,10 @@ func RunCallExprCheck(ctx *Task, ctxCheck *ContextCheck, expr *ast.CallExpr) *er
 		return err.ChainAppend(ctx.name, expr.NamePos)
 	}
 
-	funcCheck, ok := ctx.GetFuncCheck(expr.Name)
+	funcCheck, ok := ctx.GetFnCheck(expr.Name)
 	if !ok {
 		return NewRunError(ctx, fmt.Sprintf(
-			"not found check for func: `%v`", expr.Name), expr.NamePos)
+			"check function for function `%s` not found", expr.Name), expr.NamePos)
 	}
 
 	return funcCheck(ctx, expr)

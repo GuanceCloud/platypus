@@ -864,17 +864,24 @@ func runAssignArith(ctx *Task, l, r *Varb, op ast.Op, pos token.LnColPos) (
 
 // RunAssignmentExpr runs assignment expression, but actually it is a stmt
 func RunAssignmentExpr(ctx *Task, expr *ast.AssignmentExpr) (any, ast.DType, *errchain.PlError) {
-	v, dtype, err := RunStmt(ctx, expr.RHS)
+	if !(len(expr.RHS) == 1 && len(expr.LHS) == 1) {
+		return nil, ast.Void, NewRunError(ctx,
+			"it does not support assigning values to multiple variables at the same time", expr.OpPos)
+	}
+
+	RHS := expr.RHS[0]
+	LHS := expr.LHS[0]
+	v, dtype, err := RunStmt(ctx, RHS)
 	if err != nil {
 		return nil, ast.Invalid, err
 	}
 	rVarb := &Varb{Value: v, DType: dtype}
 
-	switch expr.LHS.NodeType { //nolint:exhaustive
+	switch LHS.NodeType { //nolint:exhaustive
 	case ast.TypeIdentifier:
 		switch expr.Op {
 		case ast.EQ:
-			_ = ctx.SetVarb(expr.LHS.Identifier().Name, v, dtype)
+			_ = ctx.SetVarb(LHS.Identifier().Name, v, dtype)
 			return v, dtype, nil
 
 		case ast.SUBEQ,
@@ -882,14 +889,14 @@ func RunAssignmentExpr(ctx *Task, expr *ast.AssignmentExpr) (any, ast.DType, *er
 			ast.MULEQ,
 			ast.DIVEQ,
 			ast.MODEQ:
-			lVarb, err := ctx.GetKey(expr.LHS.Identifier().Name)
+			lVarb, err := ctx.GetKey(LHS.Identifier().Name)
 			if err != nil {
 				return nil, ast.Nil, nil
 			}
 			if v, dt, errR := runAssignArith(ctx, lVarb, rVarb, expr.Op, expr.OpPos); errR != nil {
 				return nil, ast.Void, errR
 			} else {
-				_ = ctx.SetVarb(expr.LHS.Identifier().Name, v, dt)
+				_ = ctx.SetVarb(LHS.Identifier().Name, v, dt)
 				return v, dt, nil
 			}
 
@@ -900,29 +907,29 @@ func RunAssignmentExpr(ctx *Task, expr *ast.AssignmentExpr) (any, ast.DType, *er
 	case ast.TypeIndexExpr:
 		switch expr.Op {
 		case ast.EQ:
-			varb, err := ctx.GetKey(expr.LHS.IndexExpr().Obj.Name)
+			varb, err := ctx.GetKey(LHS.IndexExpr().Obj.Name)
 			if err != nil {
-				return nil, ast.Invalid, NewRunError(ctx, err.Error(), expr.LHS.IndexExpr().Obj.Start)
+				return nil, ast.Invalid, NewRunError(ctx, err.Error(), LHS.IndexExpr().Obj.Start)
 			}
-			return changeListOrMapValue(ctx, varb.Value, expr.LHS.IndexExpr().Index,
+			return changeListOrMapValue(ctx, varb.Value, LHS.IndexExpr().Index,
 				v, dtype)
 		case ast.ADDEQ,
 			ast.SUBEQ,
 			ast.MULEQ,
 			ast.DIVEQ,
 			ast.MODEQ:
-			varb, err := ctx.GetKey(expr.LHS.IndexExpr().Obj.Name)
+			varb, err := ctx.GetKey(LHS.IndexExpr().Obj.Name)
 			if err != nil {
-				return nil, ast.Invalid, NewRunError(ctx, err.Error(), expr.LHS.IndexExpr().Obj.Start)
+				return nil, ast.Invalid, NewRunError(ctx, err.Error(), LHS.IndexExpr().Obj.Start)
 			}
-			if v, dt, errR := searchListAndMap(ctx, varb.Value, expr.LHS.IndexExpr().Index); errR != nil {
+			if v, dt, errR := searchListAndMap(ctx, varb.Value, LHS.IndexExpr().Index); errR != nil {
 				return nil, ast.Invalid, errR
 			} else {
 				v, dt, err := runAssignArith(ctx, &Varb{Value: v, DType: dt}, rVarb, expr.Op, expr.OpPos)
 				if err != nil {
 					return nil, ast.Invalid, err
 				}
-				return changeListOrMapValue(ctx, varb.Value, expr.LHS.IndexExpr().Index,
+				return changeListOrMapValue(ctx, varb.Value, LHS.IndexExpr().Index,
 					v, dt)
 			}
 		default:
