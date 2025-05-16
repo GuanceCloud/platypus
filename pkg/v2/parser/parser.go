@@ -324,7 +324,7 @@ func (p *parser) newAssignmentStmt(l, r []ast.Node, op Item) ast.Node {
 func (p *parser) newInExpr(l, r ast.Node, inOp Item) ast.Node {
 	return &ast.InExpr{
 		LHS:   l,
-		Op:    "in",
+		Op:    ast.IN,
 		RHS:   r,
 		OpPos: p.posCache.LnCol(inOp.Pos),
 	}

@@ -43,6 +43,8 @@ const (
 	MULEQ Op = "*="
 	DIVEQ Op = "/="
 	MODEQ Op = "%="
+
+	IN Op = "in"
 )
 
 type Identifier struct {
@@ -312,7 +314,7 @@ func (e *CallExpr) String() string {
 	for _, n := range e.Param {
 		arr = append(arr, n.String())
 	}
-	return fmt.Sprintf("%s(%s)", strings.ToLower(e.Name), strings.Join(arr, ", "))
+	return fmt.Sprintf("%s(%s)", strings.ToLower(e.Obj.String()), strings.Join(arr, ", "))
 }
 
 type SliceExpr struct {

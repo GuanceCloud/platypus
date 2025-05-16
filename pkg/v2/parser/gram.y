@@ -118,14 +118,12 @@ NEW MAKE INTERFACE CONST
 	list_literal
 	basic_literal
 	for_init_elem
-	interface_type
 	slice_expr
 	data_type
 	fn_type
 	list_type
 	map_type
 	var_def_stmt
-	class_type
 	method_def_stmt
 	fn_def_stmt
 	import_stmt
@@ -134,13 +132,11 @@ NEW MAKE INTERFACE CONST
 	//columnref
 
 %type <classbody>
-	class_body
 	
 
 %type <fnparams>
 	fn_def_params
 	fn_def_param
-	interface_fn_li
 
 %start start
 
@@ -277,9 +273,7 @@ data_type: INT
 | list_type
 | map_type
 | fn_type
-| class_type
 | identifier
-| interface_type
 ;
 
 
@@ -310,18 +304,6 @@ var_def_stmt: LET identifier data_type EQ expr
 ;
 
 
-class_body: identifier data_type
-{
-	$$ =nil
-
-}
-| class_body identifier data_type
-{
-	$$ =nil
-}
-;
- 
-
 fn_type: FN LEFT_PAREN  RIGHT_PAREN LEFT_BRACE RIGHT_BRACE
 {
 	$$=nil
@@ -342,32 +324,11 @@ fn_type: FN LEFT_PAREN  RIGHT_PAREN LEFT_BRACE RIGHT_BRACE
 {
 	$$ =nil
 }
-| FN  LEFT_PAREN fn_def_params RIGHT_PAREN LEFT_BRACE RIGHT_BRACE FN_RET LEFT_PAREN fn_ret_types_multi RIGHT_PAREN
+| FN LEFT_PAREN fn_def_params RIGHT_PAREN LEFT_BRACE RIGHT_BRACE FN_RET LEFT_PAREN fn_ret_types_multi RIGHT_PAREN
 {
 	$$ =nil
 }
 ;
-
-
-class_type: CLASS LEFT_BRACE class_body RIGHT_BRACE
-{
-	$$ =nil
-}
-| CLASS LEFT_BRACE RIGHT_BRACE
-{
-	$$ =nil
-}
-;
-
-
-interface_type: INTERFACE LEFT_BRACE RIGHT_BRACE
-{
-	$$ = nil
-}
-| INTERFACE LEFT_BRACE interface_fn_li RIGHT_BRACE
-{
-	$$ = nil
-}
 
 /*
 stmt
@@ -384,20 +345,6 @@ import_stmt: IMPORT STRING
 }
 ;
 
-
-interface_fn_li: identifier fn_type
-{
-	$$ = nil
-}
-| interface_fn_li EOL identifier fn_type
-{
-	$$ = nil
-}
-| interface_fn_li EOL
-{
-	$$ = nil
-}
-;
 
 type_def_stmt: TYPE identifier data_type
 {
@@ -522,32 +469,32 @@ exprs: expr
 assignment_stmt: exprs EQ exprs
 {
 	$$ = yylex.(*parser).newAssignmentStmt(
-		[]*ast.Node{$1}, []*ast.Node{$3}, $2)
+		$1, $3, $2)
 }
 | expr ADD_EQ expr
 {
 	$$ = yylex.(*parser).newAssignmentStmt(
-		[]*ast.Node{$1}, []*ast.Node{$3}, $2)
+		[]ast.Node{$1}, []ast.Node{$3}, $2)
 }
 | expr SUB_EQ expr
 {
 	$$ = yylex.(*parser).newAssignmentStmt(
-		[]*ast.Node{$1}, []*ast.Node{$3}, $2)
+		[]ast.Node{$1}, []ast.Node{$3}, $2)
 }
 | expr MUL_EQ expr
 {
 	$$ = yylex.(*parser).newAssignmentStmt(
-		[]*ast.Node{$1}, []*ast.Node{$3}, $2)
+		[]ast.Node{$1}, []ast.Node{$3}, $2)
 }
 | expr DIV_EQ expr
 {
 	$$ = yylex.(*parser).newAssignmentStmt(
-		[]*ast.Node{$1}, []*ast.Node{$3}, $2)
+		[]ast.Node{$1}, []ast.Node{$3}, $2)
 }
 | expr MOD_EQ expr
 {
 	$$ = yylex.(*parser).newAssignmentStmt(
-		[]*ast.Node{$1}, []*ast.Node{$3}, $2)
+		[]ast.Node{$1}, []ast.Node{$3}, $2)
 }
 ;
 

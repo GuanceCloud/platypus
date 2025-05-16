@@ -509,12 +509,7 @@ __goon:
 	return lexStatements
 }
 
-func lexSpaceAndLineCommentForOp(l *Lexer) stateFn {
-	for isSpace(l.peek()) {
-		l.next()
-	}
-	l.ignore()
-
+func lexCommentForOp(l *Lexer) stateFn {
 	if l.peek() == '#' {
 		l.pos += token.Pos(len(lineComment))
 		for r := l.next(); !isEOL(r) && r != eof; {
@@ -522,11 +517,21 @@ func lexSpaceAndLineCommentForOp(l *Lexer) stateFn {
 		}
 		l.backup()
 		l.emit(COMMENT)
-
-		for isEOL(l.peek()) {
-			l.next()
+		if isSpace(l.peek()) {
+			return lexSpaceAndLineCommentForOp
 		}
-		l.ignore()
+	}
+	return lexStatements
+}
+
+func lexSpaceAndLineCommentForOp(l *Lexer) stateFn {
+	for isSpace(l.peek()) {
+		l.next()
+	}
+	l.ignore()
+
+	if l.peek() == '#' {
+		return lexCommentForOp
 	}
 
 	return lexStatements
