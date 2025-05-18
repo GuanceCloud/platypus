@@ -382,9 +382,6 @@ func (p *parser) newCallExpr(lParen, rParen Item, fn ast.Node, args []ast.Node) 
 		RParen: p.posCache.LnCol(rParen.Pos),
 	}
 
-	// TODO: key-value param support
-	f.Param = append(f.Param, args...)
-
 	return f
 }
 func (p *parser) newSliceExpr(l, r Item, obj, start, end, step ast.Node) ast.Node {

@@ -110,5 +110,9 @@ type BlockStmt struct {
 }
 
 func (block *BlockStmt) String() string {
-	return "block stmt"
+	var arr []string
+	for _, x := range block.Stmts {
+		arr = append(arr, x.String())
+	}
+	return strings.Join(arr, "\n")
 }

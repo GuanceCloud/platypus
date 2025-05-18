@@ -114,10 +114,11 @@ NEW MAKE INTERFACE CONST
 	map_literal
 	value_stmt
 	expr_or_empty
-	typed_literal
+	// typed_literal
 	list_literal
 	basic_literal
 	for_init_elem
+	for_loop_elem
 	slice_expr
 	data_type
 	fn_type
@@ -152,20 +153,36 @@ NEW MAKE INTERFACE CONST
 %left LEFT_PAREN RIGHT_PAREN DOT LEFT_BRACKET RIGHT_BRACKET
 %%
 
-
 sep: SEMICOLON
 | EOL
 | sep SEMICOLON
 | sep EOL
 ;
 
+sem: SEMICOLON
+| sem EOL
+| sem SEMICOLON
+;
+
+EOLS: EOL
+| EOLS EOL
+;
+
+EOLS_SPACE: EOLS
+|
+;
+
 start: START_STMTS stmts
 {
 	yylex.(*parser).parseResult = $2
 }
-| START_STMTS
+| START_STMTS EOLS
 {
 	yylex.(*parser).parseResult = ast.Stmts{}
+}
+| START_STMTS EOLS stmts
+{
+	yylex.(*parser).parseResult = $3
 }
 | start EOF
 | error
@@ -195,7 +212,7 @@ stmts_list: stmt sep
 {
 	$$ = ast.Stmts{$1}
 }
-| sep
+| sem
 {
 	$$ = ast.Stmts{}
 }
@@ -219,13 +236,11 @@ stmt: ifelse_stmt
 | import_stmt
 | type_def_stmt
 | return_stmt
+| assignment_stmt
 ;
 
 
 value_stmt: expr
-{
-	$$ = nil
-}
 ;
 
 /* expression */
@@ -233,7 +248,7 @@ expr: identifier
 | basic_literal 
 | list_literal 
 | map_literal
-| typed_literal
+// | typed_literal
 | paren_expr
 | unary_expr
 | conditional_expr
@@ -541,7 +556,9 @@ for_in_stmt : FOR in_expr stmt_block
 for_init_elem: expr | assignment_stmt | var_def_stmt
 ;
 
-for_stmt : FOR for_init_elem SEMICOLON expr SEMICOLON expr stmt_block
+for_loop_elem: expr | assignment_stmt ;
+
+for_stmt : FOR for_init_elem SEMICOLON expr SEMICOLON for_loop_elem stmt_block
 {
 	$$ = yylex.(*parser).newForStmt($1, $2, $4, $6, $7)
 }
@@ -549,7 +566,7 @@ for_stmt : FOR for_init_elem SEMICOLON expr SEMICOLON expr stmt_block
 {
 	$$ = yylex.(*parser).newForStmt($1, $2, $4, nil, $6)
 }
-| FOR for_init_elem SEMICOLON SEMICOLON expr stmt_block
+| FOR for_init_elem SEMICOLON SEMICOLON for_loop_elem stmt_block
 {
 	$$ = yylex.(*parser).newForStmt($1, $2, nil, $5, $6)
 }
@@ -557,7 +574,7 @@ for_stmt : FOR for_init_elem SEMICOLON expr SEMICOLON expr stmt_block
 {
 	$$ = yylex.(*parser).newForStmt($1, $2, nil, nil, $5)
 }
-| FOR SEMICOLON expr SEMICOLON expr stmt_block
+| FOR SEMICOLON expr SEMICOLON for_loop_elem stmt_block
 {
 	$$ = yylex.(*parser).newForStmt($1, $3, nil, $5, $6)
 }
@@ -565,7 +582,7 @@ for_stmt : FOR for_init_elem SEMICOLON expr SEMICOLON expr stmt_block
 {
 	$$ = yylex.(*parser).newForStmt($1, $3, nil, nil, $5)
 }
-| FOR SEMICOLON SEMICOLON expr stmt_block
+| FOR SEMICOLON SEMICOLON for_loop_elem stmt_block
 {
 	$$ = yylex.(*parser).newForStmt($1, nil, nil, $4, $5)
 }
@@ -653,9 +670,9 @@ named_arg: identifier EQ expr
 ;
 
 
-call_expr: expr LEFT_PAREN function_args RIGHT_PAREN
+call_expr: expr LEFT_PAREN function_args EOLS_SPACE RIGHT_PAREN
 {
-	$$ = yylex.(*parser).newCallExpr($2, $4, $1, $3)
+	$$ = yylex.(*parser).newCallExpr($2, $5, $1, $3)
 }
 | expr LEFT_PAREN function_args COMMA RIGHT_PAREN
 {
@@ -786,35 +803,39 @@ slice_expr: expr LEFT_BRACKET expr_or_empty COLON expr_or_empty COLON expr_or_em
 ;
 
 
-typed_literal: identifier LEFT_BRACE expr_colon_expr RIGHT_BRACE
-{
-	$$ = nil
-}
-| identifier LEFT_BRACE RIGHT_BRACE
-{
-	$$ = nil
-}
-| list_type LEFT_BRACE exprs RIGHT_BRACE
-{ 
-	$$ = nil
-}
-| list_type LEFT_BRACE RIGHT_BRACE
-{ 
-	$$ = nil
-}
-| map_type LEFT_BRACE expr_colon_expr RIGHT_BRACE
-{
-	$$ = nil
-}
-| map_type LEFT_BRACE RIGHT_BRACE
-{
-	$$ = nil
-}
-;
+// typed_literal: identifier LEFT_BRACE expr_colon_expr RIGHT_BRACE
+// {
+// 	$$ = nil
+// }
+// | identifier LEFT_BRACE RIGHT_BRACE
+// {
+// 	$$ = nil
+// }
+// | list_type LEFT_BRACE exprs RIGHT_BRACE
+// { 
+// 	$$ = nil
+// }
+// | list_type LEFT_BRACE RIGHT_BRACE
+// { 
+// 	$$ = nil
+// }
+// | map_type LEFT_BRACE expr_colon_expr RIGHT_BRACE
+// {
+// 	$$ = nil
+// }
+// | map_type LEFT_BRACE RIGHT_BRACE
+// {
+// 	$$ = nil
+// }
+// ;
 
-list_literal : LEFT_BRACKET exprs RIGHT_BRACKET
+list_literal : LEFT_BRACKET exprs EOLS_SPACE RIGHT_BRACKET
 { 
-	$$ = yylex.(*parser).newListLiteral($1, $3, $2)
+	$$ = yylex.(*parser).newListLiteral($1, $4, $2)
+}
+| LEFT_BRACKET exprs COMMA RIGHT_BRACKET
+{ 
+	$$ = yylex.(*parser).newListLiteral($1, $4, $2)
 }
 | LEFT_BRACKET RIGHT_BRACKET
 { 

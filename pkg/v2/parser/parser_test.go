@@ -162,14 +162,17 @@ func TestExprSeparation(t *testing.T) {
 				},
 				&ast.IfelseStmt{
 					IfList: []*ast.IfStmtElem{
-						{Condition: &ast.BoolLiteral{Val: true}},
+						{Condition: &ast.BoolLiteral{Val: true},
+							Block: &ast.BlockStmt{}},
 					},
 				},
 
 				&ast.IfelseStmt{
 					IfList: []*ast.IfStmtElem{
-						{Condition: &ast.BoolLiteral{Val: true}},
-						{Condition: &ast.BoolLiteral{Val: false}},
+						{Condition: &ast.BoolLiteral{Val: true},
+							Block: &ast.BlockStmt{}},
+						{Condition: &ast.BoolLiteral{Val: false},
+							Block: &ast.BlockStmt{}},
 						{
 							Condition: &ast.ConditionalExpr{
 								LHS: &ast.Identifier{Name: "x"},
@@ -209,8 +212,10 @@ func TestExprSeparation(t *testing.T) {
 
 				&ast.IfelseStmt{
 					IfList: []*ast.IfStmtElem{
-						{Condition: &ast.BoolLiteral{Val: true}},
-						{Condition: &ast.BoolLiteral{Val: false}},
+						{Condition: &ast.BoolLiteral{Val: true},
+							Block: &ast.BlockStmt{}},
+						{Condition: &ast.BoolLiteral{Val: false},
+							Block: &ast.BlockStmt{}},
 						{
 							Condition: &ast.ConditionalExpr{
 								LHS: &ast.Identifier{Name: "x"},
@@ -238,7 +243,6 @@ func TestExprSeparation(t *testing.T) {
 			name: "+||",
 			in:   "a * 1 + b || x + 1 && 1 / 2 == 1",
 			expected: ast.Stmts{
-
 				&ast.ConditionalExpr{
 					Op: AstOp(EQEQ),
 					LHS: &ast.ConditionalExpr{
@@ -386,8 +390,8 @@ func TestExprSeparation(t *testing.T) {
 
 			if !tc.fail {
 				var x, y string
-				x = tc.expected.String()
 				y = Stmts.String()
+				x = tc.expected.String()
 				assert.Nil(t, err)
 				assert.Equal(t, x, y)
 				// t.Logf("ok %s -> %s", tc.in, y)
@@ -618,33 +622,36 @@ func TestParser(t *testing.T) {
 			in:   `if ((a==b) && (a==c)) || a==d { }`,
 			expected: ast.Stmts{&ast.IfelseStmt{
 				IfList: ast.IfList{
-					&ast.IfStmtElem{Condition: &ast.ConditionalExpr{
-						Op: AstOp(OR),
-						LHS: &ast.ParenExpr{
-							Param: &ast.ConditionalExpr{
-								Op: AstOp(AND),
-								LHS: &ast.ParenExpr{
-									Param: &ast.ConditionalExpr{
-										Op:  AstOp(EQEQ),
-										LHS: &ast.Identifier{Name: "a"},
-										RHS: &ast.Identifier{Name: "b"},
+					&ast.IfStmtElem{
+						Condition: &ast.ConditionalExpr{
+							Op: AstOp(OR),
+							LHS: &ast.ParenExpr{
+								Param: &ast.ConditionalExpr{
+									Op: AstOp(AND),
+									LHS: &ast.ParenExpr{
+										Param: &ast.ConditionalExpr{
+											Op:  AstOp(EQEQ),
+											LHS: &ast.Identifier{Name: "a"},
+											RHS: &ast.Identifier{Name: "b"},
+										},
 									},
-								},
-								RHS: &ast.ParenExpr{
-									Param: &ast.ConditionalExpr{
-										Op:  AstOp(EQEQ),
-										LHS: &ast.Identifier{Name: "a"},
-										RHS: &ast.Identifier{Name: "c"},
+									RHS: &ast.ParenExpr{
+										Param: &ast.ConditionalExpr{
+											Op:  AstOp(EQEQ),
+											LHS: &ast.Identifier{Name: "a"},
+											RHS: &ast.Identifier{Name: "c"},
+										},
 									},
 								},
 							},
+							RHS: &ast.ConditionalExpr{
+								Op:  AstOp(EQEQ),
+								LHS: &ast.Identifier{Name: "a"},
+								RHS: &ast.Identifier{Name: "d"},
+							},
 						},
-						RHS: &ast.ConditionalExpr{
-							Op:  AstOp(EQEQ),
-							LHS: &ast.Identifier{Name: "a"},
-							RHS: &ast.Identifier{Name: "d"},
-						},
-					}},
+						Block: &ast.BlockStmt{},
+					},
 				},
 			}},
 		},
@@ -654,6 +661,7 @@ func TestParser(t *testing.T) {
 			in:   `if (a==b) && (a==c) { }`,
 			expected: ast.Stmts{&ast.IfelseStmt{
 				IfList: ast.IfList{&ast.IfStmtElem{
+					Block: &ast.BlockStmt{},
 					Condition: &ast.ConditionalExpr{
 						Op: AstOp(AND),
 						LHS: &ast.ParenExpr{
@@ -682,6 +690,7 @@ func TestParser(t *testing.T) {
 				&ast.IfelseStmt{
 					IfList: ast.IfList{
 						&ast.IfStmtElem{
+							Block: &ast.BlockStmt{},
 							Condition: &ast.ConditionalExpr{
 								Op: AstOp(AND),
 								LHS: &ast.ConditionalExpr{
@@ -837,17 +846,20 @@ func TestParser(t *testing.T) {
 			expected: ast.Stmts{&ast.IfelseStmt{
 				IfList: ast.IfList{
 					&ast.IfStmtElem{
+						Block: &ast.BlockStmt{},
 						Condition: &ast.ConditionalExpr{
 							Op:  AstOp(EQEQ),
 							LHS: &ast.Identifier{Name: "key"},
 							RHS: &ast.StringLiteral{Val: "11"},
 						},
 					},
-					&ast.IfStmtElem{Condition: &ast.ConditionalExpr{
-						Op:  AstOp(EQEQ),
-						LHS: &ast.Identifier{Name: "key"},
-						RHS: &ast.StringLiteral{Val: "22"},
-					}},
+					&ast.IfStmtElem{
+						Block: &ast.BlockStmt{},
+						Condition: &ast.ConditionalExpr{
+							Op:  AstOp(EQEQ),
+							LHS: &ast.Identifier{Name: "key"},
+							RHS: &ast.StringLiteral{Val: "22"},
+						}},
 				},
 				Else: &ast.BlockStmt{Stmts: ast.Stmts{}},
 			}},
@@ -863,16 +875,20 @@ func TestParser(t *testing.T) {
 			}`,
 			expected: ast.Stmts{&ast.IfelseStmt{
 				IfList: ast.IfList{
-					&ast.IfStmtElem{Condition: &ast.ConditionalExpr{
-						Op:  AstOp(EQEQ),
-						LHS: &ast.Identifier{Name: "key"},
-						RHS: &ast.StringLiteral{Val: "11"},
-					}},
-					&ast.IfStmtElem{Condition: &ast.ConditionalExpr{
-						Op:  AstOp(EQEQ),
-						LHS: &ast.Identifier{Name: "key"},
-						RHS: &ast.StringLiteral{Val: "22"},
-					}},
+					&ast.IfStmtElem{
+						Block: &ast.BlockStmt{},
+						Condition: &ast.ConditionalExpr{
+							Op:  AstOp(EQEQ),
+							LHS: &ast.Identifier{Name: "key"},
+							RHS: &ast.StringLiteral{Val: "11"},
+						}},
+					&ast.IfStmtElem{
+						Block: &ast.BlockStmt{},
+						Condition: &ast.ConditionalExpr{
+							Op:  AstOp(EQEQ),
+							LHS: &ast.Identifier{Name: "key"},
+							RHS: &ast.StringLiteral{Val: "22"},
+						}},
 				},
 			}},
 		},
@@ -883,6 +899,7 @@ func TestParser(t *testing.T) {
 			expected: ast.Stmts{
 				&ast.IfelseStmt{
 					IfList: ast.IfList{&ast.IfStmtElem{
+						Block: &ast.BlockStmt{},
 						Condition: &ast.ConditionalExpr{
 							Op:  AstOp(EQEQ),
 							LHS: &ast.Identifier{Name: "key"},
@@ -904,6 +921,7 @@ func TestParser(t *testing.T) {
 				&ast.IfelseStmt{
 					IfList: ast.IfList{
 						&ast.IfStmtElem{
+							Block: &ast.BlockStmt{},
 							Condition: &ast.ConditionalExpr{
 								Op:  AstOp(EQEQ),
 								LHS: &ast.Identifier{Name: "key"},
@@ -921,6 +939,7 @@ func TestParser(t *testing.T) {
 			expected: ast.Stmts{
 				&ast.IfelseStmt{
 					IfList: ast.IfList{&ast.IfStmtElem{
+						Block: &ast.BlockStmt{},
 						Condition: &ast.ConditionalExpr{
 							Op:  AstOp(EQEQ),
 							LHS: &ast.Identifier{Name: "key"},
@@ -1048,6 +1067,7 @@ func TestParser(t *testing.T) {
 				&ast.IfelseStmt{
 					IfList: ast.IfList{
 						&ast.IfStmtElem{
+							Block: &ast.BlockStmt{},
 							Condition: &ast.ConditionalExpr{
 								Op:  AstOp(EQEQ),
 								LHS: &ast.Identifier{Name: "abc"},
@@ -1399,7 +1419,7 @@ func TestParser(t *testing.T) {
 								},
 								Index: &ast.IntegerLiteral{Val: 1},
 							},
-							Attr: &ast.Identifier{Name: "Z"},
+							Attr: &ast.Identifier{Name: "z"},
 						},
 					},
 				},

@@ -34,8 +34,9 @@ func (e KwArgs) String() string {
 
 func (e Stmts) String() string {
 	arr := []string{}
-	for _, x := range e {
+	for i, x := range e {
 		arr = append(arr, x.String())
+		_ = i
 	}
 	return strings.Join(arr, "\n")
 }
