@@ -5,6 +5,8 @@
 
 package ast
 
+import "github.com/GuanceCloud/platypus/pkg/token"
+
 type DType uint
 
 func (t DType) String() string {
@@ -89,3 +91,12 @@ type TypeList struct {
 }
 
 func (*TypeList) IsType() {}
+
+type TypeBasic struct {
+	Pos token.LnColPos
+
+	Name  string
+	DType DType
+}
+
+func (*TypeBasic) IsType() {}

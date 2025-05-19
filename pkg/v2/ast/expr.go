@@ -358,5 +358,18 @@ func (e *AssignmentExpr) IsExpr() bool {
 }
 
 func (e *AssignmentExpr) String() string {
-	return fmt.Sprintf("%s %s %s", e.LHS, e.Op, e.RHS)
+	var l []string
+	for _, lhs := range e.LHS {
+		l = append(l, lhs.String())
+	}
+	var r []string
+	for _, rhs := range e.RHS {
+		r = append(r, rhs.String())
+	}
+
+	return fmt.Sprintf("%s %s %s",
+		strings.Join(l, ", "),
+		e.Op,
+		strings.Join(r, ", "),
+	)
 }

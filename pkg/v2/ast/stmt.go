@@ -6,6 +6,7 @@
 package ast
 
 import (
+	"go/ast"
 	"strings"
 
 	"github.com/GuanceCloud/platypus/pkg/token"
@@ -115,4 +116,43 @@ func (block *BlockStmt) String() string {
 		arr = append(arr, x.String())
 	}
 	return strings.Join(arr, "\n")
+}
+
+type ImportStmt struct {
+	ImportPos token.LnColPos
+	AsPos     token.LnColPos
+
+	Name   []*Identifier
+	AsName *Identifier
+}
+
+type PackageStmt struct {
+	PkgPos token.LnColPos
+
+	Name *Identifier
+}
+
+type ReturnStmt struct {
+	ReturnPos token.LnColPos
+}
+
+type FnDefStmt struct {
+	FnPos          token.LnColPos
+	LParen, RParen token.LnColPos
+
+	RetPos               token.LnColPos
+	RetLParen, RetRParen token.LnColPos
+
+	Name   *Identifier
+	Params []ast.Node
+
+	Stmts []ast.Node
+}
+
+type TypeDefStmt struct {
+	TypePos token.LnColPos
+
+	Name *Identifier
+
+	Type TypeNode
 }

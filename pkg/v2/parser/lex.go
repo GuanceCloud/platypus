@@ -498,6 +498,9 @@ __goon:
 			if kw, ok := keywords[strings.ToLower(word)]; ok {
 				// log.Debugf("emit keyword: %s", kw)
 				l.emit(kw)
+				if kw == IN {
+					return lexSpaceAndLineCommentForOp(l)
+				}
 			} else {
 				l.emit(ID)
 			}

@@ -86,6 +86,7 @@ NEW MAKE INTERFACE CONST
 %type<nodes>
 	function_args
 	exprs
+	pkg_name
 
 %type<map_nodes>
 	expr_colon_expr
@@ -121,11 +122,11 @@ NEW MAKE INTERFACE CONST
 	for_loop_elem
 	slice_expr
 	data_type
-	fn_type
+	// fn_type
 	list_type
+	array_type
 	map_type
 	var_def_stmt
-	method_def_stmt
 	fn_def_stmt
 	import_stmt
 	type_def_stmt
@@ -232,7 +233,6 @@ stmt: ifelse_stmt
 | value_stmt
 | var_def_stmt
 | fn_def_stmt
-| method_def_stmt
 | import_stmt
 | type_def_stmt
 | return_stmt
@@ -267,13 +267,13 @@ type
 
 data_type: INT
 {
-	$$ =nil
+	$$ = &ast.TypeInt
 }
 | FLOAT
 {
 	$$ =nil
 }
-| STRING
+| STR
 {
 	$$ =nil
 }
@@ -281,20 +281,27 @@ data_type: INT
 {
 	$$ =nil
 }
-| ANY 
+| ANY
 {
 	$$ =nil
 }
 | list_type
 | map_type
-| fn_type
+// | fn_type
 | identifier
+| array_type
 ;
 
 
 list_type: LEFT_BRACKET RIGHT_BRACKET data_type 
 {
 	$$ =nil
+}
+;
+
+array_type: LEFT_BRACKET NUMBER RIGHT_BRACKET data_type
+{
+	$$ = nil
 }
 ;
 
@@ -319,42 +326,52 @@ var_def_stmt: LET identifier data_type EQ expr
 ;
 
 
-fn_type: FN LEFT_PAREN  RIGHT_PAREN LEFT_BRACE RIGHT_BRACE
-{
-	$$=nil
-}
-| FN  LEFT_PAREN  RIGHT_PAREN LEFT_BRACE RIGHT_BRACE FN_RET data_type
-{
-	$$ =nil
-}
-| FN LEFT_PAREN  RIGHT_PAREN LEFT_BRACE RIGHT_BRACE FN_RET LEFT_PAREN fn_ret_types_multi RIGHT_PAREN 
-{
-	$$ =nil
-}
-| FN LEFT_PAREN fn_def_params RIGHT_PAREN LEFT_BRACE RIGHT_BRACE
-{
-	$$ =nil
-}
-| FN LEFT_PAREN fn_def_params RIGHT_PAREN LEFT_BRACE RIGHT_BRACE FN_RET data_type
-{
-	$$ =nil
-}
-| FN LEFT_PAREN fn_def_params RIGHT_PAREN LEFT_BRACE RIGHT_BRACE FN_RET LEFT_PAREN fn_ret_types_multi RIGHT_PAREN
-{
-	$$ =nil
-}
-;
+// fn_type: FN LEFT_PAREN  RIGHT_PAREN LEFT_BRACE RIGHT_BRACE
+// {
+// 	$$=nil
+// }
+// | FN  LEFT_PAREN  RIGHT_PAREN LEFT_BRACE RIGHT_BRACE FN_RET data_type
+// {
+// 	$$ =nil
+// }
+// | FN LEFT_PAREN  RIGHT_PAREN LEFT_BRACE RIGHT_BRACE FN_RET LEFT_PAREN fn_ret_types_multi RIGHT_PAREN 
+// {
+// 	$$ =nil
+// }
+// | FN LEFT_PAREN fn_def_params RIGHT_PAREN LEFT_BRACE RIGHT_BRACE
+// {
+// 	$$ =nil
+// }
+// | FN LEFT_PAREN fn_def_params RIGHT_PAREN LEFT_BRACE RIGHT_BRACE FN_RET data_type
+// {
+// 	$$ =nil
+// }
+// | FN LEFT_PAREN fn_def_params RIGHT_PAREN LEFT_BRACE RIGHT_BRACE FN_RET LEFT_PAREN fn_ret_types_multi RIGHT_PAREN
+// {
+// 	$$ =nil
+// }
+// ;
 
 /*
 stmt
 */
 
 
-import_stmt: IMPORT STRING
+pkg_name: identifier
+{
+	$$ = []ast.Node{$1}
+}
+| pkg_name DOT identifier
+{
+	$$ = append($$, $3)
+}
+;
+
+import_stmt: IMPORT pkg_name
 {
 	$$ = nil
 }
-| IMPORT STRING AS identifier
+| IMPORT pkg_name AS identifier
 {
 	$$ = nil
 }
@@ -380,18 +397,14 @@ fn_def_param: identifier
 {
 	$$ = nil
 }
-// | identifier EQ expr
-// {
-// 	$$ = nil
-// }
-// | identifier COLON data_type EQ expr
-// {
-// 	$$ = nil
-// }
-// | identifier COLON VAR_ARG data_type EQ expr
-// {
-// 	$$ = nil
-// }
+| identifier EQ expr
+{
+	$$ = nil
+}
+| identifier COLON data_type EQ expr
+{
+	$$ = nil
+}
 ;
 
 
@@ -416,55 +429,28 @@ fn_ret_types_multi: data_type
 ;
 
 
-method_def_stmt: FN LEFT_BRACE identifier identifier RIGHT_BRACE identifier  LEFT_PAREN  RIGHT_PAREN LEFT_BRACE RIGHT_BRACE stmt_block
-{
-	$$=nil
-}
-| FN LEFT_BRACE identifier identifier RIGHT_BRACE identifier  LEFT_PAREN  RIGHT_PAREN LEFT_BRACE RIGHT_BRACE FN_RET data_type stmt_block
-{
-	$$=nil
-}
-| FN LEFT_BRACE identifier identifier RIGHT_BRACE identifier  LEFT_PAREN  RIGHT_PAREN LEFT_BRACE RIGHT_BRACE FN_RET LEFT_PAREN fn_ret_types_multi RIGHT_PAREN stmt_block
-{
-	$$=nil
-}
-| FN LEFT_BRACE identifier identifier RIGHT_BRACE identifier  LEFT_PAREN fn_def_params RIGHT_PAREN LEFT_BRACE RIGHT_BRACE stmt_block
-{
-	$$=nil
-}
-| FN LEFT_BRACE identifier identifier RIGHT_BRACE identifier  LEFT_PAREN fn_def_params RIGHT_PAREN LEFT_BRACE RIGHT_BRACE FN_RET data_type stmt_block
-{
-	$$=nil
-}
-| FN LEFT_BRACE identifier identifier RIGHT_BRACE identifier  LEFT_PAREN fn_def_params RIGHT_PAREN LEFT_BRACE RIGHT_BRACE FN_RET LEFT_PAREN fn_ret_types_multi RIGHT_PAREN stmt_block
-{
-	$$=nil
-}
-;
 
-
-
-fn_def_stmt: FN identifier LEFT_PAREN  RIGHT_PAREN LEFT_BRACE RIGHT_BRACE stmt_block
+fn_def_stmt: FN identifier LEFT_PAREN RIGHT_PAREN stmt_block
 {
 	$$=nil
 }
-| FN identifier LEFT_PAREN  RIGHT_PAREN LEFT_BRACE RIGHT_BRACE FN_RET data_type stmt_block
+| FN identifier LEFT_PAREN RIGHT_PAREN FN_RET data_type stmt_block
 {
 	$$ =nil
 }
-| FN identifier LEFT_PAREN  RIGHT_PAREN LEFT_BRACE RIGHT_BRACE FN_RET LEFT_PAREN fn_ret_types_multi RIGHT_PAREN  stmt_block
+| FN identifier LEFT_PAREN RIGHT_PAREN FN_RET LEFT_PAREN fn_ret_types_multi RIGHT_PAREN  stmt_block
 {
 	$$ =nil
 }
-| FN identifier LEFT_PAREN fn_def_params RIGHT_PAREN LEFT_BRACE RIGHT_BRACE stmt_block
+| FN identifier LEFT_PAREN fn_def_params RIGHT_PAREN stmt_block
 {
 	$$ =nil
 }
-| FN identifier LEFT_PAREN fn_def_params RIGHT_PAREN LEFT_BRACE RIGHT_BRACE FN_RET data_type stmt_block
+| FN identifier LEFT_PAREN fn_def_params RIGHT_PAREN FN_RET data_type stmt_block
 {
 	$$ =nil
 }
-| FN identifier LEFT_PAREN fn_def_params RIGHT_PAREN LEFT_BRACE RIGHT_BRACE FN_RET LEFT_PAREN fn_ret_types_multi RIGHT_PAREN stmt_block
+| FN identifier LEFT_PAREN fn_def_params RIGHT_PAREN FN_RET LEFT_PAREN fn_ret_types_multi RIGHT_PAREN stmt_block
 {
 	$$ =nil
 }
@@ -756,20 +742,20 @@ arithmeticExpr: expr ADD expr
 ;
 
 
-paren_expr: LEFT_PAREN expr RIGHT_PAREN
+paren_expr: LEFT_PAREN expr EOLS_SPACE RIGHT_PAREN
 {
-	$$ = yylex.(*parser).newParenExpr($1, $3, $2)
+	$$ = yylex.(*parser).newParenExpr($1, $4, $2)
 }
 ;
 
 
-index_expr: expr LEFT_BRACKET expr RIGHT_BRACKET
+index_expr: expr LEFT_BRACKET expr EOLS_SPACE RIGHT_BRACKET
 {
-	$$ = yylex.(*parser).newIndexExpr($2, $4, $1, $3)
+	$$ = yylex.(*parser).newIndexExpr($2, $5, $1, $3)
 } 
-| DOT LEFT_BRACKET expr RIGHT_BRACKET	// 特殊处理，兼容旧版
+| DOT LEFT_BRACKET expr EOLS_SPACE RIGHT_BRACKET	// 特殊处理，兼容旧版
 {
-	$$ = yylex.(*parser).newIndexExpr($2, $4, nil, $3, $1)
+	$$ = yylex.(*parser).newIndexExpr($2, $5, nil, $3, $1)
 }
 ;
 
@@ -785,7 +771,7 @@ expr_or_empty: expr
 {
 	$$ = $1
 }
-| 
+| EOLS_SPACE 
 {
 	$$ = nil
 }
@@ -845,7 +831,7 @@ list_literal : LEFT_BRACKET exprs EOLS_SPACE RIGHT_BRACKET
 
 expr_colon_expr: expr COLON expr
 {
-	$$ = [][2]ast.Node{[2]ast.Node{$1, $2}}
+	$$ = [][2]ast.Node{[2]ast.Node{$1, $3}}
 }
 | expr_colon_expr COMMA expr COLON expr
 {
@@ -857,9 +843,9 @@ map_literal : LEFT_BRACE RIGHT_BRACE
 {
 	$$ = yylex.(*parser).newMapLiteral($1, $2, nil)
 }
-|  LEFT_BRACE expr_colon_expr RIGHT_BRACE
+|  LEFT_BRACE expr_colon_expr EOLS_SPACE RIGHT_BRACE
 {
-	$$ = yylex.(*parser).newMapLiteral($1, $3, $2)
+	$$ = yylex.(*parser).newMapLiteral($1, $4, $2)
 }
 ;
 

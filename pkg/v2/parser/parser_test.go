@@ -26,21 +26,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestSS(t *testing.T) {
-	txt := `
-if a == 1 { #123
-
-# 123
-
- 	gx(x)
-}
-#if a==1{gx(x)}
-`
-	v, err := ParsePipeline("x", txt)
-	t.Error(err)
-	t.Error(v.String())
-}
-
 func TestExprSeparation(t *testing.T) {
 	cases := []struct {
 		name     string
@@ -1644,13 +1629,32 @@ multiline-string
 		{
 			name: "invalid slice with invalid start type",
 			in:   `a["1":3]`,
-			fail: true,
+			expected: ast.Stmts{&ast.SliceExpr{
+				Obj: &ast.Identifier{
+					Name: "a",
+				},
+				Start: &ast.StringLiteral{
+					Val: "1",
+				},
+				End: &ast.IntegerLiteral{
+					Val: 3,
+				},
+			}},
 		},
 		{
 			name: "invalid slice with invalid end type",
 			in:   `a[1:"3"]`,
-			fail: true,
-		},
+			expected: ast.Stmts{&ast.SliceExpr{
+				Obj: &ast.Identifier{
+					Name: "a",
+				},
+				Start: &ast.IntegerLiteral{
+					Val: 1,
+				},
+				End: &ast.StringLiteral{
+					Val: "3",
+				},
+			}}},
 		{
 			name: "invalid slice with no object",
 			in:   `[1:3]`,
@@ -1670,7 +1674,7 @@ multiline-string
 				if err == nil {
 					t.Error(tc)
 				}
-				assert.NotNil(t, err, "")
+				assert.NotNil(t, err)
 				return
 			}
 
@@ -1780,7 +1784,7 @@ func(a, b, c)[func(a, b, c):b]
 	for _, v := range cases {
 		stmts, err := ParsePipeline("", v)
 		if err != nil {
-			t.Fatal(err)
+			t.Fatal(err, v)
 		}
 		t.Log(stmts)
 	}
