@@ -224,6 +224,38 @@ func (p *parser) newNumberLiteral(v Item) ast.Node {
 	}
 }
 
+func (p *parser) newFnParam(id ast.Node, typ ast.Node, val ast.Node, varb ...bool) ast.FnParam {
+	v := false
+	if len(varb) > 0 && varb[0] {
+		v = true
+	}
+	return ast.FnParam{
+		Name:       id,
+		DType:      typ,
+		DefaultVal: val,
+		Varb:       v,
+	}
+}
+
+func (p *parser) newReturnStmt(pos Item, exprs []ast.Node) ast.Node {
+	return &ast.ReturnStmt{
+		ReturnPos: p.pos(pos),
+		Exprs:     exprs,
+	}
+}
+
+func (p *parser) newFnDefStmt(fn Item, name ast.Node, params []ast.FnParam, results []ast.Node, body *ast.BlockStmt) ast.Node {
+	return &ast.FnDefStmt{
+		FnPos: p.pos(fn),
+		Name:  name,
+		FnType: &ast.TypeFn{
+			Params:  params,
+			Results: results,
+		},
+		Block: body,
+	}
+}
+
 func (p *parser) newBlockStmt(lBrace, rBrace Item, stmts ast.Stmts) *ast.BlockStmt {
 	return &ast.BlockStmt{
 		LBracePos: p.posCache.LnCol(lBrace.Pos),

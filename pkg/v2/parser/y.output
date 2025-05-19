@@ -89,19 +89,19 @@ state 2
 state 3
 	start:  error.    (16)
 
-	.  reduce 16 (src line 189)
+	.  reduce 16 (src line 192)
 
 
 state 4
 	start:  start EOF.    (15)
 
-	.  reduce 15 (src line 188)
+	.  reduce 15 (src line 191)
 
 
 state 5
 	start:  START_STMTS stmts.    (12)
 
-	.  reduce 12 (src line 176)
+	.  reduce 12 (src line 179)
 
 
 state 6
@@ -136,7 +136,7 @@ state 6
 	LET  shift 29
 	IMPORT  shift 31
 	TYPE  shift 32
-	.  reduce 13 (src line 180)
+	.  reduce 13 (src line 183)
 
 	stmts  goto 67
 	stmts_list  goto 7
@@ -202,7 +202,7 @@ state 7
 	LET  shift 29
 	IMPORT  shift 31
 	TYPE  shift 32
-	.  reduce 18 (src line 205)
+	.  reduce 18 (src line 208)
 
 	if_elem  goto 35
 	if_elif_list  goto 24
@@ -241,14 +241,14 @@ state 8
 
 	SEMICOLON  shift 70
 	EOL  shift 71
-	.  reduce 19 (src line 206)
+	.  reduce 19 (src line 209)
 
 	sep  goto 69
 
 state 9
 	EOLS:  EOL.    (8)
 
-	.  reduce 8 (src line 168)
+	.  reduce 8 (src line 171)
 
 
 state 10
@@ -258,95 +258,95 @@ state 10
 
 	SEMICOLON  shift 73
 	EOL  shift 72
-	.  reduce 21 (src line 216)
+	.  reduce 21 (src line 219)
 
 
 state 11
 	stmt:  ifelse_stmt.    (23)
 
-	.  reduce 23 (src line 228)
+	.  reduce 23 (src line 231)
 
 
 state 12
 	stmt:  for_in_stmt.    (24)
 
-	.  reduce 24 (src line 229)
+	.  reduce 24 (src line 232)
 
 
 state 13
 	stmt:  for_stmt.    (25)
 
-	.  reduce 25 (src line 230)
+	.  reduce 25 (src line 233)
 
 
 state 14
 	stmt:  continue_stmt.    (26)
 
-	.  reduce 26 (src line 231)
+	.  reduce 26 (src line 234)
 
 
 state 15
 	stmt:  break_stmt.    (27)
 
-	.  reduce 27 (src line 232)
+	.  reduce 27 (src line 235)
 
 
 state 16
 	stmt:  value_stmt.    (28)
 
-	.  reduce 28 (src line 233)
+	.  reduce 28 (src line 236)
 
 
 state 17
 	stmt:  var_def_stmt.    (29)
 
-	.  reduce 29 (src line 234)
+	.  reduce 29 (src line 237)
 
 
 state 18
 	stmt:  fn_def_stmt.    (30)
 
-	.  reduce 30 (src line 235)
+	.  reduce 30 (src line 238)
 
 
 state 19
 	stmt:  import_stmt.    (31)
 
-	.  reduce 31 (src line 236)
+	.  reduce 31 (src line 239)
 
 
 state 20
 	stmt:  type_def_stmt.    (32)
 
-	.  reduce 32 (src line 237)
+	.  reduce 32 (src line 240)
 
 
 state 21
 	stmt:  return_stmt.    (33)
 
-	.  reduce 33 (src line 238)
+	.  reduce 33 (src line 241)
 
 
 state 22
 	stmt:  assignment_stmt.    (34)
 
-	.  reduce 34 (src line 239)
+	.  reduce 34 (src line 242)
 
 
 state 23
 	sem:  SEMICOLON.    (5)
 
-	.  reduce 5 (src line 163)
+	.  reduce 5 (src line 166)
 
 
 state 24
-	ifelse_stmt:  if_elif_list.    (118)
+	ifelse_stmt:  if_elif_list.    (111)
 	ifelse_stmt:  if_elif_list.ELSE stmt_block 
 	if_elif_list:  if_elif_list.elif_elem 
 
 	ELIF  shift 76
 	ELSE  shift 74
-	.  reduce 118 (src line 581)
+	.  reduce 111 (src line 594)
 
 	elif_elem  goto 75
 
@@ -401,20 +401,20 @@ state 25
 	var_def_stmt  goto 82
 
 state 26
-	continue_stmt:  CONTINUE.    (103)
+	continue_stmt:  CONTINUE.    (96)
 
-	.  reduce 103 (src line 516)
+	.  reduce 96 (src line 529)
 
 
 state 27
-	break_stmt:  BREAK.    (102)
+	break_stmt:  BREAK.    (95)
 
-	.  reduce 102 (src line 509)
+	.  reduce 95 (src line 522)
 
 
 state 28
 	value_stmt:  expr.    (35)
-	exprs:  expr.    (93)
+	exprs:  expr.    (87)
 	assignment_stmt:  expr.ADD_EQ expr 
 	assignment_stmt:  expr.SUB_EQ expr 
 	assignment_stmt:  expr.MUL_EQ expr 
@@ -442,7 +442,7 @@ state 28
 	slice_expr:  expr.LEFT_BRACKET expr_or_empty COLON expr_or_empty COLON expr_or_empty RIGHT_BRACKET 
 	slice_expr:  expr.LEFT_BRACKET expr_or_empty COLON expr_or_empty RIGHT_BRACKET 
 
-	COMMA  reduce 93 (src line 458)
+	COMMA  reduce 87 (src line 478)
 	LEFT_PAREN  shift 89
 	LEFT_BRACKET  shift 103
 	ADD  shift 98
@@ -450,7 +450,7 @@ state 28
 	MUL  shift 100
 	DIV  shift 101
 	MOD  shift 102
-	EQ  reduce 93 (src line 458)
+	EQ  reduce 87 (src line 478)
 	GTE  shift 90
 	GT  shift 91
 	LT  shift 94
@@ -466,7 +466,7 @@ state 28
 	OR  shift 92
 	DOT  shift 104
 	IN  shift 88
-	.  reduce 35 (src line 243)
+	.  reduce 35 (src line 246)
 
 
 state 29
@@ -515,7 +515,7 @@ state 32
 	identifier  goto 109
 
 state 33
-	return_stmt:  RETURN.    (81)
+	return_stmt:  RETURN.    (75)
 	return_stmt:  RETURN.exprs 
 
 	ID  shift 50
@@ -534,7 +534,7 @@ state 33
 	FALSE  shift 54
 	NIL  shift 57
 	NULL  shift 58
-	.  reduce 81 (src line 410)
+	.  reduce 75 (src line 418)
 
 	exprs  goto 110
 	call_expr  goto 48
@@ -562,87 +562,87 @@ state 34
 
 
 state 35
-	if_elif_list:  if_elem.    (121)
+	if_elif_list:  if_elem.    (114)
 
-	.  reduce 121 (src line 597)
+	.  reduce 114 (src line 610)
 
 
 state 36
 	expr:  identifier.    (36)
 
-	.  reduce 36 (src line 247)
+	.  reduce 36 (src line 250)
 
 
 state 37
 	expr:  basic_literal.    (37)
 
-	.  reduce 37 (src line 248)
+	.  reduce 37 (src line 251)
 
 
 state 38
 	expr:  list_literal.    (38)
 
-	.  reduce 38 (src line 249)
+	.  reduce 38 (src line 252)
 
 
 state 39
 	expr:  map_literal.    (39)
 
-	.  reduce 39 (src line 250)
+	.  reduce 39 (src line 253)
 
 
 state 40
 	expr:  paren_expr.    (40)
 
-	.  reduce 40 (src line 252)
+	.  reduce 40 (src line 255)
 
 
 state 41
 	expr:  unary_expr.    (41)
 
-	.  reduce 41 (src line 253)
+	.  reduce 41 (src line 256)
 
 
 state 42
 	expr:  conditional_expr.    (42)
 
-	.  reduce 42 (src line 254)
+	.  reduce 42 (src line 257)
 
 
 state 43
 	expr:  arithmeticExpr.    (43)
 
-	.  reduce 43 (src line 255)
+	.  reduce 43 (src line 258)
 
 
 state 44
 	expr:  attr_expr.    (44)
 
-	.  reduce 44 (src line 256)
+	.  reduce 44 (src line 259)
 
 
 state 45
 	expr:  index_expr.    (45)
 
-	.  reduce 45 (src line 257)
+	.  reduce 45 (src line 260)
 
 
 state 46
 	expr:  slice_expr.    (46)
 
-	.  reduce 46 (src line 258)
+	.  reduce 46 (src line 261)
 
 
 state 47
 	expr:  in_expr.    (47)
 
-	.  reduce 47 (src line 259)
+	.  reduce 47 (src line 262)
 
 
 state 48
 	expr:  call_expr.    (48)
 
-	.  reduce 48 (src line 260)
+	.  reduce 48 (src line 263)
 
 
 state 49
@@ -682,57 +682,57 @@ state 49
 	slice_expr  goto 46
 
 state 50
-	identifier:  ID.    (166)
+	identifier:  ID.    (160)
 
-	.  reduce 166 (src line 852)
+	.  reduce 160 (src line 871)
 
 
 state 51
-	identifier:  QUOTED_STRING.    (167)
+	identifier:  QUOTED_STRING.    (161)
 
-	.  reduce 167 (src line 856)
+	.  reduce 161 (src line 875)
 
 
 state 52
-	basic_literal:  NUMBER.    (168)
+	basic_literal:  NUMBER.    (162)
 
-	.  reduce 168 (src line 863)
+	.  reduce 162 (src line 882)
 
 
 state 53
-	basic_literal:  TRUE.    (169)
+	basic_literal:  TRUE.    (163)
 
-	.  reduce 169 (src line 867)
+	.  reduce 163 (src line 886)
 
 
 state 54
-	basic_literal:  FALSE.    (170)
+	basic_literal:  FALSE.    (164)
 
-	.  reduce 170 (src line 871)
+	.  reduce 164 (src line 890)
 
 
 state 55
-	basic_literal:  STRING.    (171)
+	basic_literal:  STRING.    (165)
 
-	.  reduce 171 (src line 875)
+	.  reduce 165 (src line 894)
 
 
 state 56
-	basic_literal:  MULTILINE_STRING.    (172)
+	basic_literal:  MULTILINE_STRING.    (166)
 
-	.  reduce 172 (src line 880)
+	.  reduce 166 (src line 899)
 
 
 state 57
-	basic_literal:  NIL.    (173)
+	basic_literal:  NIL.    (167)
 
-	.  reduce 173 (src line 885)
+	.  reduce 167 (src line 904)
 
 
 state 58
-	basic_literal:  NULL.    (174)
+	basic_literal:  NULL.    (168)
 
-	.  reduce 174 (src line 889)
+	.  reduce 168 (src line 908)
 
 
 state 59
@@ -968,13 +968,13 @@ state 65
 state 66
 	EOLS:  EOLS EOL.    (9)
 
-	.  reduce 9 (src line 169)
+	.  reduce 9 (src line 172)
 
 
 state 67
 	start:  START_STMTS EOLS stmts.    (14)
 
-	.  reduce 14 (src line 184)
+	.  reduce 14 (src line 187)
 
 
 state 68
@@ -983,7 +983,7 @@ state 68
 
 	SEMICOLON  shift 70
 	EOL  shift 71
-	.  reduce 17 (src line 199)
+	.  reduce 17 (src line 202)
 
 	sep  goto 125
 
@@ -994,31 +994,31 @@ state 69
 
 	SEMICOLON  shift 126
 	EOL  shift 127
-	.  reduce 20 (src line 212)
+	.  reduce 20 (src line 215)
 
 
 state 70
 	sep:  SEMICOLON.    (1)
 
-	.  reduce 1 (src line 157)
+	.  reduce 1 (src line 160)
 
 
 state 71
 	sep:  EOL.    (2)
 
-	.  reduce 2 (src line 158)
+	.  reduce 2 (src line 161)
 
 
 state 72
 	sem:  sem EOL.    (6)
 
-	.  reduce 6 (src line 164)
+	.  reduce 6 (src line 167)
 
 
 state 73
 	sem:  sem SEMICOLON.    (7)
 
-	.  reduce 7 (src line 165)
+	.  reduce 7 (src line 168)
 
 
 state 74
@@ -1031,9 +1031,9 @@ state 74
 	empty_block  goto 129
 
 state 75
-	if_elif_list:  if_elif_list elif_elem.    (122)
+	if_elif_list:  if_elif_list elif_elem.    (115)
 
-	.  reduce 122 (src line 601)
+	.  reduce 115 (src line 614)
 
 
 state 76
@@ -1077,7 +1077,7 @@ state 77
 	for_in_stmt:  FOR in_expr.stmt_block 
 
 	LEFT_BRACE  shift 130
-	.  reduce 47 (src line 259)
+	.  reduce 47 (src line 262)
 
 	stmt_block  goto 132
 	empty_block  goto 129
@@ -1133,14 +1133,14 @@ state 79
 	slice_expr  goto 46
 
 state 80
-	exprs:  expr.    (93)
+	exprs:  expr.    (87)
 	assignment_stmt:  expr.ADD_EQ expr 
 	assignment_stmt:  expr.SUB_EQ expr 
 	assignment_stmt:  expr.MUL_EQ expr 
 	assignment_stmt:  expr.DIV_EQ expr 
 	assignment_stmt:  expr.MOD_EQ expr 
+	for_init_elem:  expr.    (98)
 	in_expr:  expr.IN expr 
-	for_init_elem:  expr.    (105)
 	call_expr:  expr.LEFT_PAREN function_args EOLS_SPACE RIGHT_PAREN 
 	call_expr:  expr.LEFT_PAREN function_args COMMA RIGHT_PAREN 
 	call_expr:  expr.LEFT_PAREN RIGHT_PAREN 
@@ -1162,7 +1162,7 @@ state 80
 	slice_expr:  expr.LEFT_BRACKET expr_or_empty COLON expr_or_empty COLON expr_or_empty RIGHT_BRACKET 
 	slice_expr:  expr.LEFT_BRACKET expr_or_empty COLON expr_or_empty RIGHT_BRACKET 
 
-	SEMICOLON  reduce 105 (src line 541)
+	SEMICOLON  reduce 98 (src line 554)
 	LEFT_PAREN  shift 89
 	LEFT_BRACKET  shift 103
 	ADD  shift 98
@@ -1185,19 +1185,19 @@ state 80
 	OR  shift 92
 	DOT  shift 104
 	IN  shift 88
-	.  reduce 93 (src line 458)
+	.  reduce 87 (src line 478)
 
 
 state 81
-	for_init_elem:  assignment_stmt.    (106)
+	for_init_elem:  assignment_stmt.    (99)
 
-	.  reduce 106 (src line 541)
+	.  reduce 99 (src line 554)
 
 
 state 82
-	for_init_elem:  var_def_stmt.    (107)
+	for_init_elem:  var_def_stmt.    (100)
 
-	.  reduce 107 (src line 541)
+	.  reduce 100 (src line 554)
 
 
 state 83
@@ -1948,7 +1948,7 @@ state 103
 	FALSE  shift 54
 	NIL  shift 57
 	NULL  shift 58
-	.  reduce 11 (src line 173)
+	.  reduce 11 (src line 176)
 
 	call_expr  goto 48
 	identifier  goto 36
@@ -2010,23 +2010,21 @@ state 105
 	var_def_stmt:  LET identifier.EQ expr 
 
 	ID  shift 50
-	LEFT_BRACKET  shift 177
-	STRING  shift 169
+	LEFT_BRACKET  shift 176
 	QUOTED_STRING  shift 51
 	EQ  shift 166
+	STR  shift 169
 	INT  shift 167
 	FLOAT  shift 168
 	BOOL  shift 170
-	MAP  shift 178
+	MAP  shift 177
 	ANY  shift 171
-	FN  shift 179
 	.  error
 
-	identifier  goto 175
+	identifier  goto 174
 	data_type  goto 165
-	fn_type  goto 174
 	list_type  goto 172
-	array_type  goto 176
+	array_type  goto 175
 	map_type  goto 173
 
 state 106
@@ -2037,58 +2035,56 @@ state 106
 	fn_def_stmt:  FN identifier.LEFT_PAREN fn_def_params RIGHT_PAREN FN_RET data_type stmt_block 
 	fn_def_stmt:  FN identifier.LEFT_PAREN fn_def_params RIGHT_PAREN FN_RET LEFT_PAREN fn_ret_types_multi RIGHT_PAREN stmt_block 
 
-	LEFT_PAREN  shift 180
+	LEFT_PAREN  shift 178
 	.  error
 
 
 state 107
 	pkg_name:  pkg_name.DOT identifier 
-	import_stmt:  IMPORT pkg_name.    (73)
+	import_stmt:  IMPORT pkg_name.    (66)
 	import_stmt:  IMPORT pkg_name.AS identifier 
 
-	DOT  shift 181
-	AS  shift 182
-	.  reduce 73 (src line 369)
+	DOT  shift 179
+	AS  shift 180
+	.  reduce 66 (src line 373)
 
 
 state 108
-	pkg_name:  identifier.    (71)
+	pkg_name:  identifier.    (64)
 
-	.  reduce 71 (src line 359)
+	.  reduce 64 (src line 363)
 
 
 state 109
 	type_def_stmt:  TYPE identifier.data_type 
 
 	ID  shift 50
-	LEFT_BRACKET  shift 177
-	STRING  shift 169
+	LEFT_BRACKET  shift 176
 	QUOTED_STRING  shift 51
+	STR  shift 169
 	INT  shift 167
 	FLOAT  shift 168
 	BOOL  shift 170
-	MAP  shift 178
+	MAP  shift 177
 	ANY  shift 171
-	FN  shift 179
 	.  error
 
-	identifier  goto 175
-	data_type  goto 183
-	fn_type  goto 174
+	identifier  goto 174
+	data_type  goto 181
 	list_type  goto 172
-	array_type  goto 176
+	array_type  goto 175
 	map_type  goto 173
 
 state 110
-	return_stmt:  RETURN exprs.    (82)
+	return_stmt:  RETURN exprs.    (76)
 	exprs:  exprs.COMMA expr 
 
 	COMMA  shift 112
-	.  reduce 82 (src line 414)
+	.  reduce 76 (src line 422)
 
 
 state 111
-	exprs:  expr.    (93)
+	exprs:  expr.    (87)
 	in_expr:  expr.IN expr 
 	call_expr:  expr.LEFT_PAREN function_args EOLS_SPACE RIGHT_PAREN 
 	call_expr:  expr.LEFT_PAREN function_args COMMA RIGHT_PAREN 
@@ -2128,7 +2124,7 @@ state 111
 	OR  shift 92
 	DOT  shift 104
 	IN  shift 88
-	.  reduce 93 (src line 458)
+	.  reduce 87 (src line 478)
 
 
 state 112
@@ -2161,7 +2157,7 @@ state 112
 	index_expr  goto 45
 	attr_expr  goto 44
 	in_expr  goto 47
-	expr  goto 184
+	expr  goto 182
 	map_literal  goto 39
 	list_literal  goto 38
 	basic_literal  goto 37
@@ -2188,7 +2184,7 @@ state 113
 	NULL  shift 58
 	.  error
 
-	exprs  goto 185
+	exprs  goto 183
 	call_expr  goto 48
 	identifier  goto 36
 	unary_expr  goto 41
@@ -2205,8 +2201,8 @@ state 113
 	slice_expr  goto 46
 
 state 114
-	in_expr:  expr.IN expr 
 	if_elem:  IF expr.stmt_block 
+	in_expr:  expr.IN expr 
 	call_expr:  expr.LEFT_PAREN function_args EOLS_SPACE RIGHT_PAREN 
 	call_expr:  expr.LEFT_PAREN function_args COMMA RIGHT_PAREN 
 	call_expr:  expr.LEFT_PAREN RIGHT_PAREN 
@@ -2248,7 +2244,7 @@ state 114
 	IN  shift 88
 	.  error
 
-	stmt_block  goto 186
+	stmt_block  goto 184
 	empty_block  goto 129
 
 state 115
@@ -2257,23 +2253,23 @@ state 115
 	list_literal:  LEFT_BRACKET exprs.COMMA RIGHT_BRACKET 
 	EOLS_SPACE: .    (11)
 
-	COMMA  shift 187
+	COMMA  shift 185
 	EOL  shift 9
-	.  reduce 11 (src line 173)
+	.  reduce 11 (src line 176)
 
 	EOLS  goto 163
-	EOLS_SPACE  goto 188
+	EOLS_SPACE  goto 186
 
 state 116
-	list_literal:  LEFT_BRACKET RIGHT_BRACKET.    (161)
+	list_literal:  LEFT_BRACKET RIGHT_BRACKET.    (155)
 
-	.  reduce 161 (src line 825)
+	.  reduce 155 (src line 844)
 
 
 state 117
-	map_literal:  LEFT_BRACE RIGHT_BRACE.    (164)
+	map_literal:  LEFT_BRACE RIGHT_BRACE.    (158)
 
-	.  reduce 164 (src line 841)
+	.  reduce 158 (src line 860)
 
 
 state 118
@@ -2281,12 +2277,12 @@ state 118
 	map_literal:  LEFT_BRACE expr_colon_expr.EOLS_SPACE RIGHT_BRACE 
 	EOLS_SPACE: .    (11)
 
-	COMMA  shift 189
+	COMMA  shift 187
 	EOL  shift 9
-	.  reduce 11 (src line 173)
+	.  reduce 11 (src line 176)
 
 	EOLS  goto 163
-	EOLS_SPACE  goto 190
+	EOLS_SPACE  goto 188
 
 state 119
 	in_expr:  expr.IN expr 
@@ -2314,7 +2310,7 @@ state 119
 
 	LEFT_PAREN  shift 89
 	LEFT_BRACKET  shift 103
-	COLON  shift 191
+	COLON  shift 189
 	ADD  shift 98
 	SUB  shift 99
 	MUL  shift 100
@@ -2376,17 +2372,17 @@ state 120
 	OR  shift 92
 	DOT  shift 104
 	IN  shift 88
-	.  reduce 11 (src line 173)
+	.  reduce 11 (src line 176)
 
 	EOLS  goto 163
-	EOLS_SPACE  goto 192
+	EOLS_SPACE  goto 190
 
 state 121
 	in_expr:  expr.IN expr 
 	call_expr:  expr.LEFT_PAREN function_args EOLS_SPACE RIGHT_PAREN 
 	call_expr:  expr.LEFT_PAREN function_args COMMA RIGHT_PAREN 
 	call_expr:  expr.LEFT_PAREN RIGHT_PAREN 
-	unary_expr:  ADD expr.    (135)
+	unary_expr:  ADD expr.    (129)
 	conditional_expr:  expr.GTE expr 
 	conditional_expr:  expr.GT expr 
 	conditional_expr:  expr.OR expr 
@@ -2408,7 +2404,7 @@ state 121
 	LEFT_PAREN  shift 89
 	LEFT_BRACKET  shift 103
 	DOT  shift 104
-	.  reduce 135 (src line 672)
+	.  reduce 129 (src line 691)
 
 
 state 122
@@ -2416,7 +2412,7 @@ state 122
 	call_expr:  expr.LEFT_PAREN function_args EOLS_SPACE RIGHT_PAREN 
 	call_expr:  expr.LEFT_PAREN function_args COMMA RIGHT_PAREN 
 	call_expr:  expr.LEFT_PAREN RIGHT_PAREN 
-	unary_expr:  SUB expr.    (136)
+	unary_expr:  SUB expr.    (130)
 	conditional_expr:  expr.GTE expr 
 	conditional_expr:  expr.GT expr 
 	conditional_expr:  expr.OR expr 
@@ -2438,7 +2434,7 @@ state 122
 	LEFT_PAREN  shift 89
 	LEFT_BRACKET  shift 103
 	DOT  shift 104
-	.  reduce 136 (src line 676)
+	.  reduce 130 (src line 695)
 
 
 state 123
@@ -2446,7 +2442,7 @@ state 123
 	call_expr:  expr.LEFT_PAREN function_args EOLS_SPACE RIGHT_PAREN 
 	call_expr:  expr.LEFT_PAREN function_args COMMA RIGHT_PAREN 
 	call_expr:  expr.LEFT_PAREN RIGHT_PAREN 
-	unary_expr:  NOT expr.    (137)
+	unary_expr:  NOT expr.    (131)
 	conditional_expr:  expr.GTE expr 
 	conditional_expr:  expr.GT expr 
 	conditional_expr:  expr.OR expr 
@@ -2468,7 +2464,7 @@ state 123
 	LEFT_PAREN  shift 89
 	LEFT_BRACKET  shift 103
 	DOT  shift 104
-	.  reduce 137 (src line 680)
+	.  reduce 131 (src line 699)
 
 
 state 124
@@ -2501,7 +2497,7 @@ state 124
 	index_expr  goto 45
 	attr_expr  goto 44
 	in_expr  goto 47
-	expr  goto 193
+	expr  goto 191
 	map_literal  goto 39
 	list_literal  goto 38
 	basic_literal  goto 37
@@ -2514,31 +2510,31 @@ state 125
 
 	SEMICOLON  shift 126
 	EOL  shift 127
-	.  reduce 22 (src line 220)
+	.  reduce 22 (src line 223)
 
 
 state 126
 	sep:  sep SEMICOLON.    (3)
 
-	.  reduce 3 (src line 159)
+	.  reduce 3 (src line 162)
 
 
 state 127
 	sep:  sep EOL.    (4)
 
-	.  reduce 4 (src line 160)
+	.  reduce 4 (src line 163)
 
 
 state 128
-	ifelse_stmt:  if_elif_list ELSE stmt_block.    (119)
+	ifelse_stmt:  if_elif_list ELSE stmt_block.    (112)
 
-	.  reduce 119 (src line 585)
+	.  reduce 112 (src line 598)
 
 
 state 129
-	stmt_block:  empty_block.    (124)
+	stmt_block:  empty_block.    (117)
 
-	.  reduce 124 (src line 614)
+	.  reduce 117 (src line 627)
 
 
 state 130
@@ -2551,7 +2547,7 @@ state 130
 	LEFT_PAREN  shift 61
 	LEFT_BRACKET  shift 59
 	LEFT_BRACE  shift 60
-	RIGHT_BRACE  shift 195
+	RIGHT_BRACE  shift 193
 	STRING  shift 55
 	QUOTED_STRING  shift 51
 	MULTILINE_STRING  shift 56
@@ -2574,7 +2570,7 @@ state 130
 	TYPE  shift 32
 	.  error
 
-	stmts  goto 194
+	stmts  goto 192
 	stmts_list  goto 7
 	if_elem  goto 35
 	if_elif_list  goto 24
@@ -2609,8 +2605,8 @@ state 130
 	sem  goto 10
 
 state 131
-	in_expr:  expr.IN expr 
 	elif_elem:  ELIF expr.stmt_block 
+	in_expr:  expr.IN expr 
 	call_expr:  expr.LEFT_PAREN function_args EOLS_SPACE RIGHT_PAREN 
 	call_expr:  expr.LEFT_PAREN function_args COMMA RIGHT_PAREN 
 	call_expr:  expr.LEFT_PAREN RIGHT_PAREN 
@@ -2652,13 +2648,13 @@ state 131
 	IN  shift 88
 	.  error
 
-	stmt_block  goto 196
+	stmt_block  goto 194
 	empty_block  goto 129
 
 state 132
-	for_in_stmt:  FOR in_expr stmt_block.    (104)
+	for_in_stmt:  FOR in_expr stmt_block.    (97)
 
-	.  reduce 104 (src line 527)
+	.  reduce 97 (src line 540)
 
 
 state 133
@@ -2667,7 +2663,7 @@ state 133
 	for_stmt:  FOR for_init_elem SEMICOLON.SEMICOLON for_loop_elem stmt_block 
 	for_stmt:  FOR for_init_elem SEMICOLON.SEMICOLON stmt_block 
 
-	SEMICOLON  shift 198
+	SEMICOLON  shift 196
 	ID  shift 50
 	NUMBER  shift 52
 	LEFT_PAREN  shift 61
@@ -2695,16 +2691,16 @@ state 133
 	index_expr  goto 45
 	attr_expr  goto 44
 	in_expr  goto 47
-	expr  goto 197
+	expr  goto 195
 	map_literal  goto 39
 	list_literal  goto 38
 	basic_literal  goto 37
 	slice_expr  goto 46
 
 state 134
-	in_expr:  expr.IN expr 
 	for_stmt:  FOR SEMICOLON expr.SEMICOLON for_loop_elem stmt_block 
 	for_stmt:  FOR SEMICOLON expr.SEMICOLON stmt_block 
+	in_expr:  expr.IN expr 
 	call_expr:  expr.LEFT_PAREN function_args EOLS_SPACE RIGHT_PAREN 
 	call_expr:  expr.LEFT_PAREN function_args COMMA RIGHT_PAREN 
 	call_expr:  expr.LEFT_PAREN RIGHT_PAREN 
@@ -2726,7 +2722,7 @@ state 134
 	slice_expr:  expr.LEFT_BRACKET expr_or_empty COLON expr_or_empty COLON expr_or_empty RIGHT_BRACKET 
 	slice_expr:  expr.LEFT_BRACKET expr_or_empty COLON expr_or_empty RIGHT_BRACKET 
 
-	SEMICOLON  shift 199
+	SEMICOLON  shift 197
 	LEFT_PAREN  shift 89
 	LEFT_BRACKET  shift 103
 	ADD  shift 98
@@ -2755,7 +2751,7 @@ state 135
 	NUMBER  shift 52
 	LEFT_PAREN  shift 61
 	LEFT_BRACKET  shift 59
-	LEFT_BRACE  shift 204
+	LEFT_BRACE  shift 202
 	STRING  shift 55
 	QUOTED_STRING  shift 51
 	MULTILINE_STRING  shift 56
@@ -2769,10 +2765,10 @@ state 135
 	NULL  shift 58
 	.  error
 
-	stmt_block  goto 201
+	stmt_block  goto 199
 	empty_block  goto 129
 	exprs  goto 34
-	assignment_stmt  goto 203
+	assignment_stmt  goto 201
 	call_expr  goto 48
 	identifier  goto 36
 	unary_expr  goto 41
@@ -2782,15 +2778,15 @@ state 135
 	index_expr  goto 45
 	attr_expr  goto 44
 	in_expr  goto 47
-	expr  goto 202
+	expr  goto 200
 	map_literal  goto 39
 	list_literal  goto 38
 	basic_literal  goto 37
-	for_loop_elem  goto 200
+	for_loop_elem  goto 198
 	slice_expr  goto 46
 
 state 136
-	assignment_stmt:  expr ADD_EQ expr.    (96)
+	assignment_stmt:  expr ADD_EQ expr.    (90)
 	in_expr:  expr.IN expr 
 	call_expr:  expr.LEFT_PAREN function_args EOLS_SPACE RIGHT_PAREN 
 	call_expr:  expr.LEFT_PAREN function_args COMMA RIGHT_PAREN 
@@ -2830,11 +2826,11 @@ state 136
 	OR  shift 92
 	DOT  shift 104
 	IN  shift 88
-	.  reduce 96 (src line 474)
+	.  reduce 90 (src line 494)
 
 
 state 137
-	assignment_stmt:  expr SUB_EQ expr.    (97)
+	assignment_stmt:  expr SUB_EQ expr.    (91)
 	in_expr:  expr.IN expr 
 	call_expr:  expr.LEFT_PAREN function_args EOLS_SPACE RIGHT_PAREN 
 	call_expr:  expr.LEFT_PAREN function_args COMMA RIGHT_PAREN 
@@ -2874,11 +2870,11 @@ state 137
 	OR  shift 92
 	DOT  shift 104
 	IN  shift 88
-	.  reduce 97 (src line 479)
+	.  reduce 91 (src line 499)
 
 
 state 138
-	assignment_stmt:  expr MUL_EQ expr.    (98)
+	assignment_stmt:  expr MUL_EQ expr.    (92)
 	in_expr:  expr.IN expr 
 	call_expr:  expr.LEFT_PAREN function_args EOLS_SPACE RIGHT_PAREN 
 	call_expr:  expr.LEFT_PAREN function_args COMMA RIGHT_PAREN 
@@ -2918,11 +2914,11 @@ state 138
 	OR  shift 92
 	DOT  shift 104
 	IN  shift 88
-	.  reduce 98 (src line 484)
+	.  reduce 92 (src line 504)
 
 
 state 139
-	assignment_stmt:  expr DIV_EQ expr.    (99)
+	assignment_stmt:  expr DIV_EQ expr.    (93)
 	in_expr:  expr.IN expr 
 	call_expr:  expr.LEFT_PAREN function_args EOLS_SPACE RIGHT_PAREN 
 	call_expr:  expr.LEFT_PAREN function_args COMMA RIGHT_PAREN 
@@ -2962,11 +2958,11 @@ state 139
 	OR  shift 92
 	DOT  shift 104
 	IN  shift 88
-	.  reduce 99 (src line 489)
+	.  reduce 93 (src line 509)
 
 
 state 140
-	assignment_stmt:  expr MOD_EQ expr.    (100)
+	assignment_stmt:  expr MOD_EQ expr.    (94)
 	in_expr:  expr.IN expr 
 	call_expr:  expr.LEFT_PAREN function_args EOLS_SPACE RIGHT_PAREN 
 	call_expr:  expr.LEFT_PAREN function_args COMMA RIGHT_PAREN 
@@ -3006,12 +3002,12 @@ state 140
 	OR  shift 92
 	DOT  shift 104
 	IN  shift 88
-	.  reduce 100 (src line 494)
+	.  reduce 94 (src line 514)
 
 
 state 141
 	in_expr:  expr.IN expr 
-	in_expr:  expr IN expr.    (101)
+	in_expr:  expr IN expr.    (120)
 	call_expr:  expr.LEFT_PAREN function_args EOLS_SPACE RIGHT_PAREN 
 	call_expr:  expr.LEFT_PAREN function_args COMMA RIGHT_PAREN 
 	call_expr:  expr.LEFT_PAREN RIGHT_PAREN 
@@ -3047,7 +3043,7 @@ state 141
 	NEQ  shift 96
 	EQEQ  shift 97
 	DOT  shift 104
-	.  reduce 101 (src line 502)
+	.  reduce 120 (src line 646)
 
 
 state 142
@@ -3057,28 +3053,28 @@ state 142
 	call_expr:  expr LEFT_PAREN function_args.COMMA RIGHT_PAREN 
 	EOLS_SPACE: .    (11)
 
-	COMMA  shift 205
+	COMMA  shift 203
 	EOL  shift 9
-	.  reduce 11 (src line 173)
+	.  reduce 11 (src line 176)
 
 	EOLS  goto 163
-	EOLS_SPACE  goto 206
+	EOLS_SPACE  goto 204
 
 state 143
-	call_expr:  expr LEFT_PAREN RIGHT_PAREN.    (134)
+	call_expr:  expr LEFT_PAREN RIGHT_PAREN.    (128)
 
-	.  reduce 134 (src line 666)
+	.  reduce 128 (src line 685)
 
 
 state 144
-	function_args:  named_arg.    (129)
+	function_args:  named_arg.    (123)
 
-	.  reduce 129 (src line 641)
+	.  reduce 123 (src line 660)
 
 
 state 145
 	in_expr:  expr.IN expr 
-	function_args:  expr.    (130)
+	function_args:  expr.    (124)
 	call_expr:  expr.LEFT_PAREN function_args EOLS_SPACE RIGHT_PAREN 
 	call_expr:  expr.LEFT_PAREN function_args COMMA RIGHT_PAREN 
 	call_expr:  expr.LEFT_PAREN RIGHT_PAREN 
@@ -3117,15 +3113,15 @@ state 145
 	OR  shift 92
 	DOT  shift 104
 	IN  shift 88
-	.  reduce 130 (src line 645)
+	.  reduce 124 (src line 664)
 
 
 state 146
 	expr:  identifier.    (36)
 	named_arg:  identifier.EQ expr 
 
-	EQ  shift 207
-	.  reduce 36 (src line 247)
+	EQ  shift 205
+	.  reduce 36 (src line 250)
 
 
 state 147
@@ -3134,7 +3130,7 @@ state 147
 	call_expr:  expr.LEFT_PAREN function_args COMMA RIGHT_PAREN 
 	call_expr:  expr.LEFT_PAREN RIGHT_PAREN 
 	conditional_expr:  expr.GTE expr 
-	conditional_expr:  expr GTE expr.    (138)
+	conditional_expr:  expr GTE expr.    (132)
 	conditional_expr:  expr.GT expr 
 	conditional_expr:  expr.OR expr 
 	conditional_expr:  expr.AND expr 
@@ -3160,7 +3156,7 @@ state 147
 	DIV  shift 101
 	MOD  shift 102
 	DOT  shift 104
-	.  reduce 138 (src line 686)
+	.  reduce 132 (src line 705)
 
 
 state 148
@@ -3170,7 +3166,7 @@ state 148
 	call_expr:  expr.LEFT_PAREN RIGHT_PAREN 
 	conditional_expr:  expr.GTE expr 
 	conditional_expr:  expr.GT expr 
-	conditional_expr:  expr GT expr.    (139)
+	conditional_expr:  expr GT expr.    (133)
 	conditional_expr:  expr.OR expr 
 	conditional_expr:  expr.AND expr 
 	conditional_expr:  expr.LT expr 
@@ -3195,7 +3191,7 @@ state 148
 	DIV  shift 101
 	MOD  shift 102
 	DOT  shift 104
-	.  reduce 139 (src line 690)
+	.  reduce 133 (src line 709)
 
 
 state 149
@@ -3206,7 +3202,7 @@ state 149
 	conditional_expr:  expr.GTE expr 
 	conditional_expr:  expr.GT expr 
 	conditional_expr:  expr.OR expr 
-	conditional_expr:  expr OR expr.    (140)
+	conditional_expr:  expr OR expr.    (134)
 	conditional_expr:  expr.AND expr 
 	conditional_expr:  expr.LT expr 
 	conditional_expr:  expr.LTE expr 
@@ -3238,7 +3234,7 @@ state 149
 	AND  shift 93
 	DOT  shift 104
 	IN  shift 88
-	.  reduce 140 (src line 694)
+	.  reduce 134 (src line 713)
 
 
 state 150
@@ -3250,7 +3246,7 @@ state 150
 	conditional_expr:  expr.GT expr 
 	conditional_expr:  expr.OR expr 
 	conditional_expr:  expr.AND expr 
-	conditional_expr:  expr AND expr.    (141)
+	conditional_expr:  expr AND expr.    (135)
 	conditional_expr:  expr.LT expr 
 	conditional_expr:  expr.LTE expr 
 	conditional_expr:  expr.NEQ expr 
@@ -3280,7 +3276,7 @@ state 150
 	EQEQ  shift 97
 	DOT  shift 104
 	IN  shift 88
-	.  reduce 141 (src line 698)
+	.  reduce 135 (src line 717)
 
 
 state 151
@@ -3293,7 +3289,7 @@ state 151
 	conditional_expr:  expr.OR expr 
 	conditional_expr:  expr.AND expr 
 	conditional_expr:  expr.LT expr 
-	conditional_expr:  expr LT expr.    (142)
+	conditional_expr:  expr LT expr.    (136)
 	conditional_expr:  expr.LTE expr 
 	conditional_expr:  expr.NEQ expr 
 	conditional_expr:  expr.EQEQ expr 
@@ -3315,7 +3311,7 @@ state 151
 	DIV  shift 101
 	MOD  shift 102
 	DOT  shift 104
-	.  reduce 142 (src line 702)
+	.  reduce 136 (src line 721)
 
 
 state 152
@@ -3329,7 +3325,7 @@ state 152
 	conditional_expr:  expr.AND expr 
 	conditional_expr:  expr.LT expr 
 	conditional_expr:  expr.LTE expr 
-	conditional_expr:  expr LTE expr.    (143)
+	conditional_expr:  expr LTE expr.    (137)
 	conditional_expr:  expr.NEQ expr 
 	conditional_expr:  expr.EQEQ expr 
 	arithmeticExpr:  expr.ADD expr 
@@ -3350,7 +3346,7 @@ state 152
 	DIV  shift 101
 	MOD  shift 102
 	DOT  shift 104
-	.  reduce 143 (src line 706)
+	.  reduce 137 (src line 725)
 
 
 state 153
@@ -3365,7 +3361,7 @@ state 153
 	conditional_expr:  expr.LT expr 
 	conditional_expr:  expr.LTE expr 
 	conditional_expr:  expr.NEQ expr 
-	conditional_expr:  expr NEQ expr.    (144)
+	conditional_expr:  expr NEQ expr.    (138)
 	conditional_expr:  expr.EQEQ expr 
 	arithmeticExpr:  expr.ADD expr 
 	arithmeticExpr:  expr.SUB expr 
@@ -3385,7 +3381,7 @@ state 153
 	DIV  shift 101
 	MOD  shift 102
 	DOT  shift 104
-	.  reduce 144 (src line 710)
+	.  reduce 138 (src line 729)
 
 
 state 154
@@ -3401,7 +3397,7 @@ state 154
 	conditional_expr:  expr.LTE expr 
 	conditional_expr:  expr.NEQ expr 
 	conditional_expr:  expr.EQEQ expr 
-	conditional_expr:  expr EQEQ expr.    (145)
+	conditional_expr:  expr EQEQ expr.    (139)
 	arithmeticExpr:  expr.ADD expr 
 	arithmeticExpr:  expr.SUB expr 
 	arithmeticExpr:  expr.MUL expr 
@@ -3420,7 +3416,7 @@ state 154
 	DIV  shift 101
 	MOD  shift 102
 	DOT  shift 104
-	.  reduce 145 (src line 714)
+	.  reduce 139 (src line 733)
 
 
 state 155
@@ -3437,7 +3433,7 @@ state 155
 	conditional_expr:  expr.NEQ expr 
 	conditional_expr:  expr.EQEQ expr 
 	arithmeticExpr:  expr.ADD expr 
-	arithmeticExpr:  expr ADD expr.    (146)
+	arithmeticExpr:  expr ADD expr.    (140)
 	arithmeticExpr:  expr.SUB expr 
 	arithmeticExpr:  expr.MUL expr 
 	arithmeticExpr:  expr.DIV expr 
@@ -3453,7 +3449,7 @@ state 155
 	DIV  shift 101
 	MOD  shift 102
 	DOT  shift 104
-	.  reduce 146 (src line 721)
+	.  reduce 140 (src line 740)
 
 
 state 156
@@ -3471,7 +3467,7 @@ state 156
 	conditional_expr:  expr.EQEQ expr 
 	arithmeticExpr:  expr.ADD expr 
 	arithmeticExpr:  expr.SUB expr 
-	arithmeticExpr:  expr SUB expr.    (147)
+	arithmeticExpr:  expr SUB expr.    (141)
 	arithmeticExpr:  expr.MUL expr 
 	arithmeticExpr:  expr.DIV expr 
 	arithmeticExpr:  expr.MOD expr 
@@ -3486,7 +3482,7 @@ state 156
 	DIV  shift 101
 	MOD  shift 102
 	DOT  shift 104
-	.  reduce 147 (src line 725)
+	.  reduce 141 (src line 744)
 
 
 state 157
@@ -3505,7 +3501,7 @@ state 157
 	arithmeticExpr:  expr.ADD expr 
 	arithmeticExpr:  expr.SUB expr 
 	arithmeticExpr:  expr.MUL expr 
-	arithmeticExpr:  expr MUL expr.    (148)
+	arithmeticExpr:  expr MUL expr.    (142)
 	arithmeticExpr:  expr.DIV expr 
 	arithmeticExpr:  expr.MOD expr 
 	index_expr:  expr.LEFT_BRACKET expr EOLS_SPACE RIGHT_BRACKET 
@@ -3516,7 +3512,7 @@ state 157
 	LEFT_PAREN  shift 89
 	LEFT_BRACKET  shift 103
 	DOT  shift 104
-	.  reduce 148 (src line 729)
+	.  reduce 142 (src line 748)
 
 
 state 158
@@ -3536,7 +3532,7 @@ state 158
 	arithmeticExpr:  expr.SUB expr 
 	arithmeticExpr:  expr.MUL expr 
 	arithmeticExpr:  expr.DIV expr 
-	arithmeticExpr:  expr DIV expr.    (149)
+	arithmeticExpr:  expr DIV expr.    (143)
 	arithmeticExpr:  expr.MOD expr 
 	index_expr:  expr.LEFT_BRACKET expr EOLS_SPACE RIGHT_BRACKET 
 	attr_expr:  expr.DOT expr 
@@ -3546,7 +3542,7 @@ state 158
 	LEFT_PAREN  shift 89
 	LEFT_BRACKET  shift 103
 	DOT  shift 104
-	.  reduce 149 (src line 733)
+	.  reduce 143 (src line 752)
 
 
 state 159
@@ -3567,7 +3563,7 @@ state 159
 	arithmeticExpr:  expr.MUL expr 
 	arithmeticExpr:  expr.DIV expr 
 	arithmeticExpr:  expr.MOD expr 
-	arithmeticExpr:  expr MOD expr.    (150)
+	arithmeticExpr:  expr MOD expr.    (144)
 	index_expr:  expr.LEFT_BRACKET expr EOLS_SPACE RIGHT_BRACKET 
 	attr_expr:  expr.DOT expr 
 	slice_expr:  expr.LEFT_BRACKET expr_or_empty COLON expr_or_empty COLON expr_or_empty RIGHT_BRACKET 
@@ -3576,7 +3572,7 @@ state 159
 	LEFT_PAREN  shift 89
 	LEFT_BRACKET  shift 103
 	DOT  shift 104
-	.  reduce 150 (src line 737)
+	.  reduce 144 (src line 756)
 
 
 state 160
@@ -3600,14 +3596,14 @@ state 160
 	index_expr:  expr.LEFT_BRACKET expr EOLS_SPACE RIGHT_BRACKET 
 	index_expr:  expr LEFT_BRACKET expr.EOLS_SPACE RIGHT_BRACKET 
 	attr_expr:  expr.DOT expr 
-	expr_or_empty:  expr.    (155)
+	expr_or_empty:  expr.    (149)
 	slice_expr:  expr.LEFT_BRACKET expr_or_empty COLON expr_or_empty COLON expr_or_empty RIGHT_BRACKET 
 	slice_expr:  expr.LEFT_BRACKET expr_or_empty COLON expr_or_empty RIGHT_BRACKET 
 	EOLS_SPACE: .    (11)
 
 	LEFT_PAREN  shift 89
 	LEFT_BRACKET  shift 103
-	COLON  reduce 155 (src line 769)
+	COLON  reduce 149 (src line 788)
 	EOL  shift 9
 	ADD  shift 98
 	SUB  shift 99
@@ -3624,23 +3620,23 @@ state 160
 	OR  shift 92
 	DOT  shift 104
 	IN  shift 88
-	.  reduce 11 (src line 173)
+	.  reduce 11 (src line 176)
 
 	EOLS  goto 163
-	EOLS_SPACE  goto 208
+	EOLS_SPACE  goto 206
 
 state 161
 	slice_expr:  expr LEFT_BRACKET expr_or_empty.COLON expr_or_empty COLON expr_or_empty RIGHT_BRACKET 
 	slice_expr:  expr LEFT_BRACKET expr_or_empty.COLON expr_or_empty RIGHT_BRACKET 
 
-	COLON  shift 209
+	COLON  shift 207
 	.  error
 
 
 state 162
-	expr_or_empty:  EOLS_SPACE.    (156)
+	expr_or_empty:  EOLS_SPACE.    (150)
 
-	.  reduce 156 (src line 773)
+	.  reduce 150 (src line 792)
 
 
 state 163
@@ -3648,7 +3644,7 @@ state 163
 	EOLS_SPACE:  EOLS.    (10)
 
 	EOL  shift 66
-	.  reduce 10 (src line 172)
+	.  reduce 10 (src line 175)
 
 
 state 164
@@ -3671,19 +3667,19 @@ state 164
 	arithmeticExpr:  expr.MOD expr 
 	index_expr:  expr.LEFT_BRACKET expr EOLS_SPACE RIGHT_BRACKET 
 	attr_expr:  expr.DOT expr 
-	attr_expr:  expr DOT expr.    (154)
+	attr_expr:  expr DOT expr.    (148)
 	slice_expr:  expr.LEFT_BRACKET expr_or_empty COLON expr_or_empty COLON expr_or_empty RIGHT_BRACKET 
 	slice_expr:  expr.LEFT_BRACKET expr_or_empty COLON expr_or_empty RIGHT_BRACKET 
 
-	.  reduce 154 (src line 762)
+	.  reduce 148 (src line 781)
 
 
 state 165
 	var_def_stmt:  LET identifier data_type.EQ expr 
-	var_def_stmt:  LET identifier data_type.    (63)
+	var_def_stmt:  LET identifier data_type.    (62)
 
-	EQ  shift 210
-	.  reduce 63 (src line 317)
+	EQ  shift 208
+	.  reduce 62 (src line 321)
 
 
 state 166
@@ -3716,7 +3712,7 @@ state 166
 	index_expr  goto 45
 	attr_expr  goto 44
 	in_expr  goto 47
-	expr  goto 211
+	expr  goto 209
 	map_literal  goto 39
 	list_literal  goto 38
 	basic_literal  goto 37
@@ -3725,92 +3721,74 @@ state 166
 state 167
 	data_type:  INT.    (49)
 
-	.  reduce 49 (src line 268)
+	.  reduce 49 (src line 271)
 
 
 state 168
 	data_type:  FLOAT.    (50)
 
-	.  reduce 50 (src line 272)
+	.  reduce 50 (src line 275)
 
 
 state 169
-	data_type:  STRING.    (51)
+	data_type:  STR.    (51)
 
-	.  reduce 51 (src line 276)
+	.  reduce 51 (src line 279)
 
 
 state 170
 	data_type:  BOOL.    (52)
 
-	.  reduce 52 (src line 280)
+	.  reduce 52 (src line 283)
 
 
 state 171
 	data_type:  ANY.    (53)
 
-	.  reduce 53 (src line 284)
+	.  reduce 53 (src line 287)
 
 
 state 172
 	data_type:  list_type.    (54)
 
-	.  reduce 54 (src line 288)
+	.  reduce 54 (src line 291)
 
 
 state 173
 	data_type:  map_type.    (55)
 
-	.  reduce 55 (src line 289)
+	.  reduce 55 (src line 292)
 
 
 state 174
-	data_type:  fn_type.    (56)
+	data_type:  identifier.    (56)
 
-	.  reduce 56 (src line 290)
+	.  reduce 56 (src line 294)
 
 
 state 175
-	data_type:  identifier.    (57)
+	data_type:  array_type.    (57)
 
-	.  reduce 57 (src line 291)
+	.  reduce 57 (src line 295)
 
 
 state 176
-	data_type:  array_type.    (58)
-
-	.  reduce 58 (src line 292)
-
-
-state 177
 	list_type:  LEFT_BRACKET.RIGHT_BRACKET data_type 
 	array_type:  LEFT_BRACKET.NUMBER RIGHT_BRACKET data_type 
 
-	NUMBER  shift 213
-	RIGHT_BRACKET  shift 212
+	NUMBER  shift 211
+	RIGHT_BRACKET  shift 210
+	.  error
+
+
+state 177
+	map_type:  MAP.LEFT_BRACKET data_type RIGHT_BRACKET data_type 
+
+	LEFT_BRACKET  shift 212
 	.  error
 
 
 state 178
-	map_type:  MAP.LEFT_BRACKET data_type RIGHT_BRACKET data_type 
-
-	LEFT_BRACKET  shift 214
-	.  error
-
-
-state 179
-	fn_type:  FN.LEFT_PAREN RIGHT_PAREN LEFT_BRACE RIGHT_BRACE 
-	fn_type:  FN.LEFT_PAREN RIGHT_PAREN LEFT_BRACE RIGHT_BRACE FN_RET data_type 
-	fn_type:  FN.LEFT_PAREN RIGHT_PAREN LEFT_BRACE RIGHT_BRACE FN_RET LEFT_PAREN fn_ret_types_multi RIGHT_PAREN 
-	fn_type:  FN.LEFT_PAREN fn_def_params RIGHT_PAREN LEFT_BRACE RIGHT_BRACE 
-	fn_type:  FN.LEFT_PAREN fn_def_params RIGHT_PAREN LEFT_BRACE RIGHT_BRACE FN_RET data_type 
-	fn_type:  FN.LEFT_PAREN fn_def_params RIGHT_PAREN LEFT_BRACE RIGHT_BRACE FN_RET LEFT_PAREN fn_ret_types_multi RIGHT_PAREN 
-
-	LEFT_PAREN  shift 215
-	.  error
-
-
-state 180
 	fn_def_stmt:  FN identifier LEFT_PAREN.RIGHT_PAREN stmt_block 
 	fn_def_stmt:  FN identifier LEFT_PAREN.RIGHT_PAREN FN_RET data_type stmt_block 
 	fn_def_stmt:  FN identifier LEFT_PAREN.RIGHT_PAREN FN_RET LEFT_PAREN fn_ret_types_multi RIGHT_PAREN stmt_block 
@@ -3819,40 +3797,40 @@ state 180
 	fn_def_stmt:  FN identifier LEFT_PAREN.fn_def_params RIGHT_PAREN FN_RET LEFT_PAREN fn_ret_types_multi RIGHT_PAREN stmt_block 
 
 	ID  shift 50
-	RIGHT_PAREN  shift 216
+	RIGHT_PAREN  shift 213
 	QUOTED_STRING  shift 51
 	.  error
 
-	identifier  goto 219
-	fn_def_params  goto 217
-	fn_def_param  goto 218
+	identifier  goto 216
+	fn_def_param  goto 215
+	fn_def_params  goto 214
 
-state 181
+state 179
 	pkg_name:  pkg_name DOT.identifier 
 
 	ID  shift 50
 	QUOTED_STRING  shift 51
 	.  error
 
-	identifier  goto 220
+	identifier  goto 217
 
-state 182
+state 180
 	import_stmt:  IMPORT pkg_name AS.identifier 
 
 	ID  shift 50
 	QUOTED_STRING  shift 51
 	.  error
 
-	identifier  goto 221
+	identifier  goto 218
 
-state 183
-	type_def_stmt:  TYPE identifier data_type.    (75)
+state 181
+	type_def_stmt:  TYPE identifier data_type.    (68)
 
-	.  reduce 75 (src line 380)
+	.  reduce 68 (src line 384)
 
 
-state 184
-	exprs:  exprs COMMA expr.    (94)
+state 182
+	exprs:  exprs COMMA expr.    (88)
 	in_expr:  expr.IN expr 
 	call_expr:  expr.LEFT_PAREN function_args EOLS_SPACE RIGHT_PAREN 
 	call_expr:  expr.LEFT_PAREN function_args COMMA RIGHT_PAREN 
@@ -3892,24 +3870,24 @@ state 184
 	OR  shift 92
 	DOT  shift 104
 	IN  shift 88
-	.  reduce 94 (src line 462)
+	.  reduce 88 (src line 482)
+
+
+state 183
+	exprs:  exprs.COMMA expr 
+	assignment_stmt:  exprs EQ exprs.    (89)
+
+	COMMA  shift 112
+	.  reduce 89 (src line 489)
+
+
+state 184
+	if_elem:  IF expr stmt_block.    (113)
+
+	.  reduce 113 (src line 604)
 
 
 state 185
-	exprs:  exprs.COMMA expr 
-	assignment_stmt:  exprs EQ exprs.    (95)
-
-	COMMA  shift 112
-	.  reduce 95 (src line 469)
-
-
-state 186
-	if_elem:  IF expr stmt_block.    (120)
-
-	.  reduce 120 (src line 591)
-
-
-state 187
 	exprs:  exprs COMMA.expr 
 	list_literal:  LEFT_BRACKET exprs COMMA.RIGHT_BRACKET 
 
@@ -3918,7 +3896,7 @@ state 187
 	LEFT_PAREN  shift 61
 	LEFT_BRACKET  shift 59
 	LEFT_BRACE  shift 60
-	RIGHT_BRACKET  shift 222
+	RIGHT_BRACKET  shift 219
 	STRING  shift 55
 	QUOTED_STRING  shift 51
 	MULTILINE_STRING  shift 56
@@ -3941,20 +3919,20 @@ state 187
 	index_expr  goto 45
 	attr_expr  goto 44
 	in_expr  goto 47
-	expr  goto 184
+	expr  goto 182
 	map_literal  goto 39
 	list_literal  goto 38
 	basic_literal  goto 37
 	slice_expr  goto 46
 
-state 188
+state 186
 	list_literal:  LEFT_BRACKET exprs EOLS_SPACE.RIGHT_BRACKET 
 
-	RIGHT_BRACKET  shift 223
+	RIGHT_BRACKET  shift 220
 	.  error
 
 
-state 189
+state 187
 	expr_colon_expr:  expr_colon_expr COMMA.expr COLON expr 
 
 	ID  shift 50
@@ -3984,20 +3962,20 @@ state 189
 	index_expr  goto 45
 	attr_expr  goto 44
 	in_expr  goto 47
-	expr  goto 224
+	expr  goto 221
 	map_literal  goto 39
 	list_literal  goto 38
 	basic_literal  goto 37
 	slice_expr  goto 46
 
-state 190
+state 188
 	map_literal:  LEFT_BRACE expr_colon_expr EOLS_SPACE.RIGHT_BRACE 
 
-	RIGHT_BRACE  shift 225
+	RIGHT_BRACE  shift 222
 	.  error
 
 
-state 191
+state 189
 	expr_colon_expr:  expr COLON.expr 
 
 	ID  shift 50
@@ -4027,20 +4005,20 @@ state 191
 	index_expr  goto 45
 	attr_expr  goto 44
 	in_expr  goto 47
-	expr  goto 226
+	expr  goto 223
 	map_literal  goto 39
 	list_literal  goto 38
 	basic_literal  goto 37
 	slice_expr  goto 46
 
-state 192
+state 190
 	paren_expr:  LEFT_PAREN expr EOLS_SPACE.RIGHT_PAREN 
 
-	RIGHT_PAREN  shift 227
+	RIGHT_PAREN  shift 224
 	.  error
 
 
-state 193
+state 191
 	in_expr:  expr.IN expr 
 	call_expr:  expr.LEFT_PAREN function_args EOLS_SPACE RIGHT_PAREN 
 	call_expr:  expr.LEFT_PAREN function_args COMMA RIGHT_PAREN 
@@ -4083,34 +4061,34 @@ state 193
 	OR  shift 92
 	DOT  shift 104
 	IN  shift 88
-	.  reduce 11 (src line 173)
+	.  reduce 11 (src line 176)
 
 	EOLS  goto 163
-	EOLS_SPACE  goto 228
+	EOLS_SPACE  goto 225
 
-state 194
+state 192
 	stmt_block:  LEFT_BRACE stmts.RIGHT_BRACE 
 
-	RIGHT_BRACE  shift 229
+	RIGHT_BRACE  shift 226
 	.  error
 
 
+state 193
+	empty_block:  LEFT_BRACE RIGHT_BRACE.    (119)
+
+	.  reduce 119 (src line 635)
+
+
+state 194
+	elif_elem:  ELIF expr stmt_block.    (116)
+
+	.  reduce 116 (src line 620)
+
+
 state 195
-	empty_block:  LEFT_BRACE RIGHT_BRACE.    (126)
-
-	.  reduce 126 (src line 622)
-
-
-state 196
-	elif_elem:  ELIF expr stmt_block.    (123)
-
-	.  reduce 123 (src line 607)
-
-
-state 197
-	in_expr:  expr.IN expr 
 	for_stmt:  FOR for_init_elem SEMICOLON expr.SEMICOLON for_loop_elem stmt_block 
 	for_stmt:  FOR for_init_elem SEMICOLON expr.SEMICOLON stmt_block 
+	in_expr:  expr.IN expr 
 	call_expr:  expr.LEFT_PAREN function_args EOLS_SPACE RIGHT_PAREN 
 	call_expr:  expr.LEFT_PAREN function_args COMMA RIGHT_PAREN 
 	call_expr:  expr.LEFT_PAREN RIGHT_PAREN 
@@ -4132,7 +4110,7 @@ state 197
 	slice_expr:  expr.LEFT_BRACKET expr_or_empty COLON expr_or_empty COLON expr_or_empty RIGHT_BRACKET 
 	slice_expr:  expr.LEFT_BRACKET expr_or_empty COLON expr_or_empty RIGHT_BRACKET 
 
-	SEMICOLON  shift 230
+	SEMICOLON  shift 227
 	LEFT_PAREN  shift 89
 	LEFT_BRACKET  shift 103
 	ADD  shift 98
@@ -4153,7 +4131,7 @@ state 197
 	.  error
 
 
-state 198
+state 196
 	for_stmt:  FOR for_init_elem SEMICOLON SEMICOLON.for_loop_elem stmt_block 
 	for_stmt:  FOR for_init_elem SEMICOLON SEMICOLON.stmt_block 
 
@@ -4161,7 +4139,7 @@ state 198
 	NUMBER  shift 52
 	LEFT_PAREN  shift 61
 	LEFT_BRACKET  shift 59
-	LEFT_BRACE  shift 204
+	LEFT_BRACE  shift 202
 	STRING  shift 55
 	QUOTED_STRING  shift 51
 	MULTILINE_STRING  shift 56
@@ -4175,10 +4153,10 @@ state 198
 	NULL  shift 58
 	.  error
 
-	stmt_block  goto 232
+	stmt_block  goto 229
 	empty_block  goto 129
 	exprs  goto 34
-	assignment_stmt  goto 203
+	assignment_stmt  goto 201
 	call_expr  goto 48
 	identifier  goto 36
 	unary_expr  goto 41
@@ -4188,14 +4166,14 @@ state 198
 	index_expr  goto 45
 	attr_expr  goto 44
 	in_expr  goto 47
-	expr  goto 202
+	expr  goto 200
 	map_literal  goto 39
 	list_literal  goto 38
 	basic_literal  goto 37
-	for_loop_elem  goto 231
+	for_loop_elem  goto 228
 	slice_expr  goto 46
 
-state 199
+state 197
 	for_stmt:  FOR SEMICOLON expr SEMICOLON.for_loop_elem stmt_block 
 	for_stmt:  FOR SEMICOLON expr SEMICOLON.stmt_block 
 
@@ -4203,7 +4181,7 @@ state 199
 	NUMBER  shift 52
 	LEFT_PAREN  shift 61
 	LEFT_BRACKET  shift 59
-	LEFT_BRACE  shift 204
+	LEFT_BRACE  shift 202
 	STRING  shift 55
 	QUOTED_STRING  shift 51
 	MULTILINE_STRING  shift 56
@@ -4217,10 +4195,10 @@ state 199
 	NULL  shift 58
 	.  error
 
-	stmt_block  goto 234
+	stmt_block  goto 231
 	empty_block  goto 129
 	exprs  goto 34
-	assignment_stmt  goto 203
+	assignment_stmt  goto 201
 	call_expr  goto 48
 	identifier  goto 36
 	unary_expr  goto 41
@@ -4230,37 +4208,37 @@ state 199
 	index_expr  goto 45
 	attr_expr  goto 44
 	in_expr  goto 47
-	expr  goto 202
+	expr  goto 200
 	map_literal  goto 39
 	list_literal  goto 38
 	basic_literal  goto 37
-	for_loop_elem  goto 233
+	for_loop_elem  goto 230
 	slice_expr  goto 46
 
-state 200
+state 198
 	for_stmt:  FOR SEMICOLON SEMICOLON for_loop_elem.stmt_block 
 
 	LEFT_BRACE  shift 130
 	.  error
 
-	stmt_block  goto 235
+	stmt_block  goto 232
 	empty_block  goto 129
 
-state 201
-	for_stmt:  FOR SEMICOLON SEMICOLON stmt_block.    (117)
+state 199
+	for_stmt:  FOR SEMICOLON SEMICOLON stmt_block.    (110)
 
-	.  reduce 117 (src line 574)
+	.  reduce 110 (src line 587)
 
 
-state 202
-	exprs:  expr.    (93)
+state 200
+	exprs:  expr.    (87)
 	assignment_stmt:  expr.ADD_EQ expr 
 	assignment_stmt:  expr.SUB_EQ expr 
 	assignment_stmt:  expr.MUL_EQ expr 
 	assignment_stmt:  expr.DIV_EQ expr 
 	assignment_stmt:  expr.MOD_EQ expr 
+	for_loop_elem:  expr.    (101)
 	in_expr:  expr.IN expr 
-	for_loop_elem:  expr.    (108)
 	call_expr:  expr.LEFT_PAREN function_args EOLS_SPACE RIGHT_PAREN 
 	call_expr:  expr.LEFT_PAREN function_args COMMA RIGHT_PAREN 
 	call_expr:  expr.LEFT_PAREN RIGHT_PAREN 
@@ -4284,7 +4262,7 @@ state 202
 
 	LEFT_PAREN  shift 89
 	LEFT_BRACKET  shift 103
-	LEFT_BRACE  reduce 108 (src line 544)
+	LEFT_BRACE  reduce 101 (src line 557)
 	ADD  shift 98
 	SUB  shift 99
 	MUL  shift 100
@@ -4305,16 +4283,16 @@ state 202
 	OR  shift 92
 	DOT  shift 104
 	IN  shift 88
-	.  reduce 93 (src line 458)
+	.  reduce 87 (src line 478)
 
 
-state 203
-	for_loop_elem:  assignment_stmt.    (109)
+state 201
+	for_loop_elem:  assignment_stmt.    (102)
 
-	.  reduce 109 (src line 544)
+	.  reduce 102 (src line 557)
 
 
-state 204
+state 202
 	stmt_block:  LEFT_BRACE.stmts RIGHT_BRACE 
 	empty_block:  LEFT_BRACE.RIGHT_BRACE 
 	map_literal:  LEFT_BRACE.RIGHT_BRACE 
@@ -4326,7 +4304,7 @@ state 204
 	LEFT_PAREN  shift 61
 	LEFT_BRACKET  shift 59
 	LEFT_BRACE  shift 60
-	RIGHT_BRACE  shift 236
+	RIGHT_BRACE  shift 233
 	STRING  shift 55
 	QUOTED_STRING  shift 51
 	MULTILINE_STRING  shift 56
@@ -4349,7 +4327,7 @@ state 204
 	TYPE  shift 32
 	.  error
 
-	stmts  goto 194
+	stmts  goto 192
 	stmts_list  goto 7
 	if_elem  goto 35
 	if_elif_list  goto 24
@@ -4371,7 +4349,7 @@ state 204
 	index_expr  goto 45
 	attr_expr  goto 44
 	in_expr  goto 47
-	expr  goto 237
+	expr  goto 234
 	map_literal  goto 39
 	value_stmt  goto 16
 	list_literal  goto 38
@@ -4384,7 +4362,7 @@ state 204
 	return_stmt  goto 21
 	sem  goto 10
 
-state 205
+state 203
 	function_args:  function_args COMMA.expr 
 	function_args:  function_args COMMA.named_arg 
 	call_expr:  expr LEFT_PAREN function_args COMMA.RIGHT_PAREN 
@@ -4394,7 +4372,7 @@ state 205
 	LEFT_PAREN  shift 61
 	LEFT_BRACKET  shift 59
 	LEFT_BRACE  shift 60
-	RIGHT_PAREN  shift 240
+	RIGHT_PAREN  shift 237
 	STRING  shift 55
 	QUOTED_STRING  shift 51
 	MULTILINE_STRING  shift 56
@@ -4409,7 +4387,7 @@ state 205
 	.  error
 
 	call_expr  goto 48
-	named_arg  goto 239
+	named_arg  goto 236
 	identifier  goto 146
 	unary_expr  goto 41
 	conditional_expr  goto 42
@@ -4418,20 +4396,20 @@ state 205
 	index_expr  goto 45
 	attr_expr  goto 44
 	in_expr  goto 47
-	expr  goto 238
+	expr  goto 235
 	map_literal  goto 39
 	list_literal  goto 38
 	basic_literal  goto 37
 	slice_expr  goto 46
 
-state 206
+state 204
 	call_expr:  expr LEFT_PAREN function_args EOLS_SPACE.RIGHT_PAREN 
 
-	RIGHT_PAREN  shift 241
+	RIGHT_PAREN  shift 238
 	.  error
 
 
-state 207
+state 205
 	named_arg:  identifier EQ.expr 
 
 	ID  shift 50
@@ -4461,20 +4439,20 @@ state 207
 	index_expr  goto 45
 	attr_expr  goto 44
 	in_expr  goto 47
-	expr  goto 242
+	expr  goto 239
 	map_literal  goto 39
 	list_literal  goto 38
 	basic_literal  goto 37
 	slice_expr  goto 46
 
-state 208
+state 206
 	index_expr:  expr LEFT_BRACKET expr EOLS_SPACE.RIGHT_BRACKET 
 
-	RIGHT_BRACKET  shift 243
+	RIGHT_BRACKET  shift 240
 	.  error
 
 
-state 209
+state 207
 	slice_expr:  expr LEFT_BRACKET expr_or_empty COLON.expr_or_empty COLON expr_or_empty RIGHT_BRACKET 
 	slice_expr:  expr LEFT_BRACKET expr_or_empty COLON.expr_or_empty RIGHT_BRACKET 
 	EOLS_SPACE: .    (11)
@@ -4496,7 +4474,7 @@ state 209
 	FALSE  shift 54
 	NIL  shift 57
 	NULL  shift 58
-	.  reduce 11 (src line 173)
+	.  reduce 11 (src line 176)
 
 	call_expr  goto 48
 	identifier  goto 36
@@ -4507,16 +4485,16 @@ state 209
 	index_expr  goto 45
 	attr_expr  goto 44
 	in_expr  goto 47
-	expr  goto 245
+	expr  goto 242
 	map_literal  goto 39
-	expr_or_empty  goto 244
+	expr_or_empty  goto 241
 	list_literal  goto 38
 	basic_literal  goto 37
 	slice_expr  goto 46
 	EOLS  goto 163
 	EOLS_SPACE  goto 162
 
-state 210
+state 208
 	var_def_stmt:  LET identifier data_type EQ.expr 
 
 	ID  shift 50
@@ -4546,14 +4524,14 @@ state 210
 	index_expr  goto 45
 	attr_expr  goto 44
 	in_expr  goto 47
-	expr  goto 246
+	expr  goto 243
 	map_literal  goto 39
 	list_literal  goto 38
 	basic_literal  goto 37
 	slice_expr  goto 46
 
-state 211
-	var_def_stmt:  LET identifier EQ expr.    (64)
+state 209
+	var_def_stmt:  LET identifier EQ expr.    (63)
 	in_expr:  expr.IN expr 
 	call_expr:  expr.LEFT_PAREN function_args EOLS_SPACE RIGHT_PAREN 
 	call_expr:  expr.LEFT_PAREN function_args COMMA RIGHT_PAREN 
@@ -4593,143 +4571,123 @@ state 211
 	OR  shift 92
 	DOT  shift 104
 	IN  shift 88
-	.  reduce 64 (src line 321)
+	.  reduce 63 (src line 325)
 
 
-state 212
+state 210
 	list_type:  LEFT_BRACKET RIGHT_BRACKET.data_type 
 
 	ID  shift 50
-	LEFT_BRACKET  shift 177
-	STRING  shift 169
+	LEFT_BRACKET  shift 176
 	QUOTED_STRING  shift 51
+	STR  shift 169
 	INT  shift 167
 	FLOAT  shift 168
 	BOOL  shift 170
-	MAP  shift 178
+	MAP  shift 177
 	ANY  shift 171
-	FN  shift 179
 	.  error
 
-	identifier  goto 175
-	data_type  goto 247
-	fn_type  goto 174
+	identifier  goto 174
+	data_type  goto 244
 	list_type  goto 172
-	array_type  goto 176
+	array_type  goto 175
 	map_type  goto 173
 
-state 213
+state 211
 	array_type:  LEFT_BRACKET NUMBER.RIGHT_BRACKET data_type 
 
-	RIGHT_BRACKET  shift 248
+	RIGHT_BRACKET  shift 245
 	.  error
 
 
-state 214
+state 212
 	map_type:  MAP LEFT_BRACKET.data_type RIGHT_BRACKET data_type 
 
 	ID  shift 50
-	LEFT_BRACKET  shift 177
-	STRING  shift 169
+	LEFT_BRACKET  shift 176
 	QUOTED_STRING  shift 51
+	STR  shift 169
 	INT  shift 167
 	FLOAT  shift 168
 	BOOL  shift 170
-	MAP  shift 178
+	MAP  shift 177
 	ANY  shift 171
-	FN  shift 179
 	.  error
 
-	identifier  goto 175
-	data_type  goto 249
-	fn_type  goto 174
+	identifier  goto 174
+	data_type  goto 246
 	list_type  goto 172
-	array_type  goto 176
+	array_type  goto 175
 	map_type  goto 173
 
-state 215
-	fn_type:  FN LEFT_PAREN.RIGHT_PAREN LEFT_BRACE RIGHT_BRACE 
-	fn_type:  FN LEFT_PAREN.RIGHT_PAREN LEFT_BRACE RIGHT_BRACE FN_RET data_type 
-	fn_type:  FN LEFT_PAREN.RIGHT_PAREN LEFT_BRACE RIGHT_BRACE FN_RET LEFT_PAREN fn_ret_types_multi RIGHT_PAREN 
-	fn_type:  FN LEFT_PAREN.fn_def_params RIGHT_PAREN LEFT_BRACE RIGHT_BRACE 
-	fn_type:  FN LEFT_PAREN.fn_def_params RIGHT_PAREN LEFT_BRACE RIGHT_BRACE FN_RET data_type 
-	fn_type:  FN LEFT_PAREN.fn_def_params RIGHT_PAREN LEFT_BRACE RIGHT_BRACE FN_RET LEFT_PAREN fn_ret_types_multi RIGHT_PAREN 
-
-	ID  shift 50
-	RIGHT_PAREN  shift 250
-	QUOTED_STRING  shift 51
-	.  error
-
-	identifier  goto 219
-	fn_def_params  goto 251
-	fn_def_param  goto 218
-
-state 216
+state 213
 	fn_def_stmt:  FN identifier LEFT_PAREN RIGHT_PAREN.stmt_block 
 	fn_def_stmt:  FN identifier LEFT_PAREN RIGHT_PAREN.FN_RET data_type stmt_block 
 	fn_def_stmt:  FN identifier LEFT_PAREN RIGHT_PAREN.FN_RET LEFT_PAREN fn_ret_types_multi RIGHT_PAREN stmt_block 
 
 	LEFT_BRACE  shift 130
-	FN_RET  shift 253
+	FN_RET  shift 248
 	.  error
 
-	stmt_block  goto 252
+	stmt_block  goto 247
 	empty_block  goto 129
 
-state 217
+state 214
 	fn_def_params:  fn_def_params.COMMA fn_def_param 
 	fn_def_stmt:  FN identifier LEFT_PAREN fn_def_params.RIGHT_PAREN stmt_block 
 	fn_def_stmt:  FN identifier LEFT_PAREN fn_def_params.RIGHT_PAREN FN_RET data_type stmt_block 
 	fn_def_stmt:  FN identifier LEFT_PAREN fn_def_params.RIGHT_PAREN FN_RET LEFT_PAREN fn_ret_types_multi RIGHT_PAREN stmt_block 
 
-	COMMA  shift 254
-	RIGHT_PAREN  shift 255
+	COMMA  shift 249
+	RIGHT_PAREN  shift 250
 	.  error
 
 
-state 218
-	fn_def_params:  fn_def_param.    (83)
+state 215
+	fn_def_params:  fn_def_param.    (77)
 
-	.  reduce 83 (src line 421)
+	.  reduce 77 (src line 429)
 
 
-state 219
-	fn_def_param:  identifier.    (76)
+state 216
+	fn_def_param:  identifier.    (69)
 	fn_def_param:  identifier.COLON data_type 
 	fn_def_param:  identifier.COLON VAR_ARG data_type 
+	fn_def_param:  identifier.COLON VAR_ARG 
 	fn_def_param:  identifier.EQ expr 
 	fn_def_param:  identifier.COLON data_type EQ expr 
 
-	COLON  shift 256
-	EQ  shift 257
-	.  reduce 76 (src line 387)
+	COLON  shift 251
+	EQ  shift 252
+	.  reduce 69 (src line 391)
+
+
+state 217
+	pkg_name:  pkg_name DOT identifier.    (65)
+
+	.  reduce 65 (src line 367)
+
+
+state 218
+	import_stmt:  IMPORT pkg_name AS identifier.    (67)
+
+	.  reduce 67 (src line 377)
+
+
+state 219
+	list_literal:  LEFT_BRACKET exprs COMMA RIGHT_BRACKET.    (154)
+
+	.  reduce 154 (src line 840)
 
 
 state 220
-	pkg_name:  pkg_name DOT identifier.    (72)
+	list_literal:  LEFT_BRACKET exprs EOLS_SPACE RIGHT_BRACKET.    (153)
 
-	.  reduce 72 (src line 363)
+	.  reduce 153 (src line 836)
 
 
 state 221
-	import_stmt:  IMPORT pkg_name AS identifier.    (74)
-
-	.  reduce 74 (src line 373)
-
-
-state 222
-	list_literal:  LEFT_BRACKET exprs COMMA RIGHT_BRACKET.    (160)
-
-	.  reduce 160 (src line 821)
-
-
-state 223
-	list_literal:  LEFT_BRACKET exprs EOLS_SPACE RIGHT_BRACKET.    (159)
-
-	.  reduce 159 (src line 817)
-
-
-state 224
 	in_expr:  expr.IN expr 
 	call_expr:  expr.LEFT_PAREN function_args EOLS_SPACE RIGHT_PAREN 
 	call_expr:  expr.LEFT_PAREN function_args COMMA RIGHT_PAREN 
@@ -4755,7 +4713,7 @@ state 224
 
 	LEFT_PAREN  shift 89
 	LEFT_BRACKET  shift 103
-	COLON  shift 258
+	COLON  shift 253
 	ADD  shift 98
 	SUB  shift 99
 	MUL  shift 100
@@ -4774,13 +4732,13 @@ state 224
 	.  error
 
 
-state 225
-	map_literal:  LEFT_BRACE expr_colon_expr EOLS_SPACE RIGHT_BRACE.    (165)
+state 222
+	map_literal:  LEFT_BRACE expr_colon_expr EOLS_SPACE RIGHT_BRACE.    (159)
 
-	.  reduce 165 (src line 845)
+	.  reduce 159 (src line 864)
 
 
-state 226
+state 223
 	in_expr:  expr.IN expr 
 	call_expr:  expr.LEFT_PAREN function_args EOLS_SPACE RIGHT_PAREN 
 	call_expr:  expr.LEFT_PAREN function_args COMMA RIGHT_PAREN 
@@ -4802,7 +4760,7 @@ state 226
 	attr_expr:  expr.DOT expr 
 	slice_expr:  expr.LEFT_BRACKET expr_or_empty COLON expr_or_empty COLON expr_or_empty RIGHT_BRACKET 
 	slice_expr:  expr.LEFT_BRACKET expr_or_empty COLON expr_or_empty RIGHT_BRACKET 
-	expr_colon_expr:  expr COLON expr.    (162)
+	expr_colon_expr:  expr COLON expr.    (156)
 
 	LEFT_PAREN  shift 89
 	LEFT_BRACKET  shift 103
@@ -4821,29 +4779,29 @@ state 226
 	OR  shift 92
 	DOT  shift 104
 	IN  shift 88
-	.  reduce 162 (src line 831)
+	.  reduce 156 (src line 850)
 
 
-state 227
-	paren_expr:  LEFT_PAREN expr EOLS_SPACE RIGHT_PAREN.    (151)
+state 224
+	paren_expr:  LEFT_PAREN expr EOLS_SPACE RIGHT_PAREN.    (145)
 
-	.  reduce 151 (src line 744)
+	.  reduce 145 (src line 763)
 
 
-state 228
+state 225
 	index_expr:  DOT LEFT_BRACKET expr EOLS_SPACE.RIGHT_BRACKET 
 
-	RIGHT_BRACKET  shift 259
+	RIGHT_BRACKET  shift 254
 	.  error
 
 
-state 229
-	stmt_block:  LEFT_BRACE stmts RIGHT_BRACE.    (125)
+state 226
+	stmt_block:  LEFT_BRACE stmts RIGHT_BRACE.    (118)
 
-	.  reduce 125 (src line 615)
+	.  reduce 118 (src line 628)
 
 
-state 230
+state 227
 	for_stmt:  FOR for_init_elem SEMICOLON expr SEMICOLON.for_loop_elem stmt_block 
 	for_stmt:  FOR for_init_elem SEMICOLON expr SEMICOLON.stmt_block 
 
@@ -4851,7 +4809,7 @@ state 230
 	NUMBER  shift 52
 	LEFT_PAREN  shift 61
 	LEFT_BRACKET  shift 59
-	LEFT_BRACE  shift 204
+	LEFT_BRACE  shift 202
 	STRING  shift 55
 	QUOTED_STRING  shift 51
 	MULTILINE_STRING  shift 56
@@ -4865,10 +4823,10 @@ state 230
 	NULL  shift 58
 	.  error
 
-	stmt_block  goto 261
+	stmt_block  goto 256
 	empty_block  goto 129
 	exprs  goto 34
-	assignment_stmt  goto 203
+	assignment_stmt  goto 201
 	call_expr  goto 48
 	identifier  goto 36
 	unary_expr  goto 41
@@ -4878,64 +4836,64 @@ state 230
 	index_expr  goto 45
 	attr_expr  goto 44
 	in_expr  goto 47
-	expr  goto 202
+	expr  goto 200
 	map_literal  goto 39
 	list_literal  goto 38
 	basic_literal  goto 37
-	for_loop_elem  goto 260
+	for_loop_elem  goto 255
 	slice_expr  goto 46
 
-state 231
+state 228
 	for_stmt:  FOR for_init_elem SEMICOLON SEMICOLON for_loop_elem.stmt_block 
 
 	LEFT_BRACE  shift 130
 	.  error
 
-	stmt_block  goto 262
+	stmt_block  goto 257
 	empty_block  goto 129
 
-state 232
-	for_stmt:  FOR for_init_elem SEMICOLON SEMICOLON stmt_block.    (113)
+state 229
+	for_stmt:  FOR for_init_elem SEMICOLON SEMICOLON stmt_block.    (106)
 
-	.  reduce 113 (src line 558)
+	.  reduce 106 (src line 571)
 
 
-state 233
+state 230
 	for_stmt:  FOR SEMICOLON expr SEMICOLON for_loop_elem.stmt_block 
 
 	LEFT_BRACE  shift 130
 	.  error
 
-	stmt_block  goto 263
+	stmt_block  goto 258
 	empty_block  goto 129
 
+state 231
+	for_stmt:  FOR SEMICOLON expr SEMICOLON stmt_block.    (108)
+
+	.  reduce 108 (src line 579)
+
+
+state 232
+	for_stmt:  FOR SEMICOLON SEMICOLON for_loop_elem stmt_block.    (109)
+
+	.  reduce 109 (src line 583)
+
+
+state 233
+	empty_block:  LEFT_BRACE RIGHT_BRACE.    (119)
+	map_literal:  LEFT_BRACE RIGHT_BRACE.    (158)
+
+	$end  reduce 119 (src line 635)
+	SEMICOLON  reduce 119 (src line 635)
+	EOF  reduce 119 (src line 635)
+	RIGHT_BRACE  reduce 119 (src line 635)
+	EOL  reduce 119 (src line 635)
+	.  reduce 158 (src line 860)
+
+
 state 234
-	for_stmt:  FOR SEMICOLON expr SEMICOLON stmt_block.    (115)
-
-	.  reduce 115 (src line 566)
-
-
-state 235
-	for_stmt:  FOR SEMICOLON SEMICOLON for_loop_elem stmt_block.    (116)
-
-	.  reduce 116 (src line 570)
-
-
-state 236
-	empty_block:  LEFT_BRACE RIGHT_BRACE.    (126)
-	map_literal:  LEFT_BRACE RIGHT_BRACE.    (164)
-
-	$end  reduce 126 (src line 622)
-	SEMICOLON  reduce 126 (src line 622)
-	EOF  reduce 126 (src line 622)
-	RIGHT_BRACE  reduce 126 (src line 622)
-	EOL  reduce 126 (src line 622)
-	.  reduce 164 (src line 841)
-
-
-state 237
 	value_stmt:  expr.    (35)
-	exprs:  expr.    (93)
+	exprs:  expr.    (87)
 	assignment_stmt:  expr.ADD_EQ expr 
 	assignment_stmt:  expr.SUB_EQ expr 
 	assignment_stmt:  expr.MUL_EQ expr 
@@ -4964,16 +4922,16 @@ state 237
 	slice_expr:  expr.LEFT_BRACKET expr_or_empty COLON expr_or_empty RIGHT_BRACKET 
 	expr_colon_expr:  expr.COLON expr 
 
-	COMMA  reduce 93 (src line 458)
+	COMMA  reduce 87 (src line 478)
 	LEFT_PAREN  shift 89
 	LEFT_BRACKET  shift 103
-	COLON  shift 191
+	COLON  shift 189
 	ADD  shift 98
 	SUB  shift 99
 	MUL  shift 100
 	DIV  shift 101
 	MOD  shift 102
-	EQ  reduce 93 (src line 458)
+	EQ  reduce 87 (src line 478)
 	GTE  shift 90
 	GT  shift 91
 	LT  shift 94
@@ -4989,12 +4947,12 @@ state 237
 	OR  shift 92
 	DOT  shift 104
 	IN  shift 88
-	.  reduce 35 (src line 243)
+	.  reduce 35 (src line 246)
 
 
-state 238
+state 235
 	in_expr:  expr.IN expr 
-	function_args:  function_args COMMA expr.    (127)
+	function_args:  function_args COMMA expr.    (121)
 	call_expr:  expr.LEFT_PAREN function_args EOLS_SPACE RIGHT_PAREN 
 	call_expr:  expr.LEFT_PAREN function_args COMMA RIGHT_PAREN 
 	call_expr:  expr.LEFT_PAREN RIGHT_PAREN 
@@ -5033,30 +4991,88 @@ state 238
 	OR  shift 92
 	DOT  shift 104
 	IN  shift 88
-	.  reduce 127 (src line 633)
+	.  reduce 121 (src line 652)
+
+
+state 236
+	function_args:  function_args COMMA named_arg.    (122)
+
+	.  reduce 122 (src line 656)
+
+
+state 237
+	call_expr:  expr LEFT_PAREN function_args COMMA RIGHT_PAREN.    (127)
+
+	.  reduce 127 (src line 681)
+
+
+state 238
+	call_expr:  expr LEFT_PAREN function_args EOLS_SPACE RIGHT_PAREN.    (126)
+
+	.  reduce 126 (src line 677)
 
 
 state 239
-	function_args:  function_args COMMA named_arg.    (128)
+	in_expr:  expr.IN expr 
+	named_arg:  identifier EQ expr.    (125)
+	call_expr:  expr.LEFT_PAREN function_args EOLS_SPACE RIGHT_PAREN 
+	call_expr:  expr.LEFT_PAREN function_args COMMA RIGHT_PAREN 
+	call_expr:  expr.LEFT_PAREN RIGHT_PAREN 
+	conditional_expr:  expr.GTE expr 
+	conditional_expr:  expr.GT expr 
+	conditional_expr:  expr.OR expr 
+	conditional_expr:  expr.AND expr 
+	conditional_expr:  expr.LT expr 
+	conditional_expr:  expr.LTE expr 
+	conditional_expr:  expr.NEQ expr 
+	conditional_expr:  expr.EQEQ expr 
+	arithmeticExpr:  expr.ADD expr 
+	arithmeticExpr:  expr.SUB expr 
+	arithmeticExpr:  expr.MUL expr 
+	arithmeticExpr:  expr.DIV expr 
+	arithmeticExpr:  expr.MOD expr 
+	index_expr:  expr.LEFT_BRACKET expr EOLS_SPACE RIGHT_BRACKET 
+	attr_expr:  expr.DOT expr 
+	slice_expr:  expr.LEFT_BRACKET expr_or_empty COLON expr_or_empty COLON expr_or_empty RIGHT_BRACKET 
+	slice_expr:  expr.LEFT_BRACKET expr_or_empty COLON expr_or_empty RIGHT_BRACKET 
 
-	.  reduce 128 (src line 637)
+	LEFT_PAREN  shift 89
+	LEFT_BRACKET  shift 103
+	ADD  shift 98
+	SUB  shift 99
+	MUL  shift 100
+	DIV  shift 101
+	MOD  shift 102
+	GTE  shift 90
+	GT  shift 91
+	LT  shift 94
+	LTE  shift 95
+	NEQ  shift 96
+	EQEQ  shift 97
+	AND  shift 93
+	OR  shift 92
+	DOT  shift 104
+	IN  shift 88
+	.  reduce 125 (src line 670)
 
 
 state 240
-	call_expr:  expr LEFT_PAREN function_args COMMA RIGHT_PAREN.    (133)
+	index_expr:  expr LEFT_BRACKET expr EOLS_SPACE RIGHT_BRACKET.    (146)
 
-	.  reduce 133 (src line 662)
+	.  reduce 146 (src line 770)
 
 
 state 241
-	call_expr:  expr LEFT_PAREN function_args EOLS_SPACE RIGHT_PAREN.    (132)
+	slice_expr:  expr LEFT_BRACKET expr_or_empty COLON expr_or_empty.COLON expr_or_empty RIGHT_BRACKET 
+	slice_expr:  expr LEFT_BRACKET expr_or_empty COLON expr_or_empty.RIGHT_BRACKET 
 
-	.  reduce 132 (src line 658)
+	RIGHT_BRACKET  shift 260
+	COLON  shift 259
+	.  error
 
 
 state 242
 	in_expr:  expr.IN expr 
-	named_arg:  identifier EQ expr.    (131)
 	call_expr:  expr.LEFT_PAREN function_args EOLS_SPACE RIGHT_PAREN 
 	call_expr:  expr.LEFT_PAREN function_args COMMA RIGHT_PAREN 
 	call_expr:  expr.LEFT_PAREN RIGHT_PAREN 
@@ -5075,6 +5091,7 @@ state 242
 	arithmeticExpr:  expr.MOD expr 
 	index_expr:  expr.LEFT_BRACKET expr EOLS_SPACE RIGHT_BRACKET 
 	attr_expr:  expr.DOT expr 
+	expr_or_empty:  expr.    (149)
 	slice_expr:  expr.LEFT_BRACKET expr_or_empty COLON expr_or_empty COLON expr_or_empty RIGHT_BRACKET 
 	slice_expr:  expr.LEFT_BRACKET expr_or_empty COLON expr_or_empty RIGHT_BRACKET 
 
@@ -5095,245 +5112,161 @@ state 242
 	OR  shift 92
 	DOT  shift 104
 	IN  shift 88
-	.  reduce 131 (src line 651)
+	.  reduce 149 (src line 788)
 
 
 state 243
-	index_expr:  expr LEFT_BRACKET expr EOLS_SPACE RIGHT_BRACKET.    (152)
+	var_def_stmt:  LET identifier data_type EQ expr.    (61)
+	in_expr:  expr.IN expr 
+	call_expr:  expr.LEFT_PAREN function_args EOLS_SPACE RIGHT_PAREN 
+	call_expr:  expr.LEFT_PAREN function_args COMMA RIGHT_PAREN 
+	call_expr:  expr.LEFT_PAREN RIGHT_PAREN 
+	conditional_expr:  expr.GTE expr 
+	conditional_expr:  expr.GT expr 
+	conditional_expr:  expr.OR expr 
+	conditional_expr:  expr.AND expr 
+	conditional_expr:  expr.LT expr 
+	conditional_expr:  expr.LTE expr 
+	conditional_expr:  expr.NEQ expr 
+	conditional_expr:  expr.EQEQ expr 
+	arithmeticExpr:  expr.ADD expr 
+	arithmeticExpr:  expr.SUB expr 
+	arithmeticExpr:  expr.MUL expr 
+	arithmeticExpr:  expr.DIV expr 
+	arithmeticExpr:  expr.MOD expr 
+	index_expr:  expr.LEFT_BRACKET expr EOLS_SPACE RIGHT_BRACKET 
+	attr_expr:  expr.DOT expr 
+	slice_expr:  expr.LEFT_BRACKET expr_or_empty COLON expr_or_empty COLON expr_or_empty RIGHT_BRACKET 
+	slice_expr:  expr.LEFT_BRACKET expr_or_empty COLON expr_or_empty RIGHT_BRACKET 
 
-	.  reduce 152 (src line 751)
+	LEFT_PAREN  shift 89
+	LEFT_BRACKET  shift 103
+	ADD  shift 98
+	SUB  shift 99
+	MUL  shift 100
+	DIV  shift 101
+	MOD  shift 102
+	GTE  shift 90
+	GT  shift 91
+	LT  shift 94
+	LTE  shift 95
+	NEQ  shift 96
+	EQEQ  shift 97
+	AND  shift 93
+	OR  shift 92
+	DOT  shift 104
+	IN  shift 88
+	.  reduce 61 (src line 317)
 
 
 state 244
-	slice_expr:  expr LEFT_BRACKET expr_or_empty COLON expr_or_empty.COLON expr_or_empty RIGHT_BRACKET 
-	slice_expr:  expr LEFT_BRACKET expr_or_empty COLON expr_or_empty.RIGHT_BRACKET 
+	list_type:  LEFT_BRACKET RIGHT_BRACKET data_type.    (58)
 
-	RIGHT_BRACKET  shift 265
-	COLON  shift 264
-	.  error
+	.  reduce 58 (src line 299)
 
 
 state 245
-	in_expr:  expr.IN expr 
-	call_expr:  expr.LEFT_PAREN function_args EOLS_SPACE RIGHT_PAREN 
-	call_expr:  expr.LEFT_PAREN function_args COMMA RIGHT_PAREN 
-	call_expr:  expr.LEFT_PAREN RIGHT_PAREN 
-	conditional_expr:  expr.GTE expr 
-	conditional_expr:  expr.GT expr 
-	conditional_expr:  expr.OR expr 
-	conditional_expr:  expr.AND expr 
-	conditional_expr:  expr.LT expr 
-	conditional_expr:  expr.LTE expr 
-	conditional_expr:  expr.NEQ expr 
-	conditional_expr:  expr.EQEQ expr 
-	arithmeticExpr:  expr.ADD expr 
-	arithmeticExpr:  expr.SUB expr 
-	arithmeticExpr:  expr.MUL expr 
-	arithmeticExpr:  expr.DIV expr 
-	arithmeticExpr:  expr.MOD expr 
-	index_expr:  expr.LEFT_BRACKET expr EOLS_SPACE RIGHT_BRACKET 
-	attr_expr:  expr.DOT expr 
-	expr_or_empty:  expr.    (155)
-	slice_expr:  expr.LEFT_BRACKET expr_or_empty COLON expr_or_empty COLON expr_or_empty RIGHT_BRACKET 
-	slice_expr:  expr.LEFT_BRACKET expr_or_empty COLON expr_or_empty RIGHT_BRACKET 
-
-	LEFT_PAREN  shift 89
-	LEFT_BRACKET  shift 103
-	ADD  shift 98
-	SUB  shift 99
-	MUL  shift 100
-	DIV  shift 101
-	MOD  shift 102
-	GTE  shift 90
-	GT  shift 91
-	LT  shift 94
-	LTE  shift 95
-	NEQ  shift 96
-	EQEQ  shift 97
-	AND  shift 93
-	OR  shift 92
-	DOT  shift 104
-	IN  shift 88
-	.  reduce 155 (src line 769)
-
-
-state 246
-	var_def_stmt:  LET identifier data_type EQ expr.    (62)
-	in_expr:  expr.IN expr 
-	call_expr:  expr.LEFT_PAREN function_args EOLS_SPACE RIGHT_PAREN 
-	call_expr:  expr.LEFT_PAREN function_args COMMA RIGHT_PAREN 
-	call_expr:  expr.LEFT_PAREN RIGHT_PAREN 
-	conditional_expr:  expr.GTE expr 
-	conditional_expr:  expr.GT expr 
-	conditional_expr:  expr.OR expr 
-	conditional_expr:  expr.AND expr 
-	conditional_expr:  expr.LT expr 
-	conditional_expr:  expr.LTE expr 
-	conditional_expr:  expr.NEQ expr 
-	conditional_expr:  expr.EQEQ expr 
-	arithmeticExpr:  expr.ADD expr 
-	arithmeticExpr:  expr.SUB expr 
-	arithmeticExpr:  expr.MUL expr 
-	arithmeticExpr:  expr.DIV expr 
-	arithmeticExpr:  expr.MOD expr 
-	index_expr:  expr.LEFT_BRACKET expr EOLS_SPACE RIGHT_BRACKET 
-	attr_expr:  expr.DOT expr 
-	slice_expr:  expr.LEFT_BRACKET expr_or_empty COLON expr_or_empty COLON expr_or_empty RIGHT_BRACKET 
-	slice_expr:  expr.LEFT_BRACKET expr_or_empty COLON expr_or_empty RIGHT_BRACKET 
-
-	LEFT_PAREN  shift 89
-	LEFT_BRACKET  shift 103
-	ADD  shift 98
-	SUB  shift 99
-	MUL  shift 100
-	DIV  shift 101
-	MOD  shift 102
-	GTE  shift 90
-	GT  shift 91
-	LT  shift 94
-	LTE  shift 95
-	NEQ  shift 96
-	EQEQ  shift 97
-	AND  shift 93
-	OR  shift 92
-	DOT  shift 104
-	IN  shift 88
-	.  reduce 62 (src line 313)
-
-
-state 247
-	list_type:  LEFT_BRACKET RIGHT_BRACKET data_type.    (59)
-
-	.  reduce 59 (src line 296)
-
-
-state 248
 	array_type:  LEFT_BRACKET NUMBER RIGHT_BRACKET.data_type 
 
 	ID  shift 50
-	LEFT_BRACKET  shift 177
-	STRING  shift 169
+	LEFT_BRACKET  shift 176
 	QUOTED_STRING  shift 51
+	STR  shift 169
 	INT  shift 167
 	FLOAT  shift 168
 	BOOL  shift 170
-	MAP  shift 178
+	MAP  shift 177
 	ANY  shift 171
-	FN  shift 179
 	.  error
 
-	identifier  goto 175
-	data_type  goto 266
-	fn_type  goto 174
+	identifier  goto 174
+	data_type  goto 261
 	list_type  goto 172
-	array_type  goto 176
+	array_type  goto 175
 	map_type  goto 173
 
-state 249
+state 246
 	map_type:  MAP LEFT_BRACKET data_type.RIGHT_BRACKET data_type 
 
-	RIGHT_BRACKET  shift 267
+	RIGHT_BRACKET  shift 262
 	.  error
 
 
-state 250
-	fn_type:  FN LEFT_PAREN RIGHT_PAREN.LEFT_BRACE RIGHT_BRACE 
-	fn_type:  FN LEFT_PAREN RIGHT_PAREN.LEFT_BRACE RIGHT_BRACE FN_RET data_type 
-	fn_type:  FN LEFT_PAREN RIGHT_PAREN.LEFT_BRACE RIGHT_BRACE FN_RET LEFT_PAREN fn_ret_types_multi RIGHT_PAREN 
+state 247
+	fn_def_stmt:  FN identifier LEFT_PAREN RIGHT_PAREN stmt_block.    (81)
 
-	LEFT_BRACE  shift 268
-	.  error
+	.  reduce 81 (src line 452)
 
 
-state 251
-	fn_type:  FN LEFT_PAREN fn_def_params.RIGHT_PAREN LEFT_BRACE RIGHT_BRACE 
-	fn_type:  FN LEFT_PAREN fn_def_params.RIGHT_PAREN LEFT_BRACE RIGHT_BRACE FN_RET data_type 
-	fn_type:  FN LEFT_PAREN fn_def_params.RIGHT_PAREN LEFT_BRACE RIGHT_BRACE FN_RET LEFT_PAREN fn_ret_types_multi RIGHT_PAREN 
-	fn_def_params:  fn_def_params.COMMA fn_def_param 
-
-	COMMA  shift 254
-	RIGHT_PAREN  shift 269
-	.  error
-
-
-state 252
-	fn_def_stmt:  FN identifier LEFT_PAREN RIGHT_PAREN stmt_block.    (87)
-
-	.  reduce 87 (src line 432)
-
-
-state 253
+state 248
 	fn_def_stmt:  FN identifier LEFT_PAREN RIGHT_PAREN FN_RET.data_type stmt_block 
 	fn_def_stmt:  FN identifier LEFT_PAREN RIGHT_PAREN FN_RET.LEFT_PAREN fn_ret_types_multi RIGHT_PAREN stmt_block 
 
 	ID  shift 50
-	LEFT_PAREN  shift 271
-	LEFT_BRACKET  shift 177
-	STRING  shift 169
+	LEFT_PAREN  shift 264
+	LEFT_BRACKET  shift 176
 	QUOTED_STRING  shift 51
+	STR  shift 169
 	INT  shift 167
 	FLOAT  shift 168
 	BOOL  shift 170
-	MAP  shift 178
+	MAP  shift 177
 	ANY  shift 171
-	FN  shift 179
 	.  error
 
-	identifier  goto 175
-	data_type  goto 270
-	fn_type  goto 174
+	identifier  goto 174
+	data_type  goto 263
 	list_type  goto 172
-	array_type  goto 176
+	array_type  goto 175
 	map_type  goto 173
 
-state 254
+state 249
 	fn_def_params:  fn_def_params COMMA.fn_def_param 
 
 	ID  shift 50
 	QUOTED_STRING  shift 51
 	.  error
 
-	identifier  goto 219
-	fn_def_param  goto 272
+	identifier  goto 216
+	fn_def_param  goto 265
 
-state 255
+state 250
 	fn_def_stmt:  FN identifier LEFT_PAREN fn_def_params RIGHT_PAREN.stmt_block 
 	fn_def_stmt:  FN identifier LEFT_PAREN fn_def_params RIGHT_PAREN.FN_RET data_type stmt_block 
 	fn_def_stmt:  FN identifier LEFT_PAREN fn_def_params RIGHT_PAREN.FN_RET LEFT_PAREN fn_ret_types_multi RIGHT_PAREN stmt_block 
 
 	LEFT_BRACE  shift 130
-	FN_RET  shift 274
+	FN_RET  shift 267
 	.  error
 
-	stmt_block  goto 273
+	stmt_block  goto 266
 	empty_block  goto 129
 
-state 256
+state 251
 	fn_def_param:  identifier COLON.data_type 
 	fn_def_param:  identifier COLON.VAR_ARG data_type 
+	fn_def_param:  identifier COLON.VAR_ARG 
 	fn_def_param:  identifier COLON.data_type EQ expr 
 
 	ID  shift 50
-	LEFT_BRACKET  shift 177
-	STRING  shift 169
+	LEFT_BRACKET  shift 176
 	QUOTED_STRING  shift 51
+	STR  shift 169
 	INT  shift 167
 	FLOAT  shift 168
 	BOOL  shift 170
-	MAP  shift 178
+	MAP  shift 177
 	ANY  shift 171
-	FN  shift 179
-	VAR_ARG  shift 276
+	VAR_ARG  shift 269
 	.  error
 
-	identifier  goto 175
-	data_type  goto 275
-	fn_type  goto 174
+	identifier  goto 174
+	data_type  goto 268
 	list_type  goto 172
-	array_type  goto 176
+	array_type  goto 175
 	map_type  goto 173
 
-state 257
+state 252
 	fn_def_param:  identifier EQ.expr 
 
 	ID  shift 50
@@ -5363,13 +5296,13 @@ state 257
 	index_expr  goto 45
 	attr_expr  goto 44
 	in_expr  goto 47
-	expr  goto 277
+	expr  goto 270
 	map_literal  goto 39
 	list_literal  goto 38
 	basic_literal  goto 37
 	slice_expr  goto 46
 
-state 258
+state 253
 	expr_colon_expr:  expr_colon_expr COMMA expr COLON.expr 
 
 	ID  shift 50
@@ -5399,46 +5332,46 @@ state 258
 	index_expr  goto 45
 	attr_expr  goto 44
 	in_expr  goto 47
-	expr  goto 278
+	expr  goto 271
 	map_literal  goto 39
 	list_literal  goto 38
 	basic_literal  goto 37
 	slice_expr  goto 46
 
-state 259
-	index_expr:  DOT LEFT_BRACKET expr EOLS_SPACE RIGHT_BRACKET.    (153)
+state 254
+	index_expr:  DOT LEFT_BRACKET expr EOLS_SPACE RIGHT_BRACKET.    (147)
 
-	.  reduce 153 (src line 755)
+	.  reduce 147 (src line 774)
 
 
-state 260
+state 255
 	for_stmt:  FOR for_init_elem SEMICOLON expr SEMICOLON for_loop_elem.stmt_block 
 
 	LEFT_BRACE  shift 130
 	.  error
 
-	stmt_block  goto 279
+	stmt_block  goto 272
 	empty_block  goto 129
 
-state 261
-	for_stmt:  FOR for_init_elem SEMICOLON expr SEMICOLON stmt_block.    (111)
+state 256
+	for_stmt:  FOR for_init_elem SEMICOLON expr SEMICOLON stmt_block.    (104)
 
-	.  reduce 111 (src line 550)
-
-
-state 262
-	for_stmt:  FOR for_init_elem SEMICOLON SEMICOLON for_loop_elem stmt_block.    (112)
-
-	.  reduce 112 (src line 554)
+	.  reduce 104 (src line 563)
 
 
-state 263
-	for_stmt:  FOR SEMICOLON expr SEMICOLON for_loop_elem stmt_block.    (114)
+state 257
+	for_stmt:  FOR for_init_elem SEMICOLON SEMICOLON for_loop_elem stmt_block.    (105)
 
-	.  reduce 114 (src line 562)
+	.  reduce 105 (src line 567)
 
 
-state 264
+state 258
+	for_stmt:  FOR SEMICOLON expr SEMICOLON for_loop_elem stmt_block.    (107)
+
+	.  reduce 107 (src line 575)
+
+
+state 259
 	slice_expr:  expr LEFT_BRACKET expr_or_empty COLON expr_or_empty COLON.expr_or_empty RIGHT_BRACKET 
 	EOLS_SPACE: .    (11)
 
@@ -5459,7 +5392,7 @@ state 264
 	FALSE  shift 54
 	NIL  shift 57
 	NULL  shift 58
-	.  reduce 11 (src line 173)
+	.  reduce 11 (src line 176)
 
 	call_expr  goto 48
 	identifier  goto 36
@@ -5470,344 +5403,299 @@ state 264
 	index_expr  goto 45
 	attr_expr  goto 44
 	in_expr  goto 47
-	expr  goto 245
+	expr  goto 242
 	map_literal  goto 39
-	expr_or_empty  goto 280
+	expr_or_empty  goto 273
 	list_literal  goto 38
 	basic_literal  goto 37
 	slice_expr  goto 46
 	EOLS  goto 163
 	EOLS_SPACE  goto 162
 
-state 265
-	slice_expr:  expr LEFT_BRACKET expr_or_empty COLON expr_or_empty RIGHT_BRACKET.    (158)
+state 260
+	slice_expr:  expr LEFT_BRACKET expr_or_empty COLON expr_or_empty RIGHT_BRACKET.    (152)
 
-	.  reduce 158 (src line 784)
-
-
-state 266
-	array_type:  LEFT_BRACKET NUMBER RIGHT_BRACKET data_type.    (60)
-
-	.  reduce 60 (src line 302)
+	.  reduce 152 (src line 803)
 
 
-state 267
+state 261
+	array_type:  LEFT_BRACKET NUMBER RIGHT_BRACKET data_type.    (59)
+
+	.  reduce 59 (src line 305)
+
+
+state 262
 	map_type:  MAP LEFT_BRACKET data_type RIGHT_BRACKET.data_type 
 
 	ID  shift 50
-	LEFT_BRACKET  shift 177
-	STRING  shift 169
+	LEFT_BRACKET  shift 176
 	QUOTED_STRING  shift 51
+	STR  shift 169
 	INT  shift 167
 	FLOAT  shift 168
 	BOOL  shift 170
-	MAP  shift 178
+	MAP  shift 177
 	ANY  shift 171
-	FN  shift 179
 	.  error
 
-	identifier  goto 175
-	data_type  goto 281
-	fn_type  goto 174
+	identifier  goto 174
+	data_type  goto 274
 	list_type  goto 172
-	array_type  goto 176
+	array_type  goto 175
 	map_type  goto 173
 
-state 268
-	fn_type:  FN LEFT_PAREN RIGHT_PAREN LEFT_BRACE.RIGHT_BRACE 
-	fn_type:  FN LEFT_PAREN RIGHT_PAREN LEFT_BRACE.RIGHT_BRACE FN_RET data_type 
-	fn_type:  FN LEFT_PAREN RIGHT_PAREN LEFT_BRACE.RIGHT_BRACE FN_RET LEFT_PAREN fn_ret_types_multi RIGHT_PAREN 
-
-	RIGHT_BRACE  shift 282
-	.  error
-
-
-state 269
-	fn_type:  FN LEFT_PAREN fn_def_params RIGHT_PAREN.LEFT_BRACE RIGHT_BRACE 
-	fn_type:  FN LEFT_PAREN fn_def_params RIGHT_PAREN.LEFT_BRACE RIGHT_BRACE FN_RET data_type 
-	fn_type:  FN LEFT_PAREN fn_def_params RIGHT_PAREN.LEFT_BRACE RIGHT_BRACE FN_RET LEFT_PAREN fn_ret_types_multi RIGHT_PAREN 
-
-	LEFT_BRACE  shift 283
-	.  error
-
-
-state 270
+state 263
 	fn_def_stmt:  FN identifier LEFT_PAREN RIGHT_PAREN FN_RET data_type.stmt_block 
 
 	LEFT_BRACE  shift 130
 	.  error
 
-	stmt_block  goto 284
+	stmt_block  goto 275
 	empty_block  goto 129
 
-state 271
+state 264
 	fn_def_stmt:  FN identifier LEFT_PAREN RIGHT_PAREN FN_RET LEFT_PAREN.fn_ret_types_multi RIGHT_PAREN stmt_block 
 
 	ID  shift 50
-	LEFT_BRACKET  shift 177
-	STRING  shift 169
+	LEFT_BRACKET  shift 176
 	QUOTED_STRING  shift 51
+	STR  shift 169
 	INT  shift 167
 	FLOAT  shift 168
 	BOOL  shift 170
-	MAP  shift 178
+	MAP  shift 177
 	ANY  shift 171
-	FN  shift 179
 	.  error
 
-	identifier  goto 175
-	data_type  goto 286
-	fn_type  goto 174
+	fn_ret_types_multi  goto 276
+	identifier  goto 174
+	data_type  goto 277
 	list_type  goto 172
-	array_type  goto 176
+	array_type  goto 175
 	map_type  goto 173
-	fn_ret_types_multi  goto 285
 
-state 272
-	fn_def_params:  fn_def_params COMMA fn_def_param.    (84)
+state 265
+	fn_def_params:  fn_def_params COMMA fn_def_param.    (78)
 
-	.  reduce 84 (src line 422)
-
-
-state 273
-	fn_def_stmt:  FN identifier LEFT_PAREN fn_def_params RIGHT_PAREN stmt_block.    (90)
-
-	.  reduce 90 (src line 444)
+	.  reduce 78 (src line 433)
 
 
-state 274
+state 266
+	fn_def_stmt:  FN identifier LEFT_PAREN fn_def_params RIGHT_PAREN stmt_block.    (84)
+
+	.  reduce 84 (src line 464)
+
+
+state 267
 	fn_def_stmt:  FN identifier LEFT_PAREN fn_def_params RIGHT_PAREN FN_RET.data_type stmt_block 
 	fn_def_stmt:  FN identifier LEFT_PAREN fn_def_params RIGHT_PAREN FN_RET.LEFT_PAREN fn_ret_types_multi RIGHT_PAREN stmt_block 
 
 	ID  shift 50
-	LEFT_PAREN  shift 288
-	LEFT_BRACKET  shift 177
-	STRING  shift 169
+	LEFT_PAREN  shift 279
+	LEFT_BRACKET  shift 176
 	QUOTED_STRING  shift 51
+	STR  shift 169
 	INT  shift 167
 	FLOAT  shift 168
 	BOOL  shift 170
-	MAP  shift 178
+	MAP  shift 177
 	ANY  shift 171
-	FN  shift 179
 	.  error
 
-	identifier  goto 175
-	data_type  goto 287
-	fn_type  goto 174
+	identifier  goto 174
+	data_type  goto 278
 	list_type  goto 172
-	array_type  goto 176
+	array_type  goto 175
 	map_type  goto 173
 
-state 275
-	fn_def_param:  identifier COLON data_type.    (77)
+state 268
+	fn_def_param:  identifier COLON data_type.    (70)
 	fn_def_param:  identifier COLON data_type.EQ expr 
 
-	EQ  shift 289
-	.  reduce 77 (src line 391)
+	EQ  shift 280
+	.  reduce 70 (src line 395)
+
+
+state 269
+	fn_def_param:  identifier COLON VAR_ARG.data_type 
+	fn_def_param:  identifier COLON VAR_ARG.    (72)
+
+	ID  shift 50
+	LEFT_BRACKET  shift 176
+	QUOTED_STRING  shift 51
+	STR  shift 169
+	INT  shift 167
+	FLOAT  shift 168
+	BOOL  shift 170
+	MAP  shift 177
+	ANY  shift 171
+	.  reduce 72 (src line 403)
+
+	identifier  goto 174
+	data_type  goto 281
+	list_type  goto 172
+	array_type  goto 175
+	map_type  goto 173
+
+state 270
+	fn_def_param:  identifier EQ expr.    (73)
+	in_expr:  expr.IN expr 
+	call_expr:  expr.LEFT_PAREN function_args EOLS_SPACE RIGHT_PAREN 
+	call_expr:  expr.LEFT_PAREN function_args COMMA RIGHT_PAREN 
+	call_expr:  expr.LEFT_PAREN RIGHT_PAREN 
+	conditional_expr:  expr.GTE expr 
+	conditional_expr:  expr.GT expr 
+	conditional_expr:  expr.OR expr 
+	conditional_expr:  expr.AND expr 
+	conditional_expr:  expr.LT expr 
+	conditional_expr:  expr.LTE expr 
+	conditional_expr:  expr.NEQ expr 
+	conditional_expr:  expr.EQEQ expr 
+	arithmeticExpr:  expr.ADD expr 
+	arithmeticExpr:  expr.SUB expr 
+	arithmeticExpr:  expr.MUL expr 
+	arithmeticExpr:  expr.DIV expr 
+	arithmeticExpr:  expr.MOD expr 
+	index_expr:  expr.LEFT_BRACKET expr EOLS_SPACE RIGHT_BRACKET 
+	attr_expr:  expr.DOT expr 
+	slice_expr:  expr.LEFT_BRACKET expr_or_empty COLON expr_or_empty COLON expr_or_empty RIGHT_BRACKET 
+	slice_expr:  expr.LEFT_BRACKET expr_or_empty COLON expr_or_empty RIGHT_BRACKET 
+
+	LEFT_PAREN  shift 89
+	LEFT_BRACKET  shift 103
+	ADD  shift 98
+	SUB  shift 99
+	MUL  shift 100
+	DIV  shift 101
+	MOD  shift 102
+	GTE  shift 90
+	GT  shift 91
+	LT  shift 94
+	LTE  shift 95
+	NEQ  shift 96
+	EQEQ  shift 97
+	AND  shift 93
+	OR  shift 92
+	DOT  shift 104
+	IN  shift 88
+	.  reduce 73 (src line 407)
+
+
+state 271
+	in_expr:  expr.IN expr 
+	call_expr:  expr.LEFT_PAREN function_args EOLS_SPACE RIGHT_PAREN 
+	call_expr:  expr.LEFT_PAREN function_args COMMA RIGHT_PAREN 
+	call_expr:  expr.LEFT_PAREN RIGHT_PAREN 
+	conditional_expr:  expr.GTE expr 
+	conditional_expr:  expr.GT expr 
+	conditional_expr:  expr.OR expr 
+	conditional_expr:  expr.AND expr 
+	conditional_expr:  expr.LT expr 
+	conditional_expr:  expr.LTE expr 
+	conditional_expr:  expr.NEQ expr 
+	conditional_expr:  expr.EQEQ expr 
+	arithmeticExpr:  expr.ADD expr 
+	arithmeticExpr:  expr.SUB expr 
+	arithmeticExpr:  expr.MUL expr 
+	arithmeticExpr:  expr.DIV expr 
+	arithmeticExpr:  expr.MOD expr 
+	index_expr:  expr.LEFT_BRACKET expr EOLS_SPACE RIGHT_BRACKET 
+	attr_expr:  expr.DOT expr 
+	slice_expr:  expr.LEFT_BRACKET expr_or_empty COLON expr_or_empty COLON expr_or_empty RIGHT_BRACKET 
+	slice_expr:  expr.LEFT_BRACKET expr_or_empty COLON expr_or_empty RIGHT_BRACKET 
+	expr_colon_expr:  expr_colon_expr COMMA expr COLON expr.    (157)
+
+	LEFT_PAREN  shift 89
+	LEFT_BRACKET  shift 103
+	ADD  shift 98
+	SUB  shift 99
+	MUL  shift 100
+	DIV  shift 101
+	MOD  shift 102
+	GTE  shift 90
+	GT  shift 91
+	LT  shift 94
+	LTE  shift 95
+	NEQ  shift 96
+	EQEQ  shift 97
+	AND  shift 93
+	OR  shift 92
+	DOT  shift 104
+	IN  shift 88
+	.  reduce 157 (src line 854)
+
+
+state 272
+	for_stmt:  FOR for_init_elem SEMICOLON expr SEMICOLON for_loop_elem stmt_block.    (103)
+
+	.  reduce 103 (src line 559)
+
+
+state 273
+	slice_expr:  expr LEFT_BRACKET expr_or_empty COLON expr_or_empty COLON expr_or_empty.RIGHT_BRACKET 
+
+	RIGHT_BRACKET  shift 282
+	.  error
+
+
+state 274
+	map_type:  MAP LEFT_BRACKET data_type RIGHT_BRACKET data_type.    (60)
+
+	.  reduce 60 (src line 311)
+
+
+state 275
+	fn_def_stmt:  FN identifier LEFT_PAREN RIGHT_PAREN FN_RET data_type stmt_block.    (82)
+
+	.  reduce 82 (src line 456)
 
 
 state 276
-	fn_def_param:  identifier COLON VAR_ARG.data_type 
-
-	ID  shift 50
-	LEFT_BRACKET  shift 177
-	STRING  shift 169
-	QUOTED_STRING  shift 51
-	INT  shift 167
-	FLOAT  shift 168
-	BOOL  shift 170
-	MAP  shift 178
-	ANY  shift 171
-	FN  shift 179
-	.  error
-
-	identifier  goto 175
-	data_type  goto 290
-	fn_type  goto 174
-	list_type  goto 172
-	array_type  goto 176
-	map_type  goto 173
-
-state 277
-	fn_def_param:  identifier EQ expr.    (79)
-	in_expr:  expr.IN expr 
-	call_expr:  expr.LEFT_PAREN function_args EOLS_SPACE RIGHT_PAREN 
-	call_expr:  expr.LEFT_PAREN function_args COMMA RIGHT_PAREN 
-	call_expr:  expr.LEFT_PAREN RIGHT_PAREN 
-	conditional_expr:  expr.GTE expr 
-	conditional_expr:  expr.GT expr 
-	conditional_expr:  expr.OR expr 
-	conditional_expr:  expr.AND expr 
-	conditional_expr:  expr.LT expr 
-	conditional_expr:  expr.LTE expr 
-	conditional_expr:  expr.NEQ expr 
-	conditional_expr:  expr.EQEQ expr 
-	arithmeticExpr:  expr.ADD expr 
-	arithmeticExpr:  expr.SUB expr 
-	arithmeticExpr:  expr.MUL expr 
-	arithmeticExpr:  expr.DIV expr 
-	arithmeticExpr:  expr.MOD expr 
-	index_expr:  expr.LEFT_BRACKET expr EOLS_SPACE RIGHT_BRACKET 
-	attr_expr:  expr.DOT expr 
-	slice_expr:  expr.LEFT_BRACKET expr_or_empty COLON expr_or_empty COLON expr_or_empty RIGHT_BRACKET 
-	slice_expr:  expr.LEFT_BRACKET expr_or_empty COLON expr_or_empty RIGHT_BRACKET 
-
-	LEFT_PAREN  shift 89
-	LEFT_BRACKET  shift 103
-	ADD  shift 98
-	SUB  shift 99
-	MUL  shift 100
-	DIV  shift 101
-	MOD  shift 102
-	GTE  shift 90
-	GT  shift 91
-	LT  shift 94
-	LTE  shift 95
-	NEQ  shift 96
-	EQEQ  shift 97
-	AND  shift 93
-	OR  shift 92
-	DOT  shift 104
-	IN  shift 88
-	.  reduce 79 (src line 399)
-
-
-state 278
-	in_expr:  expr.IN expr 
-	call_expr:  expr.LEFT_PAREN function_args EOLS_SPACE RIGHT_PAREN 
-	call_expr:  expr.LEFT_PAREN function_args COMMA RIGHT_PAREN 
-	call_expr:  expr.LEFT_PAREN RIGHT_PAREN 
-	conditional_expr:  expr.GTE expr 
-	conditional_expr:  expr.GT expr 
-	conditional_expr:  expr.OR expr 
-	conditional_expr:  expr.AND expr 
-	conditional_expr:  expr.LT expr 
-	conditional_expr:  expr.LTE expr 
-	conditional_expr:  expr.NEQ expr 
-	conditional_expr:  expr.EQEQ expr 
-	arithmeticExpr:  expr.ADD expr 
-	arithmeticExpr:  expr.SUB expr 
-	arithmeticExpr:  expr.MUL expr 
-	arithmeticExpr:  expr.DIV expr 
-	arithmeticExpr:  expr.MOD expr 
-	index_expr:  expr.LEFT_BRACKET expr EOLS_SPACE RIGHT_BRACKET 
-	attr_expr:  expr.DOT expr 
-	slice_expr:  expr.LEFT_BRACKET expr_or_empty COLON expr_or_empty COLON expr_or_empty RIGHT_BRACKET 
-	slice_expr:  expr.LEFT_BRACKET expr_or_empty COLON expr_or_empty RIGHT_BRACKET 
-	expr_colon_expr:  expr_colon_expr COMMA expr COLON expr.    (163)
-
-	LEFT_PAREN  shift 89
-	LEFT_BRACKET  shift 103
-	ADD  shift 98
-	SUB  shift 99
-	MUL  shift 100
-	DIV  shift 101
-	MOD  shift 102
-	GTE  shift 90
-	GT  shift 91
-	LT  shift 94
-	LTE  shift 95
-	NEQ  shift 96
-	EQEQ  shift 97
-	AND  shift 93
-	OR  shift 92
-	DOT  shift 104
-	IN  shift 88
-	.  reduce 163 (src line 835)
-
-
-state 279
-	for_stmt:  FOR for_init_elem SEMICOLON expr SEMICOLON for_loop_elem stmt_block.    (110)
-
-	.  reduce 110 (src line 546)
-
-
-state 280
-	slice_expr:  expr LEFT_BRACKET expr_or_empty COLON expr_or_empty COLON expr_or_empty.RIGHT_BRACKET 
-
-	RIGHT_BRACKET  shift 291
-	.  error
-
-
-state 281
-	map_type:  MAP LEFT_BRACKET data_type RIGHT_BRACKET data_type.    (61)
-
-	.  reduce 61 (src line 307)
-
-
-state 282
-	fn_type:  FN LEFT_PAREN RIGHT_PAREN LEFT_BRACE RIGHT_BRACE.    (65)
-	fn_type:  FN LEFT_PAREN RIGHT_PAREN LEFT_BRACE RIGHT_BRACE.FN_RET data_type 
-	fn_type:  FN LEFT_PAREN RIGHT_PAREN LEFT_BRACE RIGHT_BRACE.FN_RET LEFT_PAREN fn_ret_types_multi RIGHT_PAREN 
-
-	FN_RET  shift 292
-	.  reduce 65 (src line 328)
-
-
-state 283
-	fn_type:  FN LEFT_PAREN fn_def_params RIGHT_PAREN LEFT_BRACE.RIGHT_BRACE 
-	fn_type:  FN LEFT_PAREN fn_def_params RIGHT_PAREN LEFT_BRACE.RIGHT_BRACE FN_RET data_type 
-	fn_type:  FN LEFT_PAREN fn_def_params RIGHT_PAREN LEFT_BRACE.RIGHT_BRACE FN_RET LEFT_PAREN fn_ret_types_multi RIGHT_PAREN 
-
-	RIGHT_BRACE  shift 293
-	.  error
-
-
-state 284
-	fn_def_stmt:  FN identifier LEFT_PAREN RIGHT_PAREN FN_RET data_type stmt_block.    (88)
-
-	.  reduce 88 (src line 436)
-
-
-state 285
 	fn_ret_types_multi:  fn_ret_types_multi.COMMA data_type 
 	fn_def_stmt:  FN identifier LEFT_PAREN RIGHT_PAREN FN_RET LEFT_PAREN fn_ret_types_multi.RIGHT_PAREN stmt_block 
 
-	COMMA  shift 294
-	RIGHT_PAREN  shift 295
+	COMMA  shift 283
+	RIGHT_PAREN  shift 284
 	.  error
 
 
-state 286
-	fn_ret_types_multi:  data_type.    (85)
+state 277
+	fn_ret_types_multi:  data_type.    (79)
 
-	.  reduce 85 (src line 426)
+	.  reduce 79 (src line 440)
 
 
-state 287
+state 278
 	fn_def_stmt:  FN identifier LEFT_PAREN fn_def_params RIGHT_PAREN FN_RET data_type.stmt_block 
 
 	LEFT_BRACE  shift 130
 	.  error
 
-	stmt_block  goto 296
+	stmt_block  goto 285
 	empty_block  goto 129
 
-state 288
+state 279
 	fn_def_stmt:  FN identifier LEFT_PAREN fn_def_params RIGHT_PAREN FN_RET LEFT_PAREN.fn_ret_types_multi RIGHT_PAREN stmt_block 
 
 	ID  shift 50
-	LEFT_BRACKET  shift 177
-	STRING  shift 169
+	LEFT_BRACKET  shift 176
 	QUOTED_STRING  shift 51
+	STR  shift 169
 	INT  shift 167
 	FLOAT  shift 168
 	BOOL  shift 170
-	MAP  shift 178
+	MAP  shift 177
 	ANY  shift 171
-	FN  shift 179
 	.  error
 
-	identifier  goto 175
-	data_type  goto 286
-	fn_type  goto 174
+	fn_ret_types_multi  goto 286
+	identifier  goto 174
+	data_type  goto 277
 	list_type  goto 172
-	array_type  goto 176
+	array_type  goto 175
 	map_type  goto 173
-	fn_ret_types_multi  goto 297
 
-state 289
+state 280
 	fn_def_param:  identifier COLON data_type EQ.expr 
 
 	ID  shift 50
@@ -5837,105 +5725,70 @@ state 289
 	index_expr  goto 45
 	attr_expr  goto 44
 	in_expr  goto 47
-	expr  goto 298
+	expr  goto 287
 	map_literal  goto 39
 	list_literal  goto 38
 	basic_literal  goto 37
 	slice_expr  goto 46
 
-state 290
-	fn_def_param:  identifier COLON VAR_ARG data_type.    (78)
+state 281
+	fn_def_param:  identifier COLON VAR_ARG data_type.    (71)
 
-	.  reduce 78 (src line 395)
-
-
-state 291
-	slice_expr:  expr LEFT_BRACKET expr_or_empty COLON expr_or_empty COLON expr_or_empty RIGHT_BRACKET.    (157)
-
-	.  reduce 157 (src line 780)
+	.  reduce 71 (src line 399)
 
 
-state 292
-	fn_type:  FN LEFT_PAREN RIGHT_PAREN LEFT_BRACE RIGHT_BRACE FN_RET.data_type 
-	fn_type:  FN LEFT_PAREN RIGHT_PAREN LEFT_BRACE RIGHT_BRACE FN_RET.LEFT_PAREN fn_ret_types_multi RIGHT_PAREN 
+state 282
+	slice_expr:  expr LEFT_BRACKET expr_or_empty COLON expr_or_empty COLON expr_or_empty RIGHT_BRACKET.    (151)
 
-	ID  shift 50
-	LEFT_PAREN  shift 300
-	LEFT_BRACKET  shift 177
-	STRING  shift 169
-	QUOTED_STRING  shift 51
-	INT  shift 167
-	FLOAT  shift 168
-	BOOL  shift 170
-	MAP  shift 178
-	ANY  shift 171
-	FN  shift 179
-	.  error
-
-	identifier  goto 175
-	data_type  goto 299
-	fn_type  goto 174
-	list_type  goto 172
-	array_type  goto 176
-	map_type  goto 173
-
-state 293
-	fn_type:  FN LEFT_PAREN fn_def_params RIGHT_PAREN LEFT_BRACE RIGHT_BRACE.    (68)
-	fn_type:  FN LEFT_PAREN fn_def_params RIGHT_PAREN LEFT_BRACE RIGHT_BRACE.FN_RET data_type 
-	fn_type:  FN LEFT_PAREN fn_def_params RIGHT_PAREN LEFT_BRACE RIGHT_BRACE.FN_RET LEFT_PAREN fn_ret_types_multi RIGHT_PAREN 
-
-	FN_RET  shift 301
-	.  reduce 68 (src line 340)
+	.  reduce 151 (src line 799)
 
 
-state 294
+state 283
 	fn_ret_types_multi:  fn_ret_types_multi COMMA.data_type 
 
 	ID  shift 50
-	LEFT_BRACKET  shift 177
-	STRING  shift 169
+	LEFT_BRACKET  shift 176
 	QUOTED_STRING  shift 51
+	STR  shift 169
 	INT  shift 167
 	FLOAT  shift 168
 	BOOL  shift 170
-	MAP  shift 178
+	MAP  shift 177
 	ANY  shift 171
-	FN  shift 179
 	.  error
 
-	identifier  goto 175
-	data_type  goto 302
-	fn_type  goto 174
+	identifier  goto 174
+	data_type  goto 288
 	list_type  goto 172
-	array_type  goto 176
+	array_type  goto 175
 	map_type  goto 173
 
-state 295
+state 284
 	fn_def_stmt:  FN identifier LEFT_PAREN RIGHT_PAREN FN_RET LEFT_PAREN fn_ret_types_multi RIGHT_PAREN.stmt_block 
 
 	LEFT_BRACE  shift 130
 	.  error
 
-	stmt_block  goto 303
+	stmt_block  goto 289
 	empty_block  goto 129
 
-state 296
-	fn_def_stmt:  FN identifier LEFT_PAREN fn_def_params RIGHT_PAREN FN_RET data_type stmt_block.    (91)
+state 285
+	fn_def_stmt:  FN identifier LEFT_PAREN fn_def_params RIGHT_PAREN FN_RET data_type stmt_block.    (85)
 
-	.  reduce 91 (src line 448)
+	.  reduce 85 (src line 468)
 
 
-state 297
+state 286
 	fn_ret_types_multi:  fn_ret_types_multi.COMMA data_type 
 	fn_def_stmt:  FN identifier LEFT_PAREN fn_def_params RIGHT_PAREN FN_RET LEFT_PAREN fn_ret_types_multi.RIGHT_PAREN stmt_block 
 
-	COMMA  shift 294
-	RIGHT_PAREN  shift 304
+	COMMA  shift 283
+	RIGHT_PAREN  shift 290
 	.  error
 
 
-state 298
-	fn_def_param:  identifier COLON data_type EQ expr.    (80)
+state 287
+	fn_def_param:  identifier COLON data_type EQ expr.    (74)
 	in_expr:  expr.IN expr 
 	call_expr:  expr.LEFT_PAREN function_args EOLS_SPACE RIGHT_PAREN 
 	call_expr:  expr.LEFT_PAREN function_args COMMA RIGHT_PAREN 
@@ -5975,157 +5828,45 @@ state 298
 	OR  shift 92
 	DOT  shift 104
 	IN  shift 88
-	.  reduce 80 (src line 403)
+	.  reduce 74 (src line 411)
 
 
-state 299
-	fn_type:  FN LEFT_PAREN RIGHT_PAREN LEFT_BRACE RIGHT_BRACE FN_RET data_type.    (66)
+state 288
+	fn_ret_types_multi:  fn_ret_types_multi COMMA data_type.    (80)
 
-	.  reduce 66 (src line 332)
-
-
-state 300
-	fn_type:  FN LEFT_PAREN RIGHT_PAREN LEFT_BRACE RIGHT_BRACE FN_RET LEFT_PAREN.fn_ret_types_multi RIGHT_PAREN 
-
-	ID  shift 50
-	LEFT_BRACKET  shift 177
-	STRING  shift 169
-	QUOTED_STRING  shift 51
-	INT  shift 167
-	FLOAT  shift 168
-	BOOL  shift 170
-	MAP  shift 178
-	ANY  shift 171
-	FN  shift 179
-	.  error
-
-	identifier  goto 175
-	data_type  goto 286
-	fn_type  goto 174
-	list_type  goto 172
-	array_type  goto 176
-	map_type  goto 173
-	fn_ret_types_multi  goto 305
-
-state 301
-	fn_type:  FN LEFT_PAREN fn_def_params RIGHT_PAREN LEFT_BRACE RIGHT_BRACE FN_RET.data_type 
-	fn_type:  FN LEFT_PAREN fn_def_params RIGHT_PAREN LEFT_BRACE RIGHT_BRACE FN_RET.LEFT_PAREN fn_ret_types_multi RIGHT_PAREN 
-
-	ID  shift 50
-	LEFT_PAREN  shift 307
-	LEFT_BRACKET  shift 177
-	STRING  shift 169
-	QUOTED_STRING  shift 51
-	INT  shift 167
-	FLOAT  shift 168
-	BOOL  shift 170
-	MAP  shift 178
-	ANY  shift 171
-	FN  shift 179
-	.  error
-
-	identifier  goto 175
-	data_type  goto 306
-	fn_type  goto 174
-	list_type  goto 172
-	array_type  goto 176
-	map_type  goto 173
-
-state 302
-	fn_ret_types_multi:  fn_ret_types_multi COMMA data_type.    (86)
-
-	.  reduce 86 (src line 427)
+	.  reduce 80 (src line 444)
 
 
-state 303
-	fn_def_stmt:  FN identifier LEFT_PAREN RIGHT_PAREN FN_RET LEFT_PAREN fn_ret_types_multi RIGHT_PAREN stmt_block.    (89)
+state 289
+	fn_def_stmt:  FN identifier LEFT_PAREN RIGHT_PAREN FN_RET LEFT_PAREN fn_ret_types_multi RIGHT_PAREN stmt_block.    (83)
 
-	.  reduce 89 (src line 440)
+	.  reduce 83 (src line 460)
 
 
-state 304
+state 290
 	fn_def_stmt:  FN identifier LEFT_PAREN fn_def_params RIGHT_PAREN FN_RET LEFT_PAREN fn_ret_types_multi RIGHT_PAREN.stmt_block 
 
 	LEFT_BRACE  shift 130
 	.  error
 
-	stmt_block  goto 308
+	stmt_block  goto 291
 	empty_block  goto 129
 
-state 305
-	fn_type:  FN LEFT_PAREN RIGHT_PAREN LEFT_BRACE RIGHT_BRACE FN_RET LEFT_PAREN fn_ret_types_multi.RIGHT_PAREN 
-	fn_ret_types_multi:  fn_ret_types_multi.COMMA data_type 
+state 291
+	fn_def_stmt:  FN identifier LEFT_PAREN fn_def_params RIGHT_PAREN FN_RET LEFT_PAREN fn_ret_types_multi RIGHT_PAREN stmt_block.    (86)
 
-	COMMA  shift 294
-	RIGHT_PAREN  shift 309
-	.  error
+	.  reduce 86 (src line 472)
 
 
-state 306
-	fn_type:  FN LEFT_PAREN fn_def_params RIGHT_PAREN LEFT_BRACE RIGHT_BRACE FN_RET data_type.    (69)
-
-	.  reduce 69 (src line 344)
-
-
-state 307
-	fn_type:  FN LEFT_PAREN fn_def_params RIGHT_PAREN LEFT_BRACE RIGHT_BRACE FN_RET LEFT_PAREN.fn_ret_types_multi RIGHT_PAREN 
-
-	ID  shift 50
-	LEFT_BRACKET  shift 177
-	STRING  shift 169
-	QUOTED_STRING  shift 51
-	INT  shift 167
-	FLOAT  shift 168
-	BOOL  shift 170
-	MAP  shift 178
-	ANY  shift 171
-	FN  shift 179
-	.  error
-
-	identifier  goto 175
-	data_type  goto 286
-	fn_type  goto 174
-	list_type  goto 172
-	array_type  goto 176
-	map_type  goto 173
-	fn_ret_types_multi  goto 310
-
-state 308
-	fn_def_stmt:  FN identifier LEFT_PAREN fn_def_params RIGHT_PAREN FN_RET LEFT_PAREN fn_ret_types_multi RIGHT_PAREN stmt_block.    (92)
-
-	.  reduce 92 (src line 452)
-
-
-state 309
-	fn_type:  FN LEFT_PAREN RIGHT_PAREN LEFT_BRACE RIGHT_BRACE FN_RET LEFT_PAREN fn_ret_types_multi RIGHT_PAREN.    (67)
-
-	.  reduce 67 (src line 336)
-
-
-state 310
-	fn_type:  FN LEFT_PAREN fn_def_params RIGHT_PAREN LEFT_BRACE RIGHT_BRACE FN_RET LEFT_PAREN fn_ret_types_multi.RIGHT_PAREN 
-	fn_ret_types_multi:  fn_ret_types_multi.COMMA data_type 
-
-	COMMA  shift 294
-	RIGHT_PAREN  shift 311
-	.  error
-
-
-state 311
-	fn_type:  FN LEFT_PAREN fn_def_params RIGHT_PAREN LEFT_BRACE RIGHT_BRACE FN_RET LEFT_PAREN fn_ret_types_multi RIGHT_PAREN.    (70)
-
-	.  reduce 70 (src line 348)
-
-
-86 terminals, 56 nonterminals
-175 grammar rules, 312/16000 states
+86 terminals, 55 nonterminals
+169 grammar rules, 292/16000 states
 0 shift/reduce, 0 reduce/reduce conflicts reported
-155 working sets used
-memory: parser 1405/240000
-270 extra closures
-1937 shift entries, 13 exceptions
-199 goto entries
-912 entries saved by goto default
-Optimizer space used: output 1446/240000
-1446 table entries, 541 zero
-maximum spread: 84, maximum offset: 307
+154 working sets used
+memory: parser 1326/240000
+250 extra closures
+1866 shift entries, 13 exceptions
+188 goto entries
+881 entries saved by goto default
+Optimizer space used: output 1348/240000
+1348 table entries, 497 zero
+maximum spread: 84, maximum offset: 290

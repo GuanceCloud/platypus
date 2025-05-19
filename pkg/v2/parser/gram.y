@@ -17,7 +17,6 @@ import (
 	astblock   *ast.BlockStmt
 
 	classbody  any
-	fnparams  any
 
 	ifitem     *ast.IfStmtElem
 	iflist	   []*ast.IfStmtElem
@@ -26,6 +25,8 @@ import (
 	map_nodes [][2]ast.Node
 	item       Item
 
+	fnparam ast.FnParam
+	fnparams []ast.FnParam
 }
 
 %token <item> SEMICOLON COMMA COMMENT EOF ERROR ID NUMBER 
@@ -87,6 +88,7 @@ NEW MAKE INTERFACE CONST
 	function_args
 	exprs
 	pkg_name
+	fn_ret_types_multi
 
 %type<map_nodes>
 	expr_colon_expr
@@ -135,10 +137,11 @@ NEW MAKE INTERFACE CONST
 
 %type <classbody>
 	
+%type <fnparam>
+	fn_def_param
 
 %type <fnparams>
 	fn_def_params
-	fn_def_param
 
 %start start
 
@@ -267,7 +270,7 @@ type
 
 data_type: INT
 {
-	$$ = &ast.TypeInt
+	$$ = &ast.TypeBasic{}
 }
 | FLOAT
 {
@@ -387,72 +390,88 @@ type_def_stmt: TYPE identifier data_type
 
 fn_def_param: identifier
 {
-	$$ = nil
+	$$ = yylex.(*parser).newFnParam($1, nil, nil)
 }
 | identifier COLON data_type
 {
-	$$ = nil
+	$$ = yylex.(*parser).newFnParam($1, $3, nil)
 }
 | identifier COLON VAR_ARG data_type
 {
-	$$ = nil
+	$$ = yylex.(*parser).newFnParam($1, $4, nil, true)
+}
+| identifier COLON VAR_ARG
+{
+	$$ = yylex.(*parser).newFnParam($1, nil, nil, true)
 }
 | identifier EQ expr
 {
-	$$ = nil
+	$$ = yylex.(*parser).newFnParam($1, nil, $3)
 }
 | identifier COLON data_type EQ expr
 {
-	$$ = nil
+	$$ = yylex.(*parser).newFnParam($1, $3, $5)
 }
 ;
 
 
 return_stmt: RETURN
 {
-	$$ = nil
+	$$ = yylex.(*parser).newReturnStmt($1, nil)
 }
 | RETURN exprs 
 {
-	$$ = nil
+	$$ = yylex.(*parser).newReturnStmt($1, $2)
 }
 ;
 
 
 fn_def_params: fn_def_param
+{
+	$$ = []ast.FnParam{$1}
+}
 | fn_def_params COMMA fn_def_param
+{
+	$$ = append($$, $3)
+}
 ;
 
 
 fn_ret_types_multi: data_type
+{
+	$$ = []ast.Node{$1}
+}
 | fn_ret_types_multi COMMA data_type
+{
+	$$ = append($$, $3)
+}
 ;
 
 
 
 fn_def_stmt: FN identifier LEFT_PAREN RIGHT_PAREN stmt_block
 {
-	$$=nil
+	$$ = yylex.(*parser).newFnDefStmt($1, $2, nil, nil, $5)
 }
 | FN identifier LEFT_PAREN RIGHT_PAREN FN_RET data_type stmt_block
 {
-	$$ =nil
+	$$ = yylex.(*parser).newFnDefStmt($1, $2, nil, []ast.Node{$6}, $7)
 }
 | FN identifier LEFT_PAREN RIGHT_PAREN FN_RET LEFT_PAREN fn_ret_types_multi RIGHT_PAREN  stmt_block
 {
-	$$ =nil
+	$$ = yylex.(*parser).newFnDefStmt($1, $2, nil, $7, $9)
 }
 | FN identifier LEFT_PAREN fn_def_params RIGHT_PAREN stmt_block
 {
-	$$ =nil
+	$$ = yylex.(*parser).newFnDefStmt($1, $2, $4, nil, $6)
 }
 | FN identifier LEFT_PAREN fn_def_params RIGHT_PAREN FN_RET data_type stmt_block
 {
-	$$ =nil
+	$$ = yylex.(*parser).newFnDefStmt($1, $2, $4, []ast.Node{$7}, $8)
 }
 | FN identifier LEFT_PAREN fn_def_params RIGHT_PAREN FN_RET LEFT_PAREN fn_ret_types_multi RIGHT_PAREN stmt_block
 {
-	$$ =nil
+	$$ = yylex.(*parser).newFnDefStmt($1, $2, $4, $8, $10)
 }
 ;
 
@@ -496,13 +515,6 @@ assignment_stmt: exprs EQ exprs
 {
 	$$ = yylex.(*parser).newAssignmentStmt(
 		[]ast.Node{$1}, []ast.Node{$3}, $2)
-}
-;
-
-
-in_expr: expr IN expr
-{
-	$$ = yylex.(*parser).newInExpr($1, $3, $2)
 }
 ;
 
@@ -630,6 +642,12 @@ empty_block : LEFT_BRACE RIGHT_BRACE
 /*
 expr
 */
+
+in_expr: expr IN expr
+{
+	$$ = yylex.(*parser).newInExpr($1, $3, $2)
+}
+;
 
 function_args: function_args COMMA expr
 {

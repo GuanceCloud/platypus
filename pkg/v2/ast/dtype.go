@@ -5,7 +5,11 @@
 
 package ast
 
-import "github.com/GuanceCloud/platypus/pkg/token"
+import (
+	"bytes"
+
+	"github.com/GuanceCloud/platypus/pkg/token"
+)
 
 type DType uint
 
@@ -57,6 +61,7 @@ func AllTyp() []DType {
 
 type TypeNode interface {
 	IsType()
+	String()
 }
 
 type TypeID struct {
@@ -64,13 +69,74 @@ type TypeID struct {
 }
 
 func (*TypeID) IsType() {}
+func (t *TypeID) String() string {
+	return t.Name.String()
+}
+
+type FnParam struct {
+	Name       Node
+	DType      Node
+	Varb       bool
+	DefaultVal Node
+}
+
+func (p *FnParam) String() string {
+	s := p.Name.String()
+	if p.DType != nil {
+		if p.Varb {
+			s += ": ..." + p.DType.String()
+		} else {
+			s += ": " + p.DType.String()
+		}
+	} else if p.Varb {
+		s += ": ..."
+	}
+	if p.DefaultVal != nil {
+		s += " = " + p.DefaultVal.String()
+	}
+	return s
+}
 
 type TypeFn struct {
-	Params  []Node
+	Params  []FnParam
 	Results []Node
 }
 
 func (*TypeFn) IsType() {}
+
+func (t *TypeFn) String() string {
+	return "fn " + t.string()
+}
+
+func (t *TypeFn) string() string {
+	b := bytes.NewBuffer([]byte{})
+	b.WriteString("(")
+	for i, p := range t.Params {
+		b.WriteString(p.String())
+		if i < len(t.Params)-1 {
+			b.WriteString(", ")
+		}
+	}
+	b.WriteString(")")
+	if len(t.Results) > 0 {
+		b.WriteString(" -> ")
+	}
+
+	if len(t.Results) > 1 {
+		b.WriteString("(")
+	}
+	for i, r := range t.Results {
+		b.WriteString(r.String())
+		if i < len(t.Results)-1 {
+			b.WriteString(", ")
+		}
+	}
+	if len(t.Results) > 1 {
+		b.WriteString(")")
+	}
+
+	return b.String()
+}
 
 type TypeClass struct {
 	Fields  []Node
@@ -92,11 +158,21 @@ type TypeList struct {
 
 func (*TypeList) IsType() {}
 
-type TypeBasic struct {
-	Pos token.LnColPos
+type TypeArray struct {
+	LBracketPos token.LnColPos
+	RBracketPos token.LnColPos
 
-	Name  string
+	VType Node
+	Len   Node
+}
+
+type TypeBasic struct {
+	Pos   token.LnColPos
 	DType DType
 }
 
 func (*TypeBasic) IsType() {}
+
+func (t *TypeBasic) String() string {
+	return t.DType.String()
+}

@@ -6,7 +6,6 @@
 package ast
 
 import (
-	"go/ast"
 	"strings"
 
 	"github.com/GuanceCloud/platypus/pkg/token"
@@ -134,6 +133,18 @@ type PackageStmt struct {
 
 type ReturnStmt struct {
 	ReturnPos token.LnColPos
+	Exprs     []Node
+}
+
+func (r *ReturnStmt) String() string {
+	var params []string
+	for _, x := range r.Exprs {
+		params = append(params, x.String())
+	}
+	if len(params) > 0 {
+		return "return " + strings.Join(params, ", ")
+	}
+	return "return"
 }
 
 type FnDefStmt struct {
@@ -143,10 +154,20 @@ type FnDefStmt struct {
 	RetPos               token.LnColPos
 	RetLParen, RetRParen token.LnColPos
 
-	Name   *Identifier
-	Params []ast.Node
+	Name Node
 
-	Stmts []ast.Node
+	FnType *TypeFn
+
+	Block Node
+}
+
+func (f *FnDefStmt) String() string {
+	s := f.Block.String()
+	if len(s) > 0 {
+		return "fn " + f.FnType.string() + "{\n" + s + "\n}"
+	} else {
+		return "fn " + f.FnType.string() + "{\n}"
+	}
 }
 
 type TypeDefStmt struct {
