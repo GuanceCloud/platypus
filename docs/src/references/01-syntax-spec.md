@@ -66,7 +66,7 @@ Float types are 64bit long with symbols, and currently only support writing floa
 
 #### Boolean Type
 
-Literals in boolean types only include `true` 和 `false`.
+Literals in boolean types only include `true` and `false`.
 
 #### String Type
 
