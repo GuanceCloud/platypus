@@ -1020,7 +1020,7 @@ func changeListOrMapValue(ctx *Task, obj any, index []*ast.Node, val V) *errchai
 			}
 
 			if idx+1 == lenIdx {
-				curVal[keyInt] = val
+				curVal[keyInt] = val.V
 				return nil
 			}
 
