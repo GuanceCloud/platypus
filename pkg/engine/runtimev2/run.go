@@ -992,7 +992,7 @@ func changeListOrMapValue(ctx *Task, obj any, index []*ast.Node, val V) *errchai
 					"key type is not string", node.StartPos())
 			}
 			if idx+1 == lenIdx {
-				curVal[key.V.(string)] = val
+				curVal[key.V.(string)] = val.V
 				return nil
 			}
 
