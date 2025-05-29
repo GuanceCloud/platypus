@@ -6,22 +6,27 @@ type Sym struct {
 }
 
 type SymTable struct {
-	Symbols map[string]Sym
+	Symbols map[string]*Sym
 	Parent  *SymTable
 }
 
 func NewSymTable() SymTable {
 	return SymTable{
-		Symbols: make(map[string]Sym),
+		Symbols: map[string]*Sym{},
 		Parent:  nil,
 	}
 }
 
-func (s *SymTable) Add(name string, sym Sym) {
+func (s *SymTable) Add(name string, sym *Sym) bool {
+	if _, ok := s.Symbols[name]; ok {
+		return false
+	}
+
 	s.Symbols[name] = sym
+	return true
 }
 
-func (s *SymTable) Get(name string) (Sym, bool) {
+func (s *SymTable) Get(name string) (*Sym, bool) {
 	sym, ok := s.Symbols[name]
 	if !ok && s.Parent != nil {
 		return s.Parent.Get(name)
