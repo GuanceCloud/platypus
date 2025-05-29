@@ -117,21 +117,16 @@ NEW MAKE INTERFACE CONST
 	map_literal
 	value_stmt
 	expr_or_empty
-	// typed_literal
 	list_literal
 	basic_literal
 	for_init_elem
 	for_loop_elem
 	slice_expr
 	data_type
-	// fn_type
-	list_type
-	array_type
-	map_type
-	var_def_stmt
+	let_stmt
+	const_def_stmt
 	fn_def_stmt
 	import_stmt
-	type_def_stmt
 	return_stmt
 	//columnref
 
@@ -234,10 +229,10 @@ stmt: ifelse_stmt
 | continue_stmt
 | break_stmt
 | value_stmt
-| var_def_stmt
+| let_stmt
+| const_def_stmt
 | fn_def_stmt
 | import_stmt
-| type_def_stmt
 | return_stmt
 | assignment_stmt
 ;
@@ -251,7 +246,6 @@ expr: identifier
 | basic_literal 
 | list_literal 
 | map_literal
-// | typed_literal
 | paren_expr
 | unary_expr
 | conditional_expr
@@ -270,90 +264,52 @@ type
 
 data_type: INT
 {
-	$$ = &ast.TypeBasic{}
+	$$ =  yylex.(*parser).newBuiltinType($1)
 }
 | FLOAT
 {
-	$$ =nil
+	$$ =  yylex.(*parser).newBuiltinType($1)
 }
 | STR
 {
-	$$ =nil
+	$$ =  yylex.(*parser).newBuiltinType($1)
 }
 | BOOL
 {
-	$$ =nil
+	$$ =  yylex.(*parser).newBuiltinType($1)
 }
 | ANY
 {
-	$$ =nil
-}
-| list_type
-| map_type
-// | fn_type
-| identifier
-| array_type
-;
-
-
-list_type: LEFT_BRACKET RIGHT_BRACKET data_type 
-{
-	$$ =nil
+	$$ =  yylex.(*parser).newBuiltinType($1)
 }
 ;
 
-array_type: LEFT_BRACKET NUMBER RIGHT_BRACKET data_type
+
+const_def_stmt: CONST identifier EQ expr
 {
-	$$ = nil
+	$$ =  yylex.(*parser).newConstDefStmt($1, $2, $4)
 }
 ;
 
-map_type: MAP LEFT_BRACKET data_type RIGHT_BRACKET data_type
-{
-	$$ =nil
-}
-;
 
-var_def_stmt: LET identifier data_type EQ expr
+let_stmt: LET identifier COLON data_type EQ expr
 {
-	$$ =nil
+	$$ =  yylex.(*parser).newLetStmt($1, $2, $4, $6)
 }
-| LET identifier data_type
+| LET identifier COLON data_type
 {
-	$$ =nil
+	$$ =  yylex.(*parser).newLetStmt($1, $2, $4, nil)
+}
+| LET identifier
+{
+	$$ =  yylex.(*parser).newLetStmt($1, nil, nil, nil)
 }
 | LET identifier EQ expr
 {
-	$$ =nil
+	$$ =  yylex.(*parser).newLetStmt($1, $2, nil, nil)
 }
 ;
 
-
-// fn_type: FN LEFT_PAREN  RIGHT_PAREN LEFT_BRACE RIGHT_BRACE
-// {
-// 	$$=nil
-// }
-// | FN  LEFT_PAREN  RIGHT_PAREN LEFT_BRACE RIGHT_BRACE FN_RET data_type
-// {
-// 	$$ =nil
-// }
-// | FN LEFT_PAREN  RIGHT_PAREN LEFT_BRACE RIGHT_BRACE FN_RET LEFT_PAREN fn_ret_types_multi RIGHT_PAREN 
-// {
-// 	$$ =nil
-// }
-// | FN LEFT_PAREN fn_def_params RIGHT_PAREN LEFT_BRACE RIGHT_BRACE
-// {
-// 	$$ =nil
-// }
-// | FN LEFT_PAREN fn_def_params RIGHT_PAREN LEFT_BRACE RIGHT_BRACE FN_RET data_type
-// {
-// 	$$ =nil
-// }
-// | FN LEFT_PAREN fn_def_params RIGHT_PAREN LEFT_BRACE RIGHT_BRACE FN_RET LEFT_PAREN fn_ret_types_multi RIGHT_PAREN
-// {
-// 	$$ =nil
-// }
-// ;
 
 /*
 stmt
@@ -372,18 +328,11 @@ pkg_name: identifier
 
 import_stmt: IMPORT pkg_name
 {
-	$$ = nil
+	$$ = yylex.(*parser).newImportStmt($1, $2, nil)
 }
 | IMPORT pkg_name AS identifier
 {
-	$$ = nil
-}
-;
-
-
-type_def_stmt: TYPE identifier data_type
-{
-	$$ = nil
+	$$ = yylex.(*parser).newImportStmt($1, $2, $4)
 }
 ;
 
@@ -551,7 +500,7 @@ for_in_stmt : FOR in_expr stmt_block
 	for 	 ; cond expr;      { stmts }
 */
 
-for_init_elem: expr | assignment_stmt | var_def_stmt
+for_init_elem: expr | assignment_stmt | let_stmt
 ;
 
 for_loop_elem: expr | assignment_stmt ;
@@ -807,31 +756,7 @@ slice_expr: expr LEFT_BRACKET expr_or_empty COLON expr_or_empty COLON expr_or_em
 ;
 
 
-// typed_literal: identifier LEFT_BRACE expr_colon_expr RIGHT_BRACE
-// {
-// 	$$ = nil
-// }
-// | identifier LEFT_BRACE RIGHT_BRACE
-// {
-// 	$$ = nil
-// }
-// | list_type LEFT_BRACE exprs RIGHT_BRACE
-// { 
-// 	$$ = nil
-// }
-// | list_type LEFT_BRACE RIGHT_BRACE
-// { 
-// 	$$ = nil
-// }
-// | map_type LEFT_BRACE expr_colon_expr RIGHT_BRACE
-// {
-// 	$$ = nil
-// }
-// | map_type LEFT_BRACE RIGHT_BRACE
-// {
-// 	$$ = nil
-// }
-// ;
+
 
 list_literal : LEFT_BRACKET exprs EOLS_SPACE RIGHT_BRACKET
 { 

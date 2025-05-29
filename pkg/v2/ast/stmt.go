@@ -117,20 +117,6 @@ func (block *BlockStmt) String() string {
 	return strings.Join(arr, "\n")
 }
 
-type ImportStmt struct {
-	ImportPos token.LnColPos
-	AsPos     token.LnColPos
-
-	Name   []*Identifier
-	AsName *Identifier
-}
-
-type PackageStmt struct {
-	PkgPos token.LnColPos
-
-	Name *Identifier
-}
-
 type ReturnStmt struct {
 	ReturnPos token.LnColPos
 	Exprs     []Node
@@ -170,10 +156,52 @@ func (f *FnDefStmt) String() string {
 	}
 }
 
-type TypeDefStmt struct {
-	TypePos token.LnColPos
+type VarbDefStmt struct {
+	LetPos token.LnColPos
+	Name   Node
+	Type   Node
+	Value  Node
+}
 
-	Name *Identifier
+func (v *VarbDefStmt) String() string {
+	s := "let " + v.Name.String()
+	if v.Type != nil {
+		s += ": " + v.Type.String() + " "
+	}
+	if v.Value != nil {
+		s += "= " + v.Value.String()
+	}
+	return s
+}
 
-	Type TypeNode
+type ConstDefStmt struct {
+	ConstPos token.LnColPos
+	Name     Node
+	Value    Node
+}
+
+func (c *ConstDefStmt) String() string {
+	return "const " + c.Name.String() + " = " + c.Value.String()
+}
+
+type ImportStmt struct {
+	ImportPos token.LnColPos
+	AsPos     token.LnColPos
+
+	Name   []*Identifier
+	AsName *Identifier
+}
+
+func (i *ImportStmt) String() string {
+	var pkgNames []string
+	for _, x := range i.Name {
+		pkgNames = append(pkgNames, x.String())
+	}
+
+	s := "import " + strings.Join(pkgNames, ", ")
+	if i.AsName != nil {
+		s += " as " + i.AsName.String()
+	}
+
+	return s
 }

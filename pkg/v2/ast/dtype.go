@@ -61,7 +61,7 @@ func AllTyp() []DType {
 
 type TypeNode interface {
 	IsType()
-	String()
+	String() string
 }
 
 type TypeID struct {

@@ -151,6 +151,35 @@ func (p *parser) unquoteMultilineString(s string) string {
 	return unq
 }
 
+// data_type
+func (p *parser) newBuiltinType(name Item) ast.Node {
+	var dtyp ast.DType
+	switch name.Typ {
+	case BOOL:
+		dtyp = ast.Bool
+	case INT:
+		dtyp = ast.Int
+	case FLOAT:
+		dtyp = ast.Float
+	case STR:
+		dtyp = ast.String
+	case ANY:
+		dtyp = ast.Any
+	case LIST:
+		dtyp = ast.List
+	case MAP:
+		dtyp = ast.Map
+	default:
+		p.addParseErrf(p.yyParser.lval.item.PositionRange(),
+			"error data type")
+		return nil
+	}
+	return &ast.TypeBasic{
+		DType: dtyp,
+		Pos:   p.pos(name),
+	}
+}
+
 // literal
 
 func (p *parser) newBoolLiteral(pos plToken.Pos, val bool) ast.Node {
@@ -424,6 +453,51 @@ func (p *parser) newSliceExpr(l, r Item, obj, start, end, step ast.Node) ast.Nod
 		Step:     step,
 		LBracket: p.pos(l),
 		RBracket: p.pos(r),
+	}
+}
+
+func (p *parser) newImportStmt(i Item, name []ast.Node, as ast.Node) ast.Node {
+	var names []*ast.Identifier
+	for v := range name {
+		if v, ok := name[v].(*ast.Identifier); ok {
+			names = append(names, v)
+		} else {
+			p.addParseErrf(p.yyParser.lval.item.PositionRange(), "invalid import statement")
+			return nil
+		}
+	}
+
+	var asName *ast.Identifier
+	if as != nil {
+		if v, ok := as.(*ast.Identifier); ok {
+			asName = v
+		} else {
+			p.addParseErrf(p.yyParser.lval.item.PositionRange(), "invalid import statement")
+			return nil
+		}
+	}
+
+	return &ast.ImportStmt{
+		ImportPos: p.pos(i),
+		Name:      names,
+		AsName:    asName,
+	}
+}
+
+func (p *parser) newConstDefStmt(c Item, name, value ast.Node) ast.Node {
+	return &ast.ConstDefStmt{
+		ConstPos: p.pos(c),
+		Name:     name,
+		Value:    value,
+	}
+}
+
+func (p *parser) newLetStmt(v Item, name, typ, value ast.Node) ast.Node {
+	return &ast.VarbDefStmt{
+		LetPos: p.pos(v),
+		Name:   name,
+		Type:   typ,
+		Value:  value,
 	}
 }
 
