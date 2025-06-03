@@ -150,10 +150,17 @@ type TypeMap struct {
 	ValueType Node
 }
 
+func (t *TypeMap) String() string {
+	return "map"
+}
 func (*TypeMap) IsType() {}
 
 type TypeList struct {
 	VType Node
+}
+
+func (t *TypeList) String() string {
+	return "list"
 }
 
 func (*TypeList) IsType() {}

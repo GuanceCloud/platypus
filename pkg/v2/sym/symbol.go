@@ -2,6 +2,7 @@ package sym
 
 type Sym struct {
 	Name string
+	Kind KindCat
 	Type Type
 }
 
@@ -10,8 +11,8 @@ type SymTable struct {
 	Parent  *SymTable
 }
 
-func NewSymTable() SymTable {
-	return SymTable{
+func NewSymTable() *SymTable {
+	return &SymTable{
 		Symbols: map[string]*Sym{},
 		Parent:  nil,
 	}

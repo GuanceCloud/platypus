@@ -19,8 +19,8 @@ func Compile(stmts []ast.Node) *Insns {
 	ins := NewInsns()
 
 	for _, node := range stmts {
-		switch node := node.(type) {
-		case *ast.VarbDefStmt:
+		switch n := node.(type) {
+		case *ast.LetStmt:
 
 		}
 

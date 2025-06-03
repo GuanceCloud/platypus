@@ -129,7 +129,7 @@ func TestExprSeparation(t *testing.T) {
 						&ast.MapLiteral{},
 					},
 				},
-				&ast.AssignmentExpr{
+				&ast.AssignmentStmt{
 					Op:  ast.EQ,
 					LHS: []ast.Node{&ast.Identifier{Name: "a"}},
 					RHS: []ast.Node{&ast.IntegerLiteral{Val: 1}},
@@ -165,7 +165,7 @@ func TestExprSeparation(t *testing.T) {
 								RHS: &ast.Identifier{Name: "y"},
 							},
 							Block: &ast.BlockStmt{Stmts: ast.Stmts{
-								&ast.AssignmentExpr{
+								&ast.AssignmentStmt{
 									Op:  ast.EQ,
 									LHS: []ast.Node{&ast.Identifier{Name: "a"}},
 									RHS: []ast.Node{&ast.ArithmeticExpr{
@@ -179,17 +179,17 @@ func TestExprSeparation(t *testing.T) {
 					},
 				},
 
-				&ast.AssignmentExpr{
+				&ast.AssignmentStmt{
 					Op:  ast.EQ,
 					LHS: []ast.Node{&ast.Identifier{Name: "a"}},
 					RHS: []ast.Node{&ast.Identifier{Name: "b"}},
 				},
-				&ast.AssignmentExpr{
+				&ast.AssignmentStmt{
 					Op:  ast.EQ,
 					LHS: []ast.Node{&ast.Identifier{Name: "a"}},
 					RHS: []ast.Node{&ast.Identifier{Name: "c"}},
 				},
-				&ast.AssignmentExpr{
+				&ast.AssignmentStmt{
 					Op:  ast.EQ,
 					LHS: []ast.Node{&ast.Identifier{Name: "a"}},
 					RHS: []ast.Node{&ast.Identifier{Name: "d"}},
@@ -208,7 +208,7 @@ func TestExprSeparation(t *testing.T) {
 								RHS: &ast.Identifier{Name: "y"},
 							},
 							Block: &ast.BlockStmt{Stmts: ast.Stmts{
-								&ast.AssignmentExpr{
+								&ast.AssignmentStmt{
 									Op:  ast.EQ,
 									LHS: []ast.Node{&ast.Identifier{Name: "a"}},
 									RHS: []ast.Node{&ast.ArithmeticExpr{
@@ -300,7 +300,7 @@ func TestExprSeparation(t *testing.T) {
 					RHS: &ast.IntegerLiteral{Val: 1},
 				},
 
-				&ast.AssignmentExpr{
+				&ast.AssignmentStmt{
 					Op: ast.ADDEQ,
 					LHS: []ast.Node{&ast.Identifier{
 						Name: "a",
@@ -320,7 +320,7 @@ func TestExprSeparation(t *testing.T) {
 					},
 				},
 
-				&ast.AssignmentExpr{
+				&ast.AssignmentStmt{
 					Op: ast.SUBEQ,
 					LHS: []ast.Node{&ast.Identifier{
 						Name: "a",
@@ -329,7 +329,7 @@ func TestExprSeparation(t *testing.T) {
 						Val: 1,
 					}},
 				},
-				&ast.AssignmentExpr{
+				&ast.AssignmentStmt{
 					Op: ast.MULEQ,
 					LHS: []ast.Node{&ast.Identifier{
 						Name: "a",
@@ -338,7 +338,7 @@ func TestExprSeparation(t *testing.T) {
 						Val: 1,
 					}},
 				},
-				&ast.AssignmentExpr{
+				&ast.AssignmentStmt{
 					Op: ast.DIVEQ,
 					LHS: []ast.Node{&ast.Identifier{
 						Name: "a",
@@ -347,7 +347,7 @@ func TestExprSeparation(t *testing.T) {
 						Val: 1,
 					}},
 				},
-				&ast.AssignmentExpr{
+				&ast.AssignmentStmt{
 					Op: ast.MODEQ,
 					LHS: []ast.Node{&ast.Identifier{
 						Name: "a",
@@ -408,7 +408,7 @@ func TestParserFor(t *testing.T) {
 						RHS: &ast.Identifier{Name: "y"},
 					},
 					Body: &ast.BlockStmt{Stmts: ast.Stmts{
-						&ast.AssignmentExpr{
+						&ast.AssignmentStmt{
 							Op:  ast.EQ,
 							LHS: []ast.Node{&ast.Identifier{Name: "b"}},
 							RHS: []ast.Node{&ast.IntegerLiteral{Val: 1}},
@@ -456,7 +456,7 @@ func TestParserFor(t *testing.T) {
 								&ast.BreakStmt{},
 							}},
 						},
-						&ast.AssignmentExpr{
+						&ast.AssignmentStmt{
 							Op:  ast.EQ,
 							LHS: []ast.Node{&ast.Identifier{Name: "a"}},
 							RHS: []ast.Node{&ast.ArithmeticExpr{
@@ -484,7 +484,7 @@ func TestParserFor(t *testing.T) {
 						},
 					},
 					Body: &ast.BlockStmt{Stmts: ast.Stmts{
-						&ast.AssignmentExpr{
+						&ast.AssignmentStmt{
 							Op:  ast.EQ,
 							LHS: []ast.Node{&ast.Identifier{Name: "b"}},
 							RHS: []ast.Node{&ast.IntegerLiteral{Val: 1}},
@@ -506,7 +506,7 @@ func TestParserFor(t *testing.T) {
 						Obj: &ast.Identifier{Name: "func"},
 					},
 				},
-				Loop: &ast.AssignmentExpr{
+				Loop: &ast.AssignmentStmt{
 					Op: ast.EQ,
 					LHS: []ast.Node{&ast.Identifier{
 						Name: "x",
@@ -516,7 +516,7 @@ func TestParserFor(t *testing.T) {
 					}},
 				},
 				Body: &ast.BlockStmt{Stmts: ast.Stmts{
-					&ast.AssignmentExpr{
+					&ast.AssignmentStmt{
 						Op:  ast.EQ,
 						LHS: []ast.Node{&ast.Identifier{Name: "b"}},
 						RHS: []ast.Node{&ast.IntegerLiteral{Val: 1}},
@@ -530,7 +530,7 @@ func TestParserFor(t *testing.T) {
 				b=2
 			}`,
 			expected: ast.Stmts{&ast.ForStmt{
-				Init: &ast.AssignmentExpr{
+				Init: &ast.AssignmentStmt{
 					Op: ast.EQ,
 					LHS: []ast.Node{&ast.Identifier{
 						Name: "y",
@@ -546,7 +546,7 @@ func TestParserFor(t *testing.T) {
 						Obj: &ast.Identifier{Name: "func"},
 					},
 				},
-				Loop: &ast.AssignmentExpr{
+				Loop: &ast.AssignmentStmt{
 					Op: ast.EQ,
 					LHS: []ast.Node{&ast.Identifier{
 						Name: "x",
@@ -556,7 +556,7 @@ func TestParserFor(t *testing.T) {
 					}},
 				},
 				Body: &ast.BlockStmt{Stmts: ast.Stmts{
-					&ast.AssignmentExpr{
+					&ast.AssignmentStmt{
 						Op:  ast.EQ,
 						LHS: []ast.Node{&ast.Identifier{Name: "b"}},
 						RHS: []ast.Node{&ast.IntegerLiteral{Val: 1}},
@@ -1143,7 +1143,7 @@ func TestParser(t *testing.T) {
 			expected: ast.Stmts{
 				&ast.CallExpr{
 					Obj: &ast.Identifier{Name: "f"},
-					Param: []ast.Node{&ast.AssignmentExpr{
+					Param: []ast.Node{&ast.AssignmentStmt{
 						Op:  ast.EQ,
 						LHS: []ast.Node{&ast.Identifier{Name: "arg"}},
 						RHS: []ast.Node{&ast.AttrExpr{
@@ -1164,7 +1164,7 @@ func TestParser(t *testing.T) {
 			name: "func_call_in_assignement_right",
 			in:   `a = fx("a", true, a1=["b", 1.1])`,
 			expected: ast.Stmts{
-				&ast.AssignmentExpr{
+				&ast.AssignmentStmt{
 					Op:  ast.EQ,
 					LHS: []ast.Node{&ast.Identifier{Name: "a"}},
 					RHS: []ast.Node{&ast.CallExpr{
@@ -1172,7 +1172,7 @@ func TestParser(t *testing.T) {
 						Param: []ast.Node{
 							&ast.StringLiteral{Val: "a"},
 							&ast.BoolLiteral{Val: true},
-							&ast.AssignmentExpr{
+							&ast.AssignmentStmt{
 								Op:  ast.EQ,
 								LHS: []ast.Node{&ast.Identifier{Name: "a1"}},
 								RHS: []ast.Node{&ast.ListLiteral{
@@ -1196,12 +1196,12 @@ func TestParser(t *testing.T) {
 				&ast.CallExpr{
 					Obj: &ast.Identifier{Name: "f"},
 					Param: []ast.Node{
-						&ast.AssignmentExpr{
+						&ast.AssignmentStmt{
 							Op:  ast.EQ,
 							LHS: []ast.Node{&ast.Identifier{Name: "arg1"}},
 							RHS: []ast.Node{&ast.IntegerLiteral{Val: 1}},
 						},
-						&ast.AssignmentExpr{
+						&ast.AssignmentStmt{
 							Op:  ast.EQ,
 							LHS: []ast.Node{&ast.Identifier{Name: "arg2"}},
 							RHS: []ast.Node{&ast.IntegerLiteral{Val: 2}},
@@ -1224,7 +1224,7 @@ func TestParser(t *testing.T) {
 							Op:  ast.GT,
 							RHS: &ast.IntegerLiteral{Val: 1},
 						},
-						&ast.AssignmentExpr{
+						&ast.AssignmentStmt{
 							Op:  ast.EQ,
 							LHS: []ast.Node{&ast.Identifier{Name: "arg2"}},
 							RHS: []ast.Node{&ast.IntegerLiteral{Val: 2}},
@@ -1273,7 +1273,7 @@ func TestParser(t *testing.T) {
 					},
 				},
 				&ast.MapLiteral{},
-				&ast.AssignmentExpr{
+				&ast.AssignmentStmt{
 					Op:  ast.EQ,
 					LHS: []ast.Node{&ast.Identifier{Name: "a"}},
 					RHS: []ast.Node{&ast.MapLiteral{

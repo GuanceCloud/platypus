@@ -347,17 +347,17 @@ func (e *SliceExpr) String() string {
 	return fmt.Sprintf("%s[%s:%s%s]", e.Obj.String(), startStr, endStr, stepStr)
 }
 
-type AssignmentExpr struct {
+type AssignmentStmt struct {
 	LHS, RHS []Node
 	Op       Op
 	OpPos    token.LnColPos
 }
 
-func (e *AssignmentExpr) IsExpr() bool {
+func (e *AssignmentStmt) IsExpr() bool {
 	return true
 }
 
-func (e *AssignmentExpr) String() string {
+func (e *AssignmentStmt) String() string {
 	var l []string
 	for _, lhs := range e.LHS {
 		l = append(l, lhs.String())

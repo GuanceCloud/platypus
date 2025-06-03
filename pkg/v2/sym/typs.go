@@ -1,9 +1,9 @@
 package sym
 
-type TypCategory int
+type TypCat int
 
 const (
-	TypAnyCat TypCategory = iota
+	TypAnyCat TypCat = iota
 	TypBoolCat
 	TypIntCat
 	TypStringCat
@@ -14,42 +14,51 @@ const (
 	TypFuncCat
 )
 
+type KindCat int
+
+const (
+	KindVarb KindCat = 1 << iota
+	KindConst
+	KindFunc
+	KindClass
+)
+
 type Type interface {
-	Category() TypCategory
+	Category() TypCat
 }
 
 type TypAny struct{}
 
-func (*TypAny) Category() TypCategory { return TypAnyCat }
+func (*TypAny) Category() TypCat { return TypAnyCat }
 
 type TypBool struct{}
 
-func (*TypBool) Category() TypCategory { return TypBoolCat }
+func (*TypBool) Category() TypCat { return TypBoolCat }
 
 type TypInt struct{}
 
-func (*TypInt) Category() TypCategory { return TypIntCat }
+func (*TypInt) Category() TypCat { return TypIntCat }
 
 type TypFloat struct{}
 
-func (*TypFloat) Category() TypCategory { return TypFloatCat }
+func (*TypFloat) Category() TypCat { return TypFloatCat }
 
 type TypString struct{}
 
-func (*TypString) Category() TypCategory { return TypStringCat }
+func (*TypString) Category() TypCat { return TypStringCat }
 
 type TypMap struct {
 	Key   Type
 	Value Type
 }
 
-func (*TypMap) Category() TypCategory { return TypMapCat }
+func (*TypMap) Category() TypCat { return TypMapCat }
 
 type TypList struct {
 	Elem Type
 }
 
-func (*TypList) Category() TypCategory { return TypListCat }
+func (*TypList) Category() TypCat { return TypListCat }
 
 type Field struct {
 	Name string
@@ -62,7 +71,7 @@ type TypClass struct {
 	Method map[string]TypFunc
 }
 
-func (*TypClass) Category() TypCategory { return TypClassCat }
+func (*TypClass) Category() TypCat { return TypClassCat }
 
 type TypFunc struct {
 	Name    string
@@ -70,7 +79,7 @@ type TypFunc struct {
 	Results []*Field
 }
 
-func (TypFunc) Category() TypCategory { return TypFuncCat }
+func (TypFunc) Category() TypCat { return TypFuncCat }
 
 type TypeDesc struct {
 	typs []Type

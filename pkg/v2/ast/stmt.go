@@ -15,6 +15,8 @@ type IfelseStmt struct {
 	IfList IfList
 	Else   *BlockStmt
 
+	Label int
+
 	ElsePos token.LnColPos
 }
 
@@ -106,7 +108,10 @@ func (e *ForStmt) String() string {
 type BlockStmt struct {
 	LBracePos token.LnColPos
 	RBracePos token.LnColPos
-	Stmts     Stmts
+
+	Label int
+
+	Stmts Stmts
 }
 
 func (block *BlockStmt) String() string {
@@ -156,14 +161,14 @@ func (f *FnDefStmt) String() string {
 	}
 }
 
-type VarbDefStmt struct {
+type LetStmt struct {
 	LetPos token.LnColPos
-	Name   Node
+	Name   *Identifier
 	Type   Node
 	Value  Node
 }
 
-func (v *VarbDefStmt) String() string {
+func (v *LetStmt) String() string {
 	s := "let " + v.Name.String()
 	if v.Type != nil {
 		s += ": " + v.Type.String() + " "

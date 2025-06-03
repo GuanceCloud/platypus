@@ -374,7 +374,7 @@ func (p *parser) newUnaryExpr(op Item, r ast.Node) ast.Node {
 }
 
 func (p *parser) newAssignmentStmt(l, r []ast.Node, op Item) ast.Node {
-	return &ast.AssignmentExpr{
+	return &ast.AssignmentStmt{
 		LHS:   l,
 		Op:    AstOp(op.Typ),
 		RHS:   r,
@@ -493,9 +493,9 @@ func (p *parser) newConstDefStmt(c Item, name, value ast.Node) ast.Node {
 }
 
 func (p *parser) newLetStmt(v Item, name, typ, value ast.Node) ast.Node {
-	return &ast.VarbDefStmt{
+	return &ast.LetStmt{
 		LetPos: p.pos(v),
-		Name:   name,
+		Name:   name.(*ast.Identifier),
 		Type:   typ,
 		Value:  value,
 	}
