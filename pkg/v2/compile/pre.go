@@ -158,8 +158,27 @@ func LForIn(ctx *CContext, stmt *ast.ForInStmt) error {
 	ctx = NewChildContext(ctx)
 	stmt.SymTb = ctx.Tb.ScopeID()
 	stmt.Label = ctx.Lb.Insert()
-	return nil
 
+	inExpr := stmt.InExpr
+	if v, ok := inExpr.(*ast.InExpr); ok {
+		if lhs, ok := v.LHS.(*ast.Identifier); ok {
+			ctx.Tb.Define(lhs.Name, &sym.Sym{
+				Name: lhs.Name,
+				Type: &sym.TypAny{},
+			})
+		}
+	} else {
+		return fmt.Errorf("not in expr")
+	}
+
+	newCtx := NewChildContext(ctx)
+	if stmt.Body != nil {
+		if err := LStmt(newCtx, stmt.Body); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func LFor(ctx *CContext, stmt *ast.ForStmt) error {
