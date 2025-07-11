@@ -13,8 +13,8 @@ func getNode(node ast.Node) ast.Node {
 }
 
 type CContext struct {
-	SymTb *sym.SymTable
-	Lb    *Labels
+	Tb *sym.Tables
+	Lb *Labels
 }
 
 type Labels struct {
@@ -35,15 +35,14 @@ func NewLBs() *Labels {
 
 func NewContext() *CContext {
 	return &CContext{
-		SymTb: sym.NewSymTable(nil),
-		Lb:    NewLBs(),
+		Tb: sym.NewTabels(),
+		Lb: NewLBs(),
 	}
 }
 
 func NewChildContext(ctx *CContext) *CContext {
-	sym := sym.NewSymTable(ctx.SymTb)
 	return &CContext{
-		SymTb: sym,
-		Lb:    ctx.Lb,
+		Tb: ctx.Tb.NextScope(),
+		Lb: ctx.Lb,
 	}
 }

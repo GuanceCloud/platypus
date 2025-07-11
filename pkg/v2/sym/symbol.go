@@ -7,7 +7,7 @@ type Sym struct {
 }
 
 type tables struct {
-	v []*SymTable
+	v []*Syms
 }
 
 type Tables struct {
@@ -25,7 +25,7 @@ func NewTabels() *Tables {
 }
 
 func (tbs *Tables) NextScope() *Tables {
-	tbs.tables.v = append(tbs.tables.v, &SymTable{})
+	tbs.tables.v = append(tbs.tables.v, &Syms{})
 	return &Tables{
 		tables: tbs.tables,
 		parent: tbs.cur,
@@ -37,8 +37,16 @@ func (tbs *Tables) ScopeID() int {
 	return tbs.cur
 }
 
+func (tbs *Tables) scope() *Syms {
+	return tbs.tables.v[tbs.cur]
+}
+
 func (tbs *Tables) Define(name string, sym *Sym) bool {
-	return tbs.tables.v[tbs.cur].Add(name, sym)
+	return tbs.tables.v[tbs.cur].Define(name, sym)
+}
+
+func (tbs *Tables) GetCur(name string) (*Sym, bool) {
+	return tbs.tables.v[tbs.cur].Get(name)
 }
 
 func (tbs *Tables) Get(name string) (*Sym, bool) {
@@ -56,28 +64,28 @@ func (tbs *Tables) Get(name string) (*Sym, bool) {
 	}
 }
 
-type SymTable struct {
+type Syms struct {
 	Symbols map[string]*Sym
 
 	ParentID int
 	ID       int
 }
 
-func NewSymTable(parent *SymTable) *SymTable {
+func NewSyms(parent *Syms) *Syms {
 	var parentID, id int
 	if parent != nil {
 		parentID = parent.ID
 		id = parentID + 1
 	}
 
-	return &SymTable{
+	return &Syms{
 		Symbols:  map[string]*Sym{},
 		ParentID: parentID,
 		ID:       id,
 	}
 }
 
-func (s *SymTable) Add(name string, sym *Sym) bool {
+func (s *Syms) Define(name string, sym *Sym) bool {
 	if _, ok := s.Symbols[name]; ok {
 		return false
 	}
@@ -86,7 +94,7 @@ func (s *SymTable) Add(name string, sym *Sym) bool {
 	return true
 }
 
-func (s *SymTable) Get(name string) (*Sym, bool) {
+func (s *Syms) Get(name string) (*Sym, bool) {
 	sym, ok := s.Symbols[name]
 	return sym, ok
 }

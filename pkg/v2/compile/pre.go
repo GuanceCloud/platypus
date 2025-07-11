@@ -41,9 +41,8 @@ func LStmt(ctx *CContext, node ast.Node) error {
 }
 
 func LLetDef(ctx *CContext, stmt *ast.LetStmt) error {
-	tb := ctx.SymTb
 	name := stmt.Name.Name
-	_, ok := tb.Get(name)
+	_, ok := ctx.Tb.GetCur(name)
 	if ok {
 		return fmt.Errorf("sym exists")
 	}
@@ -83,7 +82,7 @@ func LLetDef(ctx *CContext, stmt *ast.LetStmt) error {
 		tp = sym.Any
 	}
 
-	if !tb.Add(name, &sym.Sym{
+	if !ctx.Tb.Define(name, &sym.Sym{
 		Name: name,
 		Type: tp,
 	}) {
@@ -96,13 +95,13 @@ func LLetDef(ctx *CContext, stmt *ast.LetStmt) error {
 func LBlock(ctx *CContext, stmt *ast.BlockStmt) error {
 	ctx = NewChildContext(ctx)
 	stmt.Label = ctx.Lb.Insert()
-	stmt.SymTb = ctx.SymTb
+	stmt.Table = ctx.Tb.ScopeID()
 
 	return BuildSyms(ctx, stmt.Stmts)
 }
 
 func LAssign(ctx *CContext, stmt *ast.AssignmentStmt) error {
-	tb := ctx.SymTb
+
 	lhs := stmt.LHS
 	rhs := stmt.RHS
 
@@ -117,8 +116,8 @@ func LAssign(ctx *CContext, stmt *ast.AssignmentStmt) error {
 		switch node := node.(type) {
 		case *ast.Identifier:
 			name := node.Name
-			if _, ok := tb.Get(name); !ok {
-				tb.Add(name, &sym.Sym{
+			if _, ok := ctx.Tb.GetCur(name); !ok {
+				ctx.Tb.Define(name, &sym.Sym{
 					Name: name,
 					Type: &sym.TypAny{},
 				})
@@ -156,12 +155,16 @@ func LIf(ctx *CContext, stmt *ast.IfelseStmt) error {
 }
 
 func LForIn(ctx *CContext, stmt *ast.ForInStmt) error {
+	ctx = NewChildContext(ctx)
+	stmt.SymTb = ctx.Tb.ScopeID()
+	stmt.Label = ctx.Lb.Insert()
+	return nil
 
 }
 
 func LFor(ctx *CContext, stmt *ast.ForStmt) error {
 	ctx = NewChildContext(ctx)
-	stmt.SymTb = ctx.SymTb
+	stmt.SymTb = ctx.Tb.ScopeID()
 	stmt.Label = ctx.Lb.Insert()
 
 	if err := LStmt(ctx, stmt.Init); err != nil {
@@ -190,7 +193,7 @@ func LFuncDefStmt(ctx *CContext, stmt *ast.FnDefStmt) error {
 
 	newCtx := NewChildContext(ctx)
 	stmt.Label = ctx.Lb.Insert()
-	stmt.SymTb = newCtx.SymTb
+	stmt.Table = ctx.Tb.ScopeID()
 	for _, v := range stmt.FnType.Params {
 		p := &sym.Param{}
 		if v.DType != nil {
@@ -205,7 +208,7 @@ func LFuncDefStmt(ctx *CContext, stmt *ast.FnDefStmt) error {
 		p.IsVarb = v.Varb
 		fn.Params = append(fn.Params, p)
 		if name, ok := v.Name.(*ast.Identifier); ok {
-			newCtx.SymTb.Add(name.String(), &sym.Sym{
+			newCtx.Tb.Define(name.String(), &sym.Sym{
 				Name: name.String(),
 				Type: p.Type,
 			})
@@ -222,7 +225,7 @@ func LFuncDefStmt(ctx *CContext, stmt *ast.FnDefStmt) error {
 		fn.Returns = append(fn.Returns, typ)
 	}
 
-	ctx.SymTb.Add(name, &sym.Sym{
+	ctx.Tb.Define(name, &sym.Sym{
 		Name: name,
 		Type: fn,
 	})
