@@ -97,6 +97,14 @@ func (p *FnParam) String() string {
 	return s
 }
 
+type TypeAny struct{}
+
+func (*TypeAny) IsType() {}
+
+func (t *TypeAny) String() string {
+	return "any"
+}
+
 type TypeFn struct {
 	Params  []FnParam
 	Results []Node
@@ -164,14 +172,6 @@ func (t *TypeList) String() string {
 }
 
 func (*TypeList) IsType() {}
-
-type TypeArray struct {
-	LBracketPos token.LnColPos
-	RBracketPos token.LnColPos
-
-	VType Node
-	Len   Node
-}
 
 type TypeBasic struct {
 	Pos   token.LnColPos

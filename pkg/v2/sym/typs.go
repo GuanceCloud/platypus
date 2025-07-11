@@ -23,6 +23,14 @@ const (
 	KindClass
 )
 
+var (
+	Bool  = &TypBool{}
+	Float = &TypFloat{}
+	Int   = &TypInt{}
+	Str   = &TypString{}
+	Any   = &TypAny{}
+)
+
 type Type interface {
 	Category() TypCat
 }
@@ -58,6 +66,19 @@ type TypList struct {
 	Elem Type
 }
 
+func NewListTyp(tp Type) *TypList {
+	return &TypList{
+		Elem: tp,
+	}
+}
+
+func NewMapTyp() *TypMap {
+	return &TypMap{
+		Key:   Str,
+		Value: Any,
+	}
+}
+
 func (*TypList) Category() TypCat { return TypListCat }
 
 type Field struct {
@@ -73,10 +94,15 @@ type TypClass struct {
 
 func (*TypClass) Category() TypCat { return TypClassCat }
 
+type Param struct {
+	Type   Type
+	IsVarb bool
+}
+
 type TypFunc struct {
 	Name    string
-	Params  []*Field
-	Results []*Field
+	Params  []*Param
+	Returns []Type
 }
 
 func (TypFunc) Category() TypCat { return TypFuncCat }

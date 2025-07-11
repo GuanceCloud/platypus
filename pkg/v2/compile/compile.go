@@ -21,7 +21,7 @@ func Compile(stmts []ast.Node) *Insns {
 	for _, node := range stmts {
 		switch n := node.(type) {
 		case *ast.LetStmt:
-
+			_ = n
 		}
 
 	}

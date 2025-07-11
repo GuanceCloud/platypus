@@ -340,7 +340,18 @@ func lexStatements(l *Lexer) stateFn {
 		l.emit(EOL)
 
 	case r == '.':
-		l.emit(DOT)
+		if t := l.peek(); t == '.' {
+			l.next()
+			if t := l.peek(); t == '.' {
+				l.next()
+				l.emit(VAR_ARG)
+			} else {
+				l.backup()
+				l.emit(DOT)
+			}
+		} else {
+			l.emit(DOT)
+		}
 		return lexSpaceAndLineCommentForOp(l)
 
 	case r == '|':

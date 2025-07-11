@@ -7,46 +7,9 @@ import (
 	"github.com/GuanceCloud/platypus/pkg/v2/sym"
 )
 
-type Context struct {
-	SymTb *sym.SymTable
-	Lb    *Labels
-}
-
-type Labels struct {
-	Pos int
-	Lb  map[int]any
-}
-
-func (lb *Labels) Insert() int {
-	lb.Pos++
-	return lb.Pos
-}
-
-func NewLBs() *Labels {
-	return &Labels{
-		Lb: map[int]any{},
-	}
-}
-
-func NewContext() *Context {
-	return &Context{
-		SymTb: sym.NewSymTable(),
-		Lb:    NewLBs(),
-	}
-}
-
-func NewChildContext(ctx *Context) *Context {
-	sym := sym.NewSymTable()
-	sym.SetParent(ctx.SymTb)
-	return &Context{
-		SymTb: sym,
-		Lb:    ctx.Lb,
-	}
-}
-
-func BuildSyms(ctx *Context, stmts ast.Stmts) error {
+func BuildSyms(ctx *CContext, stmts ast.Stmts) error {
 	for _, stmt := range stmts {
-		if err := LoopStmt(ctx, stmt); err != nil {
+		if err := LStmt(ctx, stmt); err != nil {
 			return err
 		}
 	}
@@ -54,31 +17,30 @@ func BuildSyms(ctx *Context, stmts ast.Stmts) error {
 	return nil
 }
 
-func LoopStmt(ctx *Context, node ast.Node) error {
+func LStmt(ctx *CContext, node ast.Node) error {
 	switch v := node.(type) {
 	case *ast.AssignmentStmt:
 		return LAssign(ctx, v)
 	case *ast.LetStmt:
+		return LLetDef(ctx, v)
 	case *ast.FnDefStmt:
+		return LFuncDefStmt(ctx, v)
 	case *ast.IfelseStmt:
 		return LIf(ctx, v)
 	case *ast.ForInStmt:
-	case *ast.Identifier:
-	case *ast.ArithmeticExpr:
-	case *ast.CallExpr:
-	case *ast.ContinueStmt:
-	case *ast.BreakStmt:
-	case *ast.ReturnStmt:
+	case *ast.ForStmt:
+		return LFor(ctx, v)
+	case *ast.BlockStmt:
+		return LBlock(ctx, v)
 	case *ast.ParenExpr:
-		return LoopStmt(ctx, v.Param)
+		return LStmt(ctx, v.Param)
 	default:
-		// return fmt.Errorf("unspported node type")
 	}
 
 	return nil
 }
 
-func LLetDef(ctx *Context, stmt *ast.LetStmt) error {
+func LLetDef(ctx *CContext, stmt *ast.LetStmt) error {
 	tb := ctx.SymTb
 	name := stmt.Name.Name
 	_, ok := tb.Get(name)
@@ -88,29 +50,37 @@ func LLetDef(ctx *Context, stmt *ast.LetStmt) error {
 
 	var tp sym.Type = &sym.TypAny{}
 
-	switch v := stmt.Type.(type) {
-	case *ast.TypeMap:
-		tp = &sym.TypMap{
-			Key:   &sym.TypString{},
-			Value: &sym.TypAny{},
+	if stmt.Type != nil {
+		switch v := stmt.Type.(type) {
+		case *ast.TypeMap:
+			tp = &sym.TypMap{
+				Key:   &sym.TypString{},
+				Value: &sym.TypAny{},
+			}
+		case *ast.TypeList:
+			tp = &sym.TypList{
+				Elem: &sym.TypAny{},
+			}
+		case *ast.TypeBasic:
+			switch v.DType {
+			case ast.Int:
+				tp = sym.Int
+			case ast.Float:
+				tp = sym.Float
+			case ast.Bool:
+				tp = sym.Bool
+			case ast.String:
+				tp = sym.Str
+			case ast.Any:
+				tp = sym.Any
+			}
+		case *ast.TypeAny:
+			tp = sym.Any
+		default:
+			return fmt.Errorf("unsuppored type")
 		}
-	case *ast.TypeList:
-		tp = &sym.TypList{
-			Elem: &sym.TypAny{},
-		}
-	case *ast.TypeBasic:
-		switch v.DType {
-		case ast.Int:
-			tp = &sym.TypInt{}
-		case ast.Float:
-			tp = &sym.TypFloat{}
-		case ast.Bool:
-			tp = &sym.TypBool{}
-		case ast.String:
-			tp = &sym.TypString{}
-		}
-	default:
-		return fmt.Errorf("unsuppored type")
+	} else {
+		tp = sym.Any
 	}
 
 	if !tb.Add(name, &sym.Sym{
@@ -123,13 +93,21 @@ func LLetDef(ctx *Context, stmt *ast.LetStmt) error {
 	return nil
 }
 
-func LAssign(ctx *Context, stmt *ast.AssignmentStmt) error {
+func LBlock(ctx *CContext, stmt *ast.BlockStmt) error {
+	ctx = NewChildContext(ctx)
+	stmt.Label = ctx.Lb.Insert()
+	stmt.SymTb = ctx.SymTb
+
+	return BuildSyms(ctx, stmt.Stmts)
+}
+
+func LAssign(ctx *CContext, stmt *ast.AssignmentStmt) error {
 	tb := ctx.SymTb
 	lhs := stmt.LHS
 	rhs := stmt.RHS
 
 	for i := range rhs {
-		if err := LoopStmt(ctx, rhs[i]); err != nil {
+		if err := LStmt(ctx, rhs[i]); err != nil {
 			return err
 		}
 	}
@@ -146,11 +124,11 @@ func LAssign(ctx *Context, stmt *ast.AssignmentStmt) error {
 				})
 			}
 		case *ast.IndexExpr:
-			if err := LoopStmt(ctx, rhs[i]); err != nil {
+			if err := LStmt(ctx, rhs[i]); err != nil {
 				return err
 			}
 		case *ast.AttrExpr:
-			if err := LoopStmt(ctx, rhs[i]); err != nil {
+			if err := LStmt(ctx, rhs[i]); err != nil {
 				return err
 			}
 		default:
@@ -161,18 +139,15 @@ func LAssign(ctx *Context, stmt *ast.AssignmentStmt) error {
 	return nil
 }
 
-func LIf(ctx *Context, stmt *ast.IfelseStmt) error {
+func LIf(ctx *CContext, stmt *ast.IfelseStmt) error {
 	for _, v := range stmt.IfList {
-		v.Block.Label = ctx.Lb.Insert()
-		ctx := NewChildContext(ctx)
-		if err := BuildSyms(ctx, v.Block.Stmts); err != nil {
+		if err := LStmt(ctx, v.Block); err != nil {
 			return err
 		}
 	}
 
 	if stmt.Else != nil {
-		stmt.Else.Label = ctx.Lb.Insert()
-		if err := BuildSyms(ctx, stmt.Else.Stmts); err != nil {
+		if err := LStmt(ctx, stmt.Else); err != nil {
 			return err
 		}
 	}
@@ -180,9 +155,105 @@ func LIf(ctx *Context, stmt *ast.IfelseStmt) error {
 	return nil
 }
 
-func getNode(node ast.Node) ast.Node {
-	if v, ok := node.(*ast.ParenExpr); ok {
-		return getNode(v.Param)
+func LForIn(ctx *CContext, stmt *ast.ForInStmt) error {
+
+}
+
+func LFor(ctx *CContext, stmt *ast.ForStmt) error {
+	ctx = NewChildContext(ctx)
+	stmt.SymTb = ctx.SymTb
+	stmt.Label = ctx.Lb.Insert()
+
+	if err := LStmt(ctx, stmt.Init); err != nil {
+		return err
 	}
-	return node
+	if err := LStmt(ctx, stmt.Cond); err != nil {
+		return err
+	}
+
+	if err := LStmt(ctx, stmt.Body); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func LFuncDefStmt(ctx *CContext, stmt *ast.FnDefStmt) error {
+	nameNode, ok := getNode(stmt.Name).(*ast.Identifier)
+	if !ok {
+		return fmt.Errorf("unsuppored node type")
+	}
+
+	name := nameNode.String()
+
+	fn := sym.TypFunc{}
+
+	newCtx := NewChildContext(ctx)
+	stmt.Label = ctx.Lb.Insert()
+	stmt.SymTb = newCtx.SymTb
+	for _, v := range stmt.FnType.Params {
+		p := &sym.Param{}
+		if v.DType != nil {
+			typ, err := getType(getNode(v.DType))
+			if err != nil {
+				return err
+			}
+			p.Type = typ
+		} else {
+			p.Type = sym.Any
+		}
+		p.IsVarb = v.Varb
+		fn.Params = append(fn.Params, p)
+		if name, ok := v.Name.(*ast.Identifier); ok {
+			newCtx.SymTb.Add(name.String(), &sym.Sym{
+				Name: name.String(),
+				Type: p.Type,
+			})
+		} else {
+			return fmt.Errorf("unsupported node type")
+		}
+	}
+
+	for _, v := range stmt.FnType.Results {
+		typ, err := getType(getNode(v))
+		if err != nil {
+			return err
+		}
+		fn.Returns = append(fn.Returns, typ)
+	}
+
+	ctx.SymTb.Add(name, &sym.Sym{
+		Name: name,
+		Type: fn,
+	})
+
+	return LStmt(newCtx, stmt.Block)
+}
+
+func getType(node ast.Node) (sym.Type, error) {
+	switch v := node.(type) {
+	case *ast.TypeBasic:
+		switch v.DType {
+		case ast.Any:
+			return sym.Any, nil
+		case ast.Int:
+			return sym.Int, nil
+		case ast.Bool:
+			return sym.Bool, nil
+		case ast.Float:
+			return sym.Float, nil
+		case ast.String:
+			return sym.Str, nil
+		default:
+			return nil, fmt.Errorf("unsupported type")
+		}
+	case *ast.TypeList:
+		return sym.NewListTyp(sym.Any), nil
+	case *ast.TypeMap:
+		return sym.NewMapTyp(), nil
+	case *ast.TypeAny:
+		return sym.Any, nil
+	default:
+		return nil, fmt.Errorf("unsupported type")
+	}
 }

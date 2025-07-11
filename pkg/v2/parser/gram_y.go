@@ -991,7 +991,7 @@ yydefault:
 		yyDollar = yyS[yypt-2 : yypt+1]
 //line gram.y:304
 		{
-			yyVAL.node = yylex.(*parser).newLetStmt(yyDollar[1].item, nil, nil, nil)
+			yyVAL.node = yylex.(*parser).newLetStmt(yyDollar[1].item, yyDollar[2].node, nil, nil)
 		}
 	case 58:
 		yyDollar = yyS[yypt-4 : yypt+1]

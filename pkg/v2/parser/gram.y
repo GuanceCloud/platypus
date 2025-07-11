@@ -302,7 +302,7 @@ let_stmt: LET identifier COLON data_type EQ expr
 }
 | LET identifier
 {
-	$$ =  yylex.(*parser).newLetStmt($1, nil, nil, nil)
+	$$ =  yylex.(*parser).newLetStmt($1, $2, nil, nil)
 }
 | LET identifier EQ expr
 {

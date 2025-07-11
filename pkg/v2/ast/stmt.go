@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/GuanceCloud/platypus/pkg/token"
+	"github.com/GuanceCloud/platypus/pkg/v2/sym"
 )
 
 type IfelseStmt struct {
@@ -78,6 +79,9 @@ type ForInStmt struct {
 	InExpr Node
 	Body   *BlockStmt
 
+	Label int
+	SymTb *sym.SymTable
+
 	ForPos token.LnColPos
 }
 
@@ -98,6 +102,9 @@ type ForStmt struct {
 	// step2: -> step3
 	Body *BlockStmt
 
+	Label int
+	SymTb *sym.SymTable
+
 	ForPos token.LnColPos
 }
 
@@ -110,6 +117,7 @@ type BlockStmt struct {
 	RBracePos token.LnColPos
 
 	Label int
+	SymTb *sym.SymTable
 
 	Stmts Stmts
 }
@@ -147,9 +155,12 @@ type FnDefStmt struct {
 
 	Name Node
 
+	Label int
+	SymTb *sym.SymTable
+
 	FnType *TypeFn
 
-	Block Node
+	Block *BlockStmt
 }
 
 func (f *FnDefStmt) String() string {
