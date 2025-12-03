@@ -83,6 +83,10 @@ for x in [1,2,3 ] {
 	break
 }
 
+x = "\u0000"
+x = "\u0000zzzz"
+x = "zzz\u0000"
+
 add_key(len1, len([12,2]))
 add_key(len2, len("123"))
 
