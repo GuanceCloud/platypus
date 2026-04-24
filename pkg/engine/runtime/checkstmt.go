@@ -252,22 +252,22 @@ func RunIfElseStmtCheck(ctx *Task, ctxCheck *ContextCheck, stmt *ast.IfelseStmt)
 			return err
 		}
 
-		ctx.StackEnterNew()
 		if ifelem.Block != nil {
-			if err := RunStmtsCheck(ctx, ctxCheck, ifelem.Block.Stmts); err != nil {
+			if err := runScoped(ctx, func() *errchain.PlError {
+				return RunStmtsCheck(ctx, ctxCheck, ifelem.Block.Stmts)
+			}); err != nil {
 				return err
 			}
 		}
-		ctx.StackExitCur()
 	}
 
-	ctx.StackEnterNew()
 	if stmt.Else != nil {
-		if err := RunStmtsCheck(ctx, ctxCheck, stmt.Else.Stmts); err != nil {
+		if err := runScoped(ctx, func() *errchain.PlError {
+			return RunStmtsCheck(ctx, ctxCheck, stmt.Else.Stmts)
+		}); err != nil {
 			return err
 		}
 	}
-	ctx.StackExitCur()
 
 	return nil
 }
@@ -287,26 +287,26 @@ func RunForStmtCheck(ctx *Task, ctxCheck *ContextCheck, stmt *ast.ForStmt) *errc
 	}
 
 	ctxCheck.forstmt = append(ctxCheck.forstmt, true)
+	defer func() {
+		ctxCheck.forstmt = ctxCheck.forstmt[0 : len(ctxCheck.forstmt)-1]
+		ctxCheck.breakstmt = false
+		ctxCheck.continuestmt = false
+	}()
 
 	// check body
-	ctx.StackEnterNew()
 	if stmt.Body != nil {
-		if err := RunStmtsCheck(ctx, ctxCheck, stmt.Body.Stmts); err != nil {
-			ctx.StackExitCur()
+		if err := runScoped(ctx, func() *errchain.PlError {
+			return RunStmtsCheck(ctx, ctxCheck, stmt.Body.Stmts)
+		}); err != nil {
 			return err
 		}
 	}
-
-	ctx.StackExitCur()
 
 	// check loop
 	if err := RunStmtCheck(ctx, ctxCheck, stmt.Loop); err != nil {
 		return err
 	}
 
-	ctxCheck.forstmt = ctxCheck.forstmt[0 : len(ctxCheck.forstmt)-1]
-	ctxCheck.breakstmt = false
-	ctxCheck.continuestmt = false
 	return nil
 }
 
@@ -328,20 +328,20 @@ func RunForInStmtCheck(ctx *Task, ctxCheck *ContextCheck, stmt *ast.ForInStmt) *
 	}
 
 	ctxCheck.forstmt = append(ctxCheck.forstmt, true)
+	defer func() {
+		ctxCheck.forstmt = ctxCheck.forstmt[0 : len(ctxCheck.forstmt)-1]
+		ctxCheck.breakstmt = false
+		ctxCheck.continuestmt = false
+	}()
 
 	// check body
-	ctx.StackEnterNew()
 	if stmt.Body != nil {
-		if err := RunStmtsCheck(ctx, ctxCheck, stmt.Body.Stmts); err != nil {
+		if err := runScoped(ctx, func() *errchain.PlError {
+			return RunStmtsCheck(ctx, ctxCheck, stmt.Body.Stmts)
+		}); err != nil {
 			return err
 		}
 	}
-
-	ctx.StackExitCur()
-
-	ctxCheck.forstmt = ctxCheck.forstmt[0 : len(ctxCheck.forstmt)-1]
-	ctxCheck.breakstmt = false
-	ctxCheck.continuestmt = false
 	return nil
 }
 

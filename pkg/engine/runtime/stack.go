@@ -75,6 +75,9 @@ func (stack *Stack) Set(key string, value any, dType ast.DType) {
 	}
 
 	// new
+	if stack.Data == nil {
+		stack.Data = map[string]*Varb{}
+	}
 	stack.Data[key] = &Varb{
 		Value: value,
 		DType: dType,

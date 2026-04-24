@@ -9,6 +9,7 @@ import (
 
 	"github.com/GuanceCloud/platypus/pkg/ast"
 	"github.com/GuanceCloud/platypus/pkg/errchain"
+	"github.com/GuanceCloud/platypus/pkg/token"
 )
 
 type Fn struct {
@@ -301,13 +302,9 @@ func GetParam(ctx *Task, expr *ast.CallExpr, params []*Param, i int) (any, *errc
 				return nil, NewRunError(ctx, fmt.Sprintf(
 					"variable parameter value %d not passed", ePIndex), expr.ParamNormalized[i].StartPos())
 			}
-			err := RunExpr(ctx, p)
+			v, err := getParamValue(ctx, expr, i+ePIndex, p)
 			if err != nil {
 				return nil, err
-			}
-			v, errReg := ctx.Regs.GetRet()
-			if errReg != nil {
-				return nil, NewRunError(ctx, errReg.Error(), p.StartPos())
 			}
 			ret = append(ret, v.V)
 		}
@@ -321,16 +318,30 @@ func GetParam(ctx *Task, expr *ast.CallExpr, params []*Param, i int) (any, *errc
 					"parameter %s was not passed", params[i].Name), expr.NamePos)
 			}
 		}
-		err := RunExpr(ctx, expr.ParamNormalized[i])
+		v, err := getParamValue(ctx, expr, i, expr.ParamNormalized[i])
 		if err != nil {
 			return nil, err
 		}
-		v, errReg := ctx.Regs.GetRet()
-		if errReg != nil {
-			return nil, NewRunError(ctx, errReg.Error(), expr.ParamNormalized[i].StartPos())
-		}
 		return v.V, nil
 	}
+}
+
+func getParamValue(ctx *Task, call *ast.CallExpr, i int, node *ast.Node) (V, *errchain.PlError) {
+	if ctx.call != nil && ctx.call.call == call && i < len(ctx.call.args) && ctx.call.args[i] != nil {
+		if i < len(ctx.call.argsV) && ctx.call.argsV[i] != nil {
+			return ctx.call.argsV[i].evalValue(ctx, token.InvalidLnColPos)
+		}
+		return evalOne(ctx, ctx.call.args[i], node.StartPos())
+	}
+
+	if err := RunExpr(ctx, node); err != nil {
+		return V{}, err
+	}
+	v, errReg := ctx.Regs.GetRet()
+	if errReg != nil {
+		return V{}, NewRunError(ctx, errReg.Error(), node.StartPos())
+	}
+	return v, nil
 }
 
 func GetParamInt(ctx *Task, expr *ast.CallExpr, params []*Param, i int) (int64, *errchain.PlError) {

@@ -25,6 +25,12 @@ func RunStmts(ctx *Task, nodes ast.Stmts) *errchain.PlError {
 	return nil
 }
 
+func runScoped(ctx *Task, fn func() *errchain.PlError) (err *errchain.PlError) {
+	ctx.StackEnterNew()
+	defer ctx.StackExitCur()
+	return fn()
+}
+
 func RunIfElseStmt(ctx *Task, stmt *ast.IfelseStmt) *errchain.PlError {
 	ctx.StackEnterNew()
 	defer ctx.StackExitCur()
@@ -46,13 +52,11 @@ func RunIfElseStmt(ctx *Task, stmt *ast.IfelseStmt) *errchain.PlError {
 
 		if ifstmt.Block != nil {
 			// run if or elif stmt
-			ctx.StackEnterNew()
-
-			if err := RunStmts(ctx, ifstmt.Block.Stmts); err != nil {
+			if err := runScoped(ctx, func() *errchain.PlError {
+				return RunStmts(ctx, ifstmt.Block.Stmts)
+			}); err != nil {
 				return err
 			}
-
-			ctx.StackExitCur()
 		}
 
 		return nil
@@ -60,11 +64,11 @@ func RunIfElseStmt(ctx *Task, stmt *ast.IfelseStmt) *errchain.PlError {
 
 	if stmt.Else != nil {
 		// run else stmt
-		ctx.StackEnterNew()
-		if err := RunStmts(ctx, stmt.Else.Stmts); err != nil {
+		if err := runScoped(ctx, func() *errchain.PlError {
+			return RunStmts(ctx, stmt.Else.Stmts)
+		}); err != nil {
 			return err
 		}
-		ctx.StackExitCur()
 	}
 
 	return nil
@@ -134,11 +138,11 @@ func RunForStmt(ctx *Task, stmt *ast.ForStmt) *errchain.PlError {
 
 		if stmt.Body != nil {
 			// for body
-			ctx.StackEnterNew()
-			if err := RunStmts(ctx, stmt.Body.Stmts); err != nil {
+			if err := runScoped(ctx, func() *errchain.PlError {
+				return RunStmts(ctx, stmt.Body.Stmts)
+			}); err != nil {
 				return err
 			}
-			ctx.StackExitCur()
 		}
 
 		if ctx.loopBreak {
@@ -498,7 +502,7 @@ func RunUnaryExpr(ctx *Task, expr *ast.UnaryExpr) *errchain.PlError {
 }
 
 func RunListInitExpr(ctx *Task, expr *ast.ListLiteral) *errchain.PlError {
-	ret := []any{}
+	ret := make([]any, 0, len(expr.List))
 	for _, v := range expr.List {
 		err := RunExpr(ctx, v)
 		if err != nil {
@@ -515,7 +519,7 @@ func RunListInitExpr(ctx *Task, expr *ast.ListLiteral) *errchain.PlError {
 }
 
 func RunMapInitExpr(ctx *Task, expr *ast.MapLiteral) *errchain.PlError {
-	ret := map[string]any{}
+	ret := make(map[string]any, len(expr.KeyValeList))
 
 	for _, v := range expr.KeyValeList {
 		err := RunExpr(ctx, v[0])
@@ -835,6 +839,18 @@ func runAssignArith(ctx *Task, l, r V, op ast.Op, pos token.LnColPos) (
 			"unsupported op", pos)
 	}
 
+	if l.T == ast.Int && r.T == ast.Int {
+		lv, lok := toInt64Fast(l.V)
+		rv, rok := toInt64Fast(r.V)
+		if lok && rok {
+			v, dtype, err := arithOpInt(lv, rv, arithOp)
+			if err != nil {
+				return r, NewRunError(ctx, err.Error(), pos)
+			}
+			return V{v, dtype}, nil
+		}
+	}
+
 	if !arithType(l.T) {
 		return V{}, NewRunError(ctx, fmt.Sprintf(
 			"unsupported lhs data type: %s", l.T), pos)
@@ -1143,24 +1159,30 @@ func RunSliceExpr(ctx *Task, expr *ast.SliceExpr) *errchain.PlError {
 	case ast.String:
 		str := obj.V.(string)
 		if stepInt > 0 {
-			result := ""
+			var result strings.Builder
+			if n := (endInt - startInt + stepInt - 1) / stepInt; n > 0 {
+				result.Grow(n)
+			}
 			if startInt < 0 {
 				startInt = 0
 			}
 			for i := startInt; i < endInt && i < length; i += stepInt {
-				result += string(str[i])
+				result.WriteByte(str[i])
 			}
-			ctx.Regs.ReturnAppend(V{result, ast.String})
+			ctx.Regs.ReturnAppend(V{result.String(), ast.String})
 			return nil
 		} else {
-			result := ""
+			var result strings.Builder
 			if startInt > length-1 {
 				startInt = length - 1
 			}
-			for i := startInt; i > endInt && i >= 0; i += stepInt {
-				result += string(str[i])
+			if n := (startInt - endInt - stepInt - 1) / (-stepInt); n > 0 {
+				result.Grow(n)
 			}
-			ctx.Regs.ReturnAppend(V{result, ast.String})
+			for i := startInt; i > endInt && i >= 0; i += stepInt {
+				result.WriteByte(str[i])
+			}
+			ctx.Regs.ReturnAppend(V{result.String(), ast.String})
 			return nil
 		}
 	default:
