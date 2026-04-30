@@ -109,7 +109,7 @@ func (e *bytecodeExpr) run(ctx *Task) (err *errchain.PlError) {
 	if err != nil {
 		return err
 	}
-	ctx.Regs.ReturnAppend(v)
+	ctx.Regs.ReturnOne(v)
 	return nil
 }
 

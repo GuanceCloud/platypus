@@ -203,7 +203,7 @@ func RunForInStmt(ctx *Task, stmt *ast.ForInStmt) *errchain.PlError {
 					return err
 				}
 			}
-			ctx.stackCur.Clear()
+			ctx.stackClearCur()
 
 			if forbreak(ctx) {
 				break
@@ -220,7 +220,7 @@ func RunForInStmt(ctx *Task, stmt *ast.ForInStmt) *errchain.PlError {
 				"inner type error", stmt.Iter.StartPos())
 		}
 		for x := range iter {
-			ctx.stackCur.Clear()
+			ctx.stackClearCur()
 			ctx.SetVarb(stmt.Varb.Identifier().Name, V{x, ast.String})
 			if stmt.Body != nil {
 				if err := RunStmts(ctx, stmt.Body.Stmts); err != nil {
@@ -242,7 +242,7 @@ func RunForInStmt(ctx *Task, stmt *ast.ForInStmt) *errchain.PlError {
 				"inner type error", stmt.Iter.StartPos())
 		}
 		for _, x := range iter {
-			ctx.stackCur.Clear()
+			ctx.stackClearCur()
 			x, dtype := ast.DectDataType(x)
 			if dtype == ast.Invalid {
 				return NewRunError(ctx,

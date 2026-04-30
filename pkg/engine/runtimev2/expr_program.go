@@ -102,8 +102,21 @@ func (c *compiler) compileExpr(node *ast.Node) expr {
 		}
 	case ast.TypeSliceExpr:
 		e := node.SliceExpr()
+		obj := c.compileExpr(e.Obj)
+		if start, end, step, ok := compileConstSliceBounds(e.Start, e.End, e.Step); ok {
+			return constSliceExpr{
+				obj:    obj,
+				objN:   e.Obj,
+				start:  start,
+				end:    end,
+				step:   step,
+				startN: e.Start,
+				endN:   e.End,
+				stepN:  e.Step,
+			}
+		}
 		return sliceExpr{
-			obj:    c.compileExpr(e.Obj),
+			obj:    obj,
 			start:  c.compileExpr(e.Start),
 			end:    c.compileExpr(e.End),
 			step:   c.compileExpr(e.Step),
@@ -119,9 +132,11 @@ func (c *compiler) compileExpr(node *ast.Node) expr {
 			target := assignTarget{node: node, slot: -1}
 			switch node.NodeType {
 			case ast.TypeIdentifier:
-				target.slot = c.slot(node.Identifier().Name)
+				target.name = node.Identifier().Name
+				target.slot = c.slot(target.name)
 			case ast.TypeIndexExpr:
-				target.slot = c.slot(node.IndexExpr().Obj.Name)
+				target.name = node.IndexExpr().Obj.Name
+				target.slot = c.slot(target.name)
 			}
 			lhs = append(lhs, target)
 		}
@@ -229,7 +244,7 @@ type literalExpr struct {
 }
 
 func (e literalExpr) run(ctx *Task) *errchain.PlError {
-	ctx.Regs.ReturnAppend(e.val)
+	ctx.Regs.ReturnOne(e.val)
 	return nil
 }
 
@@ -248,7 +263,7 @@ func (e identifierExpr) run(ctx *Task) *errchain.PlError {
 	if err != nil {
 		return err
 	}
-	ctx.Regs.ReturnAppend(v)
+	ctx.Regs.ReturnOne(v)
 	return nil
 }
 
@@ -290,7 +305,7 @@ func (e unaryExpr) run(ctx *Task) *errchain.PlError {
 	if err != nil {
 		return err
 	}
-	ctx.Regs.ReturnAppend(v)
+	ctx.Regs.ReturnOne(v)
 	return nil
 }
 
@@ -353,7 +368,7 @@ func (e arithmeticExpr) run(ctx *Task) *errchain.PlError {
 	if err != nil {
 		return err
 	}
-	ctx.Regs.ReturnAppend(v)
+	ctx.Regs.ReturnOne(v)
 	return nil
 }
 
@@ -416,7 +431,7 @@ func (e conditionExpr) run(ctx *Task) *errchain.PlError {
 	if err != nil {
 		return err
 	}
-	ctx.Regs.ReturnAppend(v)
+	ctx.Regs.ReturnOne(v)
 	return nil
 }
 
@@ -471,6 +486,7 @@ type assignExpr struct {
 type assignTarget struct {
 	node *ast.Node
 	slot int
+	name string
 }
 
 func (e assignExpr) run(ctx *Task) *errchain.PlError {
@@ -560,19 +576,84 @@ func (e assignExpr) runSingle(ctx *Task) *errchain.PlError {
 	lhs := e.lhs[0]
 	switch e.op {
 	case ast.EQ:
+		if lhs.node.NodeType == ast.TypeIdentifier {
+			if ctx.slotSetIndex(lhs.slot, rhs) {
+				return nil
+			}
+			ctx.SetVarb(lhs.name, rhs)
+			return nil
+		}
 		return e.assignValue(ctx, lhs, rhs)
 	case ast.SUBEQ, ast.ADDEQ, ast.MULEQ, ast.DIVEQ, ast.MODEQ:
-		lval, err := evalLValue(ctx, lhs)
-		if err != nil {
-			return err
+		var lval V
+		if lhs.node.NodeType == ast.TypeIdentifier {
+			var getErr error
+			lval, getErr = getValueBySlotOrName(ctx, lhs.slot, lhs.name)
+			if getErr != nil {
+				return NewRunError(ctx, getErr.Error(), lhs.node.StartPos())
+			}
+			if r, ok, fastErr := runAssignIntFast(lval, rhs, e.op); ok || fastErr != nil {
+				if fastErr != nil {
+					return NewRunError(ctx, fastErr.Error(), e.opPos)
+				}
+				if ctx.slotSetIndex(lhs.slot, r) {
+					return nil
+				}
+				ctx.SetVarb(lhs.name, r)
+				return nil
+			}
+		} else {
+			var err *errchain.PlError
+			lval, err = evalLValue(ctx, lhs)
+			if err != nil {
+				return err
+			}
 		}
 		r, err := runAssignArith(ctx, lval, rhs, e.op, e.opPos)
 		if err != nil {
 			return err
 		}
+		if lhs.node.NodeType == ast.TypeIdentifier {
+			if ctx.slotSetIndex(lhs.slot, r) {
+				return nil
+			}
+			ctx.SetVarb(lhs.name, r)
+			return nil
+		}
 		return e.assignValue(ctx, lhs, r)
 	default:
 		return NewRunError(ctx, "unsupported op", e.opPos)
+	}
+}
+
+func runAssignIntFast(l, r V, op ast.Op) (V, bool, error) {
+	if l.T != ast.Int || r.T != ast.Int {
+		return V{}, false, nil
+	}
+	lv, lok := toInt64Fast(l.V)
+	rv, rok := toInt64Fast(r.V)
+	if !lok || !rok {
+		return V{}, false, nil
+	}
+	switch op {
+	case ast.ADDEQ:
+		return V{lv + rv, ast.Int}, true, nil
+	case ast.SUBEQ:
+		return V{lv - rv, ast.Int}, true, nil
+	case ast.MULEQ:
+		return V{lv * rv, ast.Int}, true, nil
+	case ast.DIVEQ:
+		if rv == 0 {
+			return V{}, true, fmt.Errorf("integer division by zero")
+		}
+		return V{lv / rv, ast.Int}, true, nil
+	case ast.MODEQ:
+		if rv == 0 {
+			return V{}, true, fmt.Errorf("integer modulo by zero")
+		}
+		return V{lv % rv, ast.Int}, true, nil
+	default:
+		return V{}, false, nil
 	}
 }
 
@@ -583,10 +664,10 @@ func (e assignExpr) assignValue(ctx *Task, target assignTarget, val V) *errchain
 		if ctx.slotSetIndex(target.slot, val) {
 			return nil
 		}
-		ctx.SetVarb(lhs.Identifier().Name, val)
+		ctx.SetVarb(target.name, val)
 		return nil
 	case ast.TypeIndexExpr:
-		varb, err := getValueBySlotOrName(ctx, target.slot, lhs.IndexExpr().Obj.Name)
+		varb, err := getValueBySlotOrName(ctx, target.slot, target.name)
 		if err != nil {
 			return NewRunError(ctx, err.Error(), lhs.IndexExpr().Obj.Start)
 		}
@@ -601,7 +682,7 @@ func evalLValue(ctx *Task, target assignTarget) (V, *errchain.PlError) {
 	node := target.node
 	switch node.NodeType {
 	case ast.TypeIdentifier:
-		v, err := getValueBySlotOrName(ctx, target.slot, node.Identifier().Name)
+		v, err := getValueBySlotOrName(ctx, target.slot, target.name)
 		if err != nil {
 			return V{}, NewRunError(ctx, err.Error(), node.StartPos())
 		}
@@ -629,6 +710,7 @@ type compiledCall struct {
 
 type callExpr struct {
 	call  *ast.CallExpr
+	fn    FnCall
 	args  []expr
 	argsV []valueExpr
 }
@@ -648,28 +730,36 @@ func (c *compiler) compileCallExpr(call *ast.CallExpr) callExpr {
 			}
 		}
 	}
-	return callExpr{
+	e := callExpr{
 		call:  call,
 		args:  args,
 		argsV: argsV,
 	}
+	if c.funcs != nil {
+		if fn := c.funcs[call.Name]; fn != nil {
+			e.fn = fn.Call
+		}
+	}
+	return e
 }
 
 func (e callExpr) run(ctx *Task) *errchain.PlError {
-	fn, ok := ctx.GetFn(e.call.Name)
-	if !ok {
-		return nil
+	fn := e.fn
+	if fn == nil {
+		var ok bool
+		fn, ok = ctx.GetFn(e.call.Name)
+		if !ok {
+			return nil
+		}
 	}
 
 	prev := ctx.call
 	frame := ctx.enterCall(e.call, e.args, e.argsV)
 	ctx.call = frame
-	defer func() {
-		ctx.call = prev
-		ctx.exitCall(frame)
-	}()
-
-	return fn(ctx, e.call)
+	err := fn(ctx, e.call)
+	ctx.call = prev
+	ctx.exitCall(frame)
+	return err
 }
 
 type indexExpr struct {
@@ -685,7 +775,7 @@ func (e indexExpr) run(ctx *Task) *errchain.PlError {
 	if err != nil {
 		return err
 	}
-	ctx.Regs.ReturnAppend(v)
+	ctx.Regs.ReturnOne(v)
 	return nil
 }
 
@@ -783,12 +873,103 @@ type sliceExpr struct {
 	stepN  *ast.Node
 }
 
+type constSliceExpr struct {
+	obj    expr
+	objN   *ast.Node
+	start  int
+	end    int
+	step   int
+	startN *ast.Node
+	endN   *ast.Node
+	stepN  *ast.Node
+}
+
+func compileConstSliceBounds(start, end, step *ast.Node) (startInt, endInt, stepInt int, ok bool) {
+	var has bool
+	startInt, has = constOptionalInt(start)
+	if !has {
+		return 0, 0, 0, false
+	}
+	endInt, has = constOptionalInt(end)
+	if !has {
+		return 0, 0, 0, false
+	}
+	stepInt, has = constOptionalInt(step)
+	if !has || stepInt == 0 {
+		return 0, 0, 0, false
+	}
+	return startInt, endInt, stepInt, true
+}
+
+func constOptionalInt(node *ast.Node) (int, bool) {
+	if node == nil {
+		return 0, true
+	}
+	if node.NodeType != ast.TypeIntegerLiteral {
+		return 0, false
+	}
+	return intFromValue(node.IntegerLiteral().Val), true
+}
+
+func (e constSliceExpr) run(ctx *Task) *errchain.PlError {
+	v, err := e.evalValue(ctx, e.objN.StartPos())
+	if err != nil {
+		return err
+	}
+	ctx.Regs.ReturnOne(v)
+	return nil
+}
+
+func (e constSliceExpr) evalValue(ctx *Task, pos token.LnColPos) (V, *errchain.PlError) {
+	obj, err := evalNode(ctx, e.obj, e.objN)
+	if err != nil {
+		return V{}, err
+	}
+
+	var length int
+	switch obj.T {
+	case ast.String:
+		length = len(obj.V.(string))
+	case ast.List, ast.DType(ast.TypeSliceExpr):
+		length = len(obj.V.([]any))
+	default:
+		return V{}, NewRunError(ctx, "invalid obj type", e.objN.StartPos())
+	}
+
+	startInt, endInt, stepInt := e.start, e.end, e.step
+	if e.startN == nil {
+		if stepInt > 0 {
+			startInt = 0
+		} else {
+			startInt = length - 1
+		}
+	} else if startInt < 0 {
+		startInt = length + startInt
+	}
+	if e.endN == nil {
+		if stepInt > 0 {
+			endInt = length
+		} else {
+			endInt = -1
+		}
+	} else if endInt < 0 {
+		endInt = length + endInt
+	}
+
+	switch obj.T {
+	case ast.String:
+		return sliceExpr{}.evalString(obj.V.(string), startInt, endInt, stepInt, length), nil
+	default:
+		return sliceExpr{}.evalList(obj.V.([]any), startInt, endInt, stepInt, length), nil
+	}
+}
+
 func (e sliceExpr) run(ctx *Task) *errchain.PlError {
 	v, err := e.evalValue(ctx, e.objN.StartPos())
 	if err != nil {
 		return err
 	}
-	ctx.Regs.ReturnAppend(v)
+	ctx.Regs.ReturnOne(v)
 	return nil
 }
 
@@ -1025,7 +1206,7 @@ func (e inExpr) run(ctx *Task) *errchain.PlError {
 	if err != nil {
 		return err
 	}
-	ctx.Regs.ReturnAppend(v)
+	ctx.Regs.ReturnOne(v)
 	return nil
 }
 
@@ -1086,7 +1267,7 @@ func (e constListExpr) run(ctx *Task) *errchain.PlError {
 	if err != nil {
 		return err
 	}
-	ctx.Regs.ReturnAppend(v)
+	ctx.Regs.ReturnOne(v)
 	return nil
 }
 
@@ -1101,7 +1282,7 @@ func (e listExpr) run(ctx *Task) *errchain.PlError {
 	if err != nil {
 		return err
 	}
-	ctx.Regs.ReturnAppend(v)
+	ctx.Regs.ReturnOne(v)
 	return nil
 }
 
@@ -1142,7 +1323,7 @@ func (e constMapExpr) run(ctx *Task) *errchain.PlError {
 	if err != nil {
 		return err
 	}
-	ctx.Regs.ReturnAppend(v)
+	ctx.Regs.ReturnOne(v)
 	return nil
 }
 
@@ -1159,7 +1340,7 @@ func (e mapExpr) run(ctx *Task) *errchain.PlError {
 	if err != nil {
 		return err
 	}
-	ctx.Regs.ReturnAppend(v)
+	ctx.Regs.ReturnOne(v)
 	return nil
 }
 

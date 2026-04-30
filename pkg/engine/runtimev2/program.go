@@ -9,25 +9,41 @@ import (
 )
 
 type Program struct {
-	ops   []stmtOp
-	slots map[string]int
+	ops        []stmtOp
+	code       []vmInstr
+	slots      map[string]int
+	needsScope bool
 }
 
 func Compile(stmts ast.Stmts) *Program {
+	return CompileWithFuncs(stmts, nil)
+}
+
+func CompileWithFuncs(stmts ast.Stmts, funcs map[string]*Fn) *Program {
 	c := &compiler{
 		slots: map[string]int{},
+		funcs: funcs,
 	}
 	return c.compileProgram(stmts)
 }
 
 type compiler struct {
-	slots map[string]int
+	slots     map[string]int
+	funcs     map[string]*Fn
+	loopDepth int
 }
 
 func (c *compiler) compileProgram(stmts ast.Stmts) *Program {
+	ops := c.compileOps(stmts)
+	var code []vmInstr
+	if c.loopDepth == 0 {
+		code, _ = compileVM(ops)
+	}
 	return &Program{
-		ops:   c.compileOps(stmts),
-		slots: c.slots,
+		ops:        ops,
+		code:       code,
+		slots:      c.slots,
+		needsScope: opsNeedScope(ops),
 	}
 }
 
@@ -78,6 +94,9 @@ func (p *Program) Run(ctx *Task) *errchain.PlError {
 }
 
 func (p *Program) run(ctx *Task) *errchain.PlError {
+	if len(p.code) > 0 {
+		return p.runVM(ctx)
+	}
 	for i := range p.ops {
 		op := &p.ops[i]
 		var err *errchain.PlError
@@ -104,11 +123,13 @@ func (p *Program) run(ctx *Task) *errchain.PlError {
 }
 
 func runProgramScoped(ctx *Task, p *Program) *errchain.PlError {
-	ctx.StackEnterNew()
 	if p == nil {
-		ctx.StackExitCur()
 		return nil
 	}
+	if !p.needsScope {
+		return p.run(ctx)
+	}
+	ctx.StackEnterNew()
 	err := p.run(ctx)
 	ctx.StackExitCur()
 	return err
@@ -268,7 +289,9 @@ type forOp struct {
 func (c *compiler) compileFor(stmt *ast.ForStmt) stmtOp {
 	var body *Program
 	if stmt.Body != nil {
+		c.loopDepth++
 		body = c.compileProgram(stmt.Body.Stmts)
+		c.loopDepth--
 	}
 	return stmtOp{
 		kind: stmtFor,
@@ -284,10 +307,10 @@ func (c *compiler) compileFor(stmt *ast.ForStmt) stmtOp {
 
 func (op forOp) run(ctx *Task) *errchain.PlError {
 	ctx.StackEnterNew()
-	defer ctx.StackExitCur()
 
 	if op.init != nil {
 		if err := op.init.run(ctx); err != nil {
+			ctx.StackExitCur()
 			return err
 		}
 	}
@@ -295,10 +318,12 @@ func (op forOp) run(ctx *Task) *errchain.PlError {
 	for {
 		if op.cond != nil {
 			if err := op.cond.run(ctx); err != nil {
+				ctx.StackExitCur()
 				return err
 			}
 			val, errReg := ctx.Regs.GetRet()
 			if errReg != nil {
+				ctx.StackExitCur()
 				return NewRunError(ctx, errReg.Error(), op.condN.StartPos())
 			}
 			if !condTrue(val) {
@@ -308,6 +333,7 @@ func (op forOp) run(ctx *Task) *errchain.PlError {
 
 		if op.body != nil {
 			if err := runProgramScoped(ctx, op.body); err != nil {
+				ctx.StackExitCur()
 				return err
 			}
 		}
@@ -327,11 +353,13 @@ func (op forOp) run(ctx *Task) *errchain.PlError {
 
 		if op.loop != nil {
 			if err := op.loop.run(ctx); err != nil {
+				ctx.StackExitCur()
 				return err
 			}
 		}
 	}
 
+	ctx.StackExitCur()
 	return nil
 }
 
@@ -351,7 +379,9 @@ func (c *compiler) compileForIn(stmt *ast.ForInStmt) stmtOp {
 	}
 	var body *Program
 	if stmt.Body != nil {
+		c.loopDepth++
 		body = c.compileProgram(stmt.Body.Stmts)
+		c.loopDepth--
 	}
 	iter := c.compileExpr(stmt.Iter)
 	var iterV valueExpr
@@ -418,7 +448,7 @@ func (op forInOp) run(ctx *Task) *errchain.PlError {
 				ctx.StackExitCur()
 				return err
 			}
-			ctx.stackCur.Clear()
+			ctx.stackClearCur()
 			ctx.slotClearCur()
 			if forbreak(ctx) {
 				break
@@ -436,7 +466,7 @@ func (op forInOp) run(ctx *Task) *errchain.PlError {
 			return NewRunError(ctx, "inner type error", op.iterN.StartPos())
 		}
 		for x := range iter {
-			ctx.stackCur.Clear()
+			ctx.stackClearCur()
 			ctx.slotClearCur()
 			op.setIterVar(ctx, V{x, ast.String})
 			if err := op.runBody(ctx); err != nil {
@@ -460,7 +490,7 @@ func (op forInOp) run(ctx *Task) *errchain.PlError {
 			return NewRunError(ctx, "inner type error", op.iterN.StartPos())
 		}
 		for _, x := range iter {
-			ctx.stackCur.Clear()
+			ctx.stackClearCur()
 			ctx.slotClearCur()
 			v, ok := valueFromAny(x)
 			if !ok {
@@ -506,6 +536,101 @@ func (op forInOp) runBody(ctx *Task) *errchain.PlError {
 		return nil
 	}
 	return op.body.run(ctx)
+}
+
+func opsNeedScope(ops []stmtOp) bool {
+	for i := range ops {
+		if opNeedScope(&ops[i]) {
+			return true
+		}
+	}
+	return false
+}
+
+func opNeedScope(op *stmtOp) bool {
+	switch op.kind {
+	case stmtExpr:
+		return exprNeedScope(op.expr)
+	case stmtIfElse, stmtFor, stmtForIn:
+		return true
+	default:
+		return true
+	}
+}
+
+func exprNeedScope(e expr) bool {
+	switch e := e.(type) {
+	case nil:
+		return false
+	case literalExpr, identifierExpr, *bytecodeExpr:
+		return false
+	case parenExpr:
+		return exprNeedScope(e.expr)
+	case unaryExpr:
+		return exprNeedScope(e.rhs)
+	case arithmeticExpr:
+		return exprNeedScope(e.lhs) || exprNeedScope(e.rhs)
+	case conditionExpr:
+		return exprNeedScope(e.lhs) || exprNeedScope(e.rhs)
+	case inExpr:
+		return exprNeedScope(e.lhs) || exprNeedScope(e.rhs)
+	case sliceExpr:
+		return exprNeedScope(e.obj) ||
+			exprNeedScope(e.start) ||
+			exprNeedScope(e.end) ||
+			exprNeedScope(e.step)
+	case constSliceExpr:
+		return exprNeedScope(e.obj)
+	case indexExpr:
+		for _, idx := range e.index {
+			if exprNeedScope(idx) {
+				return true
+			}
+		}
+		return false
+	case listExpr:
+		for _, item := range e.items {
+			if exprNeedScope(item) {
+				return true
+			}
+		}
+		return false
+	case constListExpr, constMapExpr:
+		return false
+	case mapExpr:
+		for _, pair := range e.pairs {
+			if exprNeedScope(pair.key) || exprNeedScope(pair.val) {
+				return true
+			}
+		}
+		return false
+	case assignExpr:
+		for _, rhs := range e.rhs {
+			if exprNeedScope(rhs) {
+				return true
+			}
+		}
+		for _, lhs := range e.lhs {
+			if lhs.node.NodeType == ast.TypeIdentifier && e.op == ast.EQ {
+				return true
+			}
+			if lhs.node.NodeType == ast.TypeIndexExpr {
+				return true
+			}
+		}
+		return false
+	case callExpr:
+		for _, arg := range e.args {
+			if exprNeedScope(arg) {
+				return true
+			}
+		}
+		return false
+	case fallbackExpr:
+		return true
+	default:
+		return true
+	}
 }
 
 func exprContainsAssignment(node *ast.Node) bool {

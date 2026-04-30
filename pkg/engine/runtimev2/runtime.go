@@ -44,7 +44,7 @@ func (s *Script) Check() *errchain.PlError {
 		return err
 	}
 
-	s.Program = Compile(s.Stmts)
+	s.Program = CompileWithFuncs(s.Stmts, s.Fn)
 	return nil
 }
 
@@ -132,6 +132,12 @@ func (reg *PlReg) ReturnAppend(val ...V) {
 	reg.overflow = append(reg.overflow, val...)
 }
 
+func (reg *PlReg) ReturnOne(val V) {
+	reg.Reset()
+	reg.count = 1
+	reg.in[0] = val
+}
+
 func (reg *PlReg) Count() int {
 	return reg.count
 }
@@ -204,6 +210,13 @@ func (ctx *Task) StackExitCur() {
 	cur.Before = nil
 	ctx.stackFree = append(ctx.stackFree, cur)
 	ctx.slotExit()
+}
+
+func (ctx *Task) stackClearCur() {
+	if ctx.stackCur.Data == nil && ctx.stackCur.CheckPattern == nil {
+		return
+	}
+	ctx.stackCur.Clear()
 }
 
 func (ctx *Task) ProcExit() bool {

@@ -309,6 +309,51 @@ if true {
 	}
 }
 
+func TestProgramCompilesTopLevelVM(t *testing.T) {
+	s := parseTestScript(t, "top-level-vm", `
+total = 0
+if total == 0 {
+	total = 3
+} else {
+	total = 4
+}
+`, nil)
+
+	if len(s.Program.code) == 0 {
+		t.Fatal("expected top-level program to compile to VM code")
+	}
+
+	task := NewTask(s.Name, s.Fn)
+	if err := s.Program.Run(task); err != nil {
+		t.Fatal(err)
+	}
+	total, err := task.GetKey("total")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if total.Value != int64(3) {
+		t.Fatalf("expected total=3, got %v", total.Value)
+	}
+}
+
+func TestProgramSkipsVMInLoopBody(t *testing.T) {
+	s := parseTestScript(t, "loop-body-no-vm", `
+for i in [1] {
+	if i == 1 {
+		i += 1
+	}
+}
+`, nil)
+
+	body := s.Program.ops[0].forInOp.body
+	if body == nil {
+		t.Fatal("expected for-in body")
+	}
+	if len(body.code) != 0 {
+		t.Fatal("expected loop body to keep compiled-op execution")
+	}
+}
+
 func TestScriptRunFallsBackToInterpreterWithoutProgram(t *testing.T) {
 	stmts, err := parser.ParsePipeline("fallback", `a = 1`)
 	if err != nil {
@@ -451,6 +496,33 @@ func TestRunErrorUnwindsBlockScope(t *testing.T) {
 	}
 	if task.stackCur != initialStack {
 		t.Fatal("expected block scope to be unwound after runtime error")
+	}
+}
+
+func TestProgramVMUnwindsBlockScopeOnError(t *testing.T) {
+	funcs := map[string]*Fn{
+		"fail": {
+			CallCheck: func(ctx *Task, fn *ast.CallExpr) *errchain.PlError {
+				return CheckPassParam(ctx, fn, nil)
+			},
+			Call: func(ctx *Task, fn *ast.CallExpr) *errchain.PlError {
+				return NewRunError(ctx, "fail", fn.NamePos)
+			},
+		},
+	}
+
+	s := parseTestScript(t, "vm-unwind", `if true { fail() }`, funcs)
+	if len(s.Program.code) == 0 {
+		t.Fatal("expected top-level if to compile to VM code")
+	}
+	task := NewTask(s.Name, s.Fn)
+	initialStack := task.stackCur
+
+	if err := s.Program.Run(task); err == nil {
+		t.Fatal("expected runtime error")
+	}
+	if task.stackCur != initialStack {
+		t.Fatal("expected VM block scope to be unwound after runtime error")
 	}
 }
 
