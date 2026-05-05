@@ -309,6 +309,79 @@ if true {
 	}
 }
 
+func TestProgramCallSideEffectsStayBlockScoped(t *testing.T) {
+	funcs := map[string]*Fn{
+		"set_local": {
+			CallCheck: func(ctx *Task, fn *ast.CallExpr) *errchain.PlError {
+				return CheckPassParam(ctx, fn, nil)
+			},
+			Call: func(ctx *Task, fn *ast.CallExpr) *errchain.PlError {
+				ctx.SetVarb("local_from_call", V{V: int64(1), T: ast.Int})
+				return nil
+			},
+		},
+	}
+
+	s := parseTestScript(t, "call-scope", `
+if true {
+	set_local()
+}
+`, funcs)
+
+	task := NewTask(s.Name, s.Fn)
+	if err := s.Program.Run(task); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := task.GetKey("local_from_call"); err == nil {
+		t.Fatal("expected function-created block local to be out of scope")
+	}
+}
+
+func TestProgramRunResetsSlotsForReusedTask(t *testing.T) {
+	first := parseTestScript(t, "first-program", `a = 1`, nil)
+	second := parseTestScript(t, "second-program", `b`, nil)
+
+	task := NewTask(first.Name, first.Fn)
+	if err := first.Program.Run(task); err != nil {
+		t.Fatal(err)
+	}
+	if err := second.Program.Run(task); err == nil {
+		t.Fatal("expected reused task to use the second program slots and reject undefined b")
+	}
+}
+
+func TestProgramCallUsesCurrentFunctionTable(t *testing.T) {
+	funcs := map[string]*Fn{
+		"dyn": {
+			CallCheck: func(ctx *Task, fn *ast.CallExpr) *errchain.PlError {
+				return CheckPassParam(ctx, fn, nil)
+			},
+			Call: func(ctx *Task, fn *ast.CallExpr) *errchain.PlError {
+				ctx.Regs.ReturnAppend(V{V: int64(1), T: ast.Int})
+				return nil
+			},
+		},
+	}
+
+	s := parseTestScript(t, "current-func", `x = dyn()`, funcs)
+	funcs["dyn"].Call = func(ctx *Task, fn *ast.CallExpr) *errchain.PlError {
+		ctx.Regs.ReturnAppend(V{V: int64(2), T: ast.Int})
+		return nil
+	}
+
+	task := NewTask(s.Name, s.Fn)
+	if err := s.Program.Run(task); err != nil {
+		t.Fatal(err)
+	}
+	x, err := task.GetKey("x")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if x.Value != int64(2) {
+		t.Fatalf("expected current function implementation to return 2, got %v", x.Value)
+	}
+}
+
 func TestProgramCompilesTopLevelVM(t *testing.T) {
 	s := parseTestScript(t, "top-level-vm", `
 total = 0

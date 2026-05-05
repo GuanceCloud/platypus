@@ -616,6 +616,28 @@ func TestSignal(t *testing.T) {
 	assert.Equal(t, false, sig == nil)
 }
 
+func TestStackReuseScopeIsolation(t *testing.T) {
+	ctx := GetContext()
+	defer PutContext(ctx)
+
+	ctx.input = &inputImpl{data: map[string]any{}}
+	ctx.StackEnterNew()
+	assert.NoError(t, ctx.SetVarb("scoped", int64(1), ast.Int))
+	if v, err := ctx.GetKey("scoped"); assert.NoError(t, err) {
+		assert.Equal(t, int64(1), v.Value)
+	}
+	ctx.StackExitCur()
+
+	_, err := ctx.GetKey("scoped")
+	assert.Error(t, err)
+
+	ctx.StackEnterNew()
+	assert.NoError(t, ctx.SetVarb("other", int64(2), ast.Int))
+	_, err = ctx.GetKey("scoped")
+	assert.Error(t, err)
+	ctx.StackExitCur()
+}
+
 func TestUnaryAndAssignOP(t *testing.T) {
 	cases := []struct {
 		name string
@@ -1260,4 +1282,78 @@ func ckfn(ctx *Task, callExpr *ast.CallExpr) *errchain.PlError {
 
 func lencheck(ctx *Task, callexpr *ast.CallExpr) *errchain.PlError {
 	return nil
+}
+
+func BenchmarkRuntimeRun(b *testing.B) {
+	script := mustBenchmarkScript(b, `
+total = 0
+for i = 0; i < 20; i = i + 1 {
+	if i % 2 {
+		total += i
+	} else {
+		total += 1
+	}
+}
+arr = [1, 2, 3, 4, 5, total]
+obj = {"total": total, "arr": arr, "flag": true}
+part = arr[1:5:2]
+add_key("total", total)
+add_key("part", part)
+add_key("obj", obj)
+`)
+
+	b.ReportAllocs()
+	for i := 0; i < b.N; i++ {
+		inData := &inputImpl{data: map[string]any{}}
+		if err := script.Run(inData, nil); err != nil {
+			b.Fatal(err)
+		}
+	}
+}
+
+func BenchmarkRuntimeRunReuseInput(b *testing.B) {
+	script := mustBenchmarkScript(b, `
+total = 0
+for i = 0; i < 20; i = i + 1 {
+	total += i
+}
+add_key("total", total)
+`)
+	inData := &inputImpl{data: map[string]any{}}
+
+	b.ReportAllocs()
+	for i := 0; i < b.N; i++ {
+		for k := range inData.data {
+			delete(inData.data, k)
+		}
+		if err := script.Run(inData, nil); err != nil {
+			b.Fatal(err)
+		}
+	}
+}
+
+func mustBenchmarkScript(b *testing.B, pl string) *Script {
+	b.Helper()
+
+	stmts, err := parseScript(pl)
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	script := &Script{
+		FuncCall: map[string]FuncCall{
+			"add_key": addkeytest,
+			"len":     lentest,
+		},
+		Name:    "bench",
+		Content: pl,
+		Ast:     stmts,
+	}
+	if errR := script.Check(map[string]FuncCheck{
+		"add_key": addkeycheck,
+		"len":     lencheck,
+	}); errR != nil {
+		b.Fatal(errR)
+	}
+	return script
 }

@@ -22,14 +22,12 @@ func Compile(stmts ast.Stmts) *Program {
 func CompileWithFuncs(stmts ast.Stmts, funcs map[string]*Fn) *Program {
 	c := &compiler{
 		slots: map[string]int{},
-		funcs: funcs,
 	}
 	return c.compileProgram(stmts)
 }
 
 type compiler struct {
 	slots     map[string]int
-	funcs     map[string]*Fn
 	loopDepth int
 }
 
@@ -87,9 +85,7 @@ func (p *Program) Run(ctx *Task) *errchain.PlError {
 	if p == nil {
 		return nil
 	}
-	if ctx.slots == nil && len(p.slots) > 0 {
-		ctx.useSlots(p.slots)
-	}
+	ctx.useSlots(p.slots)
 	return p.run(ctx)
 }
 
@@ -620,12 +616,7 @@ func exprNeedScope(e expr) bool {
 		}
 		return false
 	case callExpr:
-		for _, arg := range e.args {
-			if exprNeedScope(arg) {
-				return true
-			}
-		}
-		return false
+		return true
 	case fallbackExpr:
 		return true
 	default:

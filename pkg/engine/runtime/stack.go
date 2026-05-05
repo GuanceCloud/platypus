@@ -6,11 +6,15 @@
 package runtime
 
 import (
-	"fmt"
+	"errors"
 
 	"github.com/GuanceCloud/grok"
 	"github.com/GuanceCloud/platypus/pkg/ast"
 )
+
+var errStackKeyNotFound = errors.New("not found")
+
+const maxRetainedStackVars = 64
 
 type Varb struct {
 	Value any
@@ -20,6 +24,9 @@ type Varb struct {
 type Stack struct {
 	Data   map[string]*Varb
 	Before *Stack
+	Next   *Stack
+	free   []*Varb
+	keys   []string
 
 	CheckPattern map[string]*grok.GrokPattern
 }
@@ -75,13 +82,27 @@ func (stack *Stack) Set(key string, value any, dType ast.DType) {
 	}
 
 	// new
+	stack.SetLocal(key, value, dType)
+}
+
+func (stack *Stack) SetLocal(key string, value any, dType ast.DType) *Varb {
 	if stack.Data == nil {
 		stack.Data = map[string]*Varb{}
 	}
-	stack.Data[key] = &Varb{
-		Value: value,
-		DType: dType,
+	var v *Varb
+	last := len(stack.free) - 1
+	if last >= 0 {
+		v = stack.free[last]
+		stack.free[last] = nil
+		stack.free = stack.free[:last]
+	} else {
+		v = &Varb{}
 	}
+	v.Value = value
+	v.DType = dType
+	stack.Data[key] = v
+	stack.keys = append(stack.keys, key)
+	return v
 }
 
 // func (stack *PlProcStack) SetLocal(key string, value any, dType DType) {
@@ -108,12 +129,64 @@ func (stack *Stack) Get(key string) (*Varb, error) {
 		}
 	}
 
-	return nil, fmt.Errorf("not found")
+	return nil, errStackKeyNotFound
 }
 
 func (stack *Stack) Clear() {
 	stack.CheckPattern = nil
-	for k := range stack.Data {
+	if len(stack.Data) > maxRetainedStackVars {
+		stack.Data = nil
+		stack.free = nil
+		stack.keys = nil
+		return
+	}
+	for _, k := range stack.keys {
+		v := stack.Data[k]
+		if v == nil {
+			continue
+		}
+		if len(stack.free) < maxRetainedStackVars {
+			v.Value = nil
+			v.DType = ast.Void
+			stack.free = append(stack.free, v)
+		}
 		delete(stack.Data, k)
+	}
+	if cap(stack.keys) > maxRetainedStackVars {
+		stack.keys = nil
+	} else {
+		stack.keys = stack.keys[:0]
+	}
+}
+
+func (stack *Stack) ResetChain() {
+	for stack != nil {
+		stack.Before = nil
+		stack.CheckPattern = nil
+		if len(stack.Data) > maxRetainedStackVars {
+			stack.Data = nil
+			stack.free = nil
+			stack.keys = nil
+			stack = stack.Next
+			continue
+		}
+		for _, k := range stack.keys {
+			v := stack.Data[k]
+			if v == nil {
+				continue
+			}
+			if len(stack.free) < maxRetainedStackVars {
+				v.Value = nil
+				v.DType = ast.Void
+				stack.free = append(stack.free, v)
+			}
+			delete(stack.Data, k)
+		}
+		if cap(stack.keys) > maxRetainedStackVars {
+			stack.keys = nil
+		} else {
+			stack.keys = stack.keys[:0]
+		}
+		stack = stack.Next
 	}
 }

@@ -17,8 +17,9 @@ import (
 )
 
 const (
-	ploriginkey    = "message"
-	PlRunInfoField = "pl_msg"
+	ploriginkey        = "message"
+	PlRunInfoField     = "pl_msg"
+	localVarCacheSlots = 4
 )
 
 type Task struct {
@@ -28,6 +29,14 @@ type Task struct {
 
 	stackHeader *Stack
 	stackCur    *Stack
+	varCache    map[string]*Varb
+	lastVarKey  string
+	lastVarb    *Varb
+	prevVarKey  string
+	prevVarb    *Varb
+	varCacheKey [localVarCacheSlots]string
+	varCacheVal [localVarCacheSlots]*Varb
+	varCachePos uint8
 
 	funcCall  map[string]FuncCall
 	funcCheck map[string]FuncCheck
@@ -55,6 +64,8 @@ var (
 	ErrNilKey           = errors.New("key is nil")
 	ErrKeyNotComparable = errors.New("key is not comparable")
 	ErrKeyExists        = errors.New("key exists")
+	errRunKeyNotFound   = errors.New("key not found")
+	errRunNil           = errors.New("nil")
 )
 
 func (ctx *Task) PValue(k string) (any, bool) {
@@ -91,8 +102,12 @@ func InitCtx(ctx *Task, input Input, script *Script, signal Signal) *Task {
 }
 
 func InitCtxForCheck(ctx *Task, script *Script, checkFn map[string]FuncCheck) *Task {
-	ctx.stackHeader = &Stack{
-		Data: map[string]*Varb{},
+	if ctx.stackHeader == nil {
+		ctx.stackHeader = &Stack{
+			Data: map[string]*Varb{},
+		}
+	} else {
+		ctx.stackHeader.ResetChain()
 	}
 	ctx.stackCur = ctx.stackHeader
 
@@ -116,7 +131,41 @@ func (ctx *Task) SetVarb(key string, value any, dtype ast.DType) error {
 		key = ploriginkey
 	}
 
-	ctx.stackCur.Set(key, value, dtype)
+	if ctx.lastVarb != nil && ctx.lastVarKey == key {
+		ctx.lastVarb.Value = value
+		ctx.lastVarb.DType = dtype
+		return nil
+	}
+	if ctx.prevVarb != nil && ctx.prevVarKey == key {
+		v := ctx.prevVarb
+		ctx.prevVarKey, ctx.prevVarb = ctx.lastVarKey, ctx.lastVarb
+		ctx.lastVarKey, ctx.lastVarb = key, v
+		v.Value = value
+		v.DType = dtype
+		return nil
+	}
+	if v := ctx.getCachedVarb(key); v != nil {
+		v.Value = value
+		v.DType = dtype
+		return nil
+	}
+	if ctx.varCache != nil {
+		if v, ok := ctx.varCache[key]; ok {
+			v.Value = value
+			v.DType = dtype
+			ctx.touchVarb(key, v)
+			return nil
+		}
+	}
+
+	if v, err := ctx.stackCur.Get(key); err == nil {
+		v.Value = value
+		v.DType = dtype
+		ctx.cacheVarb(key, v)
+		return nil
+	}
+
+	ctx.cacheVarb(key, ctx.stackCur.SetLocal(key, value, dtype))
 	return nil
 }
 
@@ -135,7 +184,26 @@ func (ctx *Task) GetKey(key string) (*Varb, error) {
 	if key == "_" {
 		key = ploriginkey
 	}
+	if ctx.lastVarb != nil && ctx.lastVarKey == key {
+		return ctx.lastVarb, nil
+	}
+	if ctx.prevVarb != nil && ctx.prevVarKey == key {
+		v := ctx.prevVarb
+		ctx.prevVarKey, ctx.prevVarb = ctx.lastVarKey, ctx.lastVarb
+		ctx.lastVarKey, ctx.lastVarb = key, v
+		return v, nil
+	}
+	if v := ctx.getCachedVarb(key); v != nil {
+		return v, nil
+	}
+	if ctx.varCache != nil {
+		if v, ok := ctx.varCache[key]; ok {
+			ctx.touchVarb(key, v)
+			return v, nil
+		}
+	}
 	if v, err := ctx.stackCur.Get(key); err == nil {
+		ctx.cacheVarb(key, v)
 		return v, nil
 	}
 
@@ -146,7 +214,7 @@ func (ctx *Task) GetKey(key string) (*Varb, error) {
 		}, nil
 	}
 
-	return nil, fmt.Errorf("key not found")
+	return nil, errRunKeyNotFound
 }
 
 func (ctx *Task) GetKeyConv2Str(key string) (string, error) {
@@ -162,7 +230,7 @@ func (ctx *Task) GetKeyConv2Str(key string) (string, error) {
 		return Conv2String(v, t)
 	}
 
-	return "", fmt.Errorf("nil")
+	return "", errRunNil
 }
 
 func (ctx *Task) GetFuncCall(key string) (FuncCall, bool) {
@@ -182,23 +250,118 @@ func (ctx *Task) GetFuncCheck(key string) (FuncCheck, bool) {
 }
 
 func (ctx *Task) StackEnterNew() {
-	next := &Stack{
-		Data:   map[string]*Varb{},
-		Before: ctx.stackCur,
+	next := ctx.stackCur.Next
+	if next == nil {
+		next = &Stack{}
+		ctx.stackCur.Next = next
 	}
+	next.Before = ctx.stackCur
 
 	ctx.stackCur = next
 }
 
 func (ctx *Task) StackExitCur() {
-	ctx.stackCur.Data = nil
-	ctx.stackCur.CheckPattern = nil
+	cur := ctx.stackCur
+	if len(cur.keys) != 0 || cur.CheckPattern != nil {
+		ctx.invalidateStackVars(cur)
+		cur.Clear()
+	}
 
-	ctx.stackCur = ctx.stackCur.Before
+	ctx.stackCur = cur.Before
+	cur.Before = nil
 }
 
 func (ctx *Task) StackClear() {
+	ctx.invalidateStackVars(ctx.stackCur)
 	ctx.stackCur.Clear()
+}
+
+func (ctx *Task) cacheVarb(key string, v *Varb) {
+	if ctx.varCache == nil {
+		ctx.varCache = make(map[string]*Varb, 8)
+	}
+	ctx.varCache[key] = v
+	ctx.touchVarb(key, v)
+
+	for i := range ctx.varCacheVal {
+		if ctx.varCacheVal[i] == nil || ctx.varCacheKey[i] == key {
+			ctx.varCacheKey[i] = key
+			ctx.varCacheVal[i] = v
+			return
+		}
+	}
+	idx := int(ctx.varCachePos % localVarCacheSlots)
+	ctx.varCachePos++
+	ctx.varCacheKey[idx] = key
+	ctx.varCacheVal[idx] = v
+}
+
+func (ctx *Task) touchVarb(key string, v *Varb) {
+	if ctx.lastVarb == v && ctx.lastVarKey == key {
+		return
+	}
+	ctx.prevVarKey = ctx.lastVarKey
+	ctx.prevVarb = ctx.lastVarb
+	ctx.lastVarKey = key
+	ctx.lastVarb = v
+}
+
+func (ctx *Task) getCachedVarb(key string) *Varb {
+	for i, v := range ctx.varCacheVal {
+		if v != nil && ctx.varCacheKey[i] == key {
+			ctx.touchVarb(key, v)
+			return v
+		}
+	}
+	return nil
+}
+
+func (ctx *Task) clearVarCache() {
+	ctx.lastVarKey = ""
+	ctx.lastVarb = nil
+	ctx.prevVarKey = ""
+	ctx.prevVarb = nil
+	ctx.varCachePos = 0
+	for i := range ctx.varCacheVal {
+		ctx.varCacheKey[i] = ""
+		ctx.varCacheVal[i] = nil
+	}
+	if len(ctx.varCache) > maxRetainedStackVars {
+		ctx.varCache = nil
+		return
+	}
+	for k := range ctx.varCache {
+		delete(ctx.varCache, k)
+	}
+}
+
+func (ctx *Task) invalidateStackVars(stack *Stack) {
+	if ctx.varCache == nil || stack == nil {
+		return
+	}
+	for _, k := range stack.keys {
+		v := stack.Data[k]
+		if v == nil {
+			continue
+		}
+		if ctx.varCache[k] == v {
+			delete(ctx.varCache, k)
+		}
+		if ctx.lastVarb == v {
+			ctx.lastVarKey = ""
+			ctx.lastVarb = nil
+		}
+		if ctx.prevVarb == v {
+			ctx.prevVarKey = ""
+			ctx.prevVarb = nil
+		}
+		for i, cached := range ctx.varCacheVal {
+			if cached == v {
+				ctx.varCacheKey[i] = ""
+				ctx.varCacheVal[i] = nil
+			}
+		}
+	}
 }
 
 func (ctx *Task) GetPattern(pattern string) (*grok.GrokPattern, bool) {
@@ -244,15 +407,35 @@ var ctxPool sync.Pool = sync.Pool{
 func GetContext() *Task {
 	ctx, _ := ctxPool.Get().(*Task)
 
-	ctx.stackHeader = &Stack{
-		Data: map[string]*Varb{},
+	if ctx.stackHeader == nil {
+		ctx.stackHeader = &Stack{
+			Data: map[string]*Varb{},
+		}
+	} else {
+		ctx.stackHeader.ResetChain()
 	}
+	ctx.clearVarCache()
 	ctx.stackCur = ctx.stackHeader
 	return ctx
 }
 
 func PutContext(ctx *Task) {
-	*ctx = Task{}
+	ctx.private = nil
+	ctx.Regs.Reset()
+	ctx.stackCur = ctx.stackHeader
+	if ctx.stackHeader != nil {
+		ctx.stackHeader.ResetChain()
+	}
+	ctx.funcCall = nil
+	ctx.funcCheck = nil
+	ctx.clearVarCache()
+	ctx.input = nil
+	ctx.loopBreak = false
+	ctx.loopContinue = false
+	ctx.signal = nil
+	ctx.procExit = false
+	ctx.callRef = nil
+	ctx.name = ""
 	ctxPool.Put(ctx)
 }
 

@@ -710,7 +710,6 @@ type compiledCall struct {
 
 type callExpr struct {
 	call  *ast.CallExpr
-	fn    FnCall
 	args  []expr
 	argsV []valueExpr
 }
@@ -735,22 +734,13 @@ func (c *compiler) compileCallExpr(call *ast.CallExpr) callExpr {
 		args:  args,
 		argsV: argsV,
 	}
-	if c.funcs != nil {
-		if fn := c.funcs[call.Name]; fn != nil {
-			e.fn = fn.Call
-		}
-	}
 	return e
 }
 
 func (e callExpr) run(ctx *Task) *errchain.PlError {
-	fn := e.fn
-	if fn == nil {
-		var ok bool
-		fn, ok = ctx.GetFn(e.call.Name)
-		if !ok {
-			return nil
-		}
+	fn, ok := ctx.GetFn(e.call.Name)
+	if !ok {
+		return nil
 	}
 
 	prev := ctx.call

@@ -156,20 +156,35 @@ func RunIfElseStmt(ctx *Task, stmt *ast.IfelseStmt) (any, ast.DType, *errchain.P
 func condTrue(val any, dtype ast.DType) bool {
 	switch dtype { //nolint:exhaustive
 	case ast.String:
+		if v, ok := val.(string); ok {
+			return v != ""
+		}
 		if cast.ToString(val) == "" {
 			return false
 		}
 	case ast.Bool:
+		if v, ok := val.(bool); ok {
+			return v
+		}
 		return cast.ToBool(val)
 	case ast.Int:
+		if v, ok := val.(int64); ok {
+			return v != 0
+		}
 		if cast.ToInt64(val) == 0 {
 			return false
 		}
 	case ast.Float:
+		if v, ok := val.(float64); ok {
+			return v != 0
+		}
 		if cast.ToFloat64(val) == 0 {
 			return false
 		}
 	case ast.List:
+		if v, ok := val.([]any); ok {
+			return len(v) != 0
+		}
 		if len(cast.ToSlice(val)) == 0 {
 			return false
 		}
@@ -212,10 +227,10 @@ func RunForStmt(ctx *Task, stmt *ast.ForStmt) (any, ast.DType, *errchain.PlError
 		}
 
 		if stmt.Body != nil {
-			// for body
-			if err := runScoped(ctx, func() *errchain.PlError {
-				return RunStmts(ctx, stmt.Body.Stmts)
-			}); err != nil {
+			ctx.StackEnterNew()
+			err := RunStmts(ctx, stmt.Body.Stmts)
+			ctx.StackExitCur()
+			if err != nil {
 				return nil, ast.Invalid, err
 			}
 		}
@@ -274,7 +289,7 @@ func RunForInStmt(ctx *Task, stmt *ast.ForInStmt) (any, ast.DType, *errchain.PlE
 					return nil, ast.Invalid, err
 				}
 			}
-			ctx.stackCur.Clear()
+			ctx.StackClear()
 
 			if forbreak(ctx) {
 				break
@@ -291,7 +306,7 @@ func RunForInStmt(ctx *Task, stmt *ast.ForInStmt) (any, ast.DType, *errchain.PlE
 				"inner type error", stmt.Iter.StartPos())
 		}
 		for x := range iter {
-			ctx.stackCur.Clear()
+			ctx.StackClear()
 			_ = ctx.SetVarb(stmt.Varb.Identifier().Name, x, ast.String)
 			if stmt.Body != nil {
 				if err := RunStmts(ctx, stmt.Body.Stmts); err != nil {
@@ -313,7 +328,7 @@ func RunForInStmt(ctx *Task, stmt *ast.ForInStmt) (any, ast.DType, *errchain.PlE
 				"inner type error", stmt.Iter.StartPos())
 		}
 		for _, x := range iter {
-			ctx.stackCur.Clear()
+			ctx.StackClear()
 			x, dtype := ast.DectDataType(x)
 			if dtype == ast.Invalid {
 				return nil, ast.Invalid, NewRunError(ctx,
@@ -724,6 +739,28 @@ func RunInExpr(ctx *Task, expr *ast.InExpr) (any, ast.DType, *errchain.PlError) 
 }
 
 func RunConditionExpr(ctx *Task, expr *ast.ConditionalExpr) (any, ast.DType, *errchain.PlError) {
+	switch expr.Op { //nolint:exhaustive
+	case ast.EQEQ, ast.NEQ, ast.LT, ast.LTE, ast.GT, ast.GTE:
+		if lhs, ok := runIntLikeNode(ctx, expr.LHS); ok {
+			if rhs, ok := runIntLikeNode(ctx, expr.RHS); ok {
+				switch expr.Op { //nolint:exhaustive
+				case ast.EQEQ:
+					return lhs == rhs, ast.Bool, nil
+				case ast.NEQ:
+					return lhs != rhs, ast.Bool, nil
+				case ast.LT:
+					return lhs < rhs, ast.Bool, nil
+				case ast.LTE:
+					return lhs <= rhs, ast.Bool, nil
+				case ast.GT:
+					return lhs > rhs, ast.Bool, nil
+				case ast.GTE:
+					return lhs >= rhs, ast.Bool, nil
+				}
+			}
+		}
+	}
+
 	lhs, lhsT, err := RunStmt(ctx, expr.LHS)
 	if err != nil {
 		return nil, ast.Invalid, err
@@ -732,11 +769,11 @@ func RunConditionExpr(ctx *Task, expr *ast.ConditionalExpr) (any, ast.DType, *er
 	if lhsT == ast.Bool {
 		switch expr.Op { //nolint:exhaustive
 		case ast.OR:
-			if cast.ToBool(lhs) {
+			if fastBool(lhs) {
 				return true, ast.Bool, nil
 			}
 		case ast.AND:
-			if !cast.ToBool(lhs) {
+			if !fastBool(lhs) {
 				return false, ast.Bool, nil
 			}
 		}
@@ -756,6 +793,15 @@ func RunConditionExpr(ctx *Task, expr *ast.ConditionalExpr) (any, ast.DType, *er
 
 func RunArithmeticExpr(ctx *Task, expr *ast.ArithmeticExpr) (any, ast.DType, *errchain.PlError) {
 	// 允许字符串通过操作符 '+' 进行拼接
+	if lhs, ok := runIntLikeNode(ctx, expr.LHS); ok {
+		if rhs, ok := runIntLikeNode(ctx, expr.RHS); ok {
+			v, dtype, errOp := arithOpInt(lhs, rhs, expr.Op)
+			if errOp != nil {
+				return nil, ast.Invalid, NewRunError(ctx, errOp.Error(), expr.OpPos)
+			}
+			return v, dtype, nil
+		}
+	}
 
 	lhsVal, lhsValType, errOpInt := RunStmt(ctx, expr.LHS)
 	if errOpInt != nil {
@@ -785,7 +831,7 @@ func RunArithmeticExpr(ctx *Task, expr *ast.ArithmeticExpr) (any, ast.DType, *er
 				expr.Op, lhsValType, rhsValType), expr.OpPos)
 		}
 		if lhsValType == ast.String && rhsValType == ast.String {
-			return cast.ToString(lhsVal) + cast.ToString(rhsVal), ast.String, nil
+			return fastString(lhsVal) + fastString(rhsVal), ast.String, nil
 		} else {
 			return nil, ast.Invalid, NewRunError(ctx, fmt.Sprintf(
 				"unsupported operand type(s) for %s: %s and %s",
@@ -795,7 +841,7 @@ func RunArithmeticExpr(ctx *Task, expr *ast.ArithmeticExpr) (any, ast.DType, *er
 
 	// float
 	if lhsValType == ast.Float || rhsValType == ast.Float {
-		v, dtype, err := arithOpFloat(cast.ToFloat64(lhsVal), cast.ToFloat64(rhsVal), expr.Op)
+		v, dtype, err := arithOpFloat(fastFloat64(lhsVal), fastFloat64(rhsVal), expr.Op)
 		if err != nil {
 			return nil, ast.Invalid, NewRunError(ctx, err.Error(), expr.OpPos)
 		}
@@ -804,7 +850,7 @@ func RunArithmeticExpr(ctx *Task, expr *ast.ArithmeticExpr) (any, ast.DType, *er
 
 	// bool or int
 
-	v, dtype, errOp := arithOpInt(cast.ToInt64(lhsVal), cast.ToInt64(rhsVal), expr.Op)
+	v, dtype, errOp := arithOpInt(fastInt64(lhsVal), fastInt64(rhsVal), expr.Op)
 
 	if errOp != nil {
 		return nil, ast.Invalid, NewRunError(ctx, errOp.Error(), expr.OpPos)
@@ -839,7 +885,7 @@ func runAssignArith(ctx *Task, l, r *Varb, op ast.Op, pos token.LnColPos) (
 				op, l.DType, r.DType), pos)
 		}
 		if l.DType == ast.String && r.DType == ast.String {
-			return cast.ToString(l.Value) + cast.ToString(r.Value), ast.String, nil
+			return fastString(l.Value) + fastString(r.Value), ast.String, nil
 		} else {
 			return nil, ast.Invalid, NewRunError(ctx, fmt.Sprintf(
 				"unsupported operand type(s) for %s: %s and %s",
@@ -849,7 +895,7 @@ func runAssignArith(ctx *Task, l, r *Varb, op ast.Op, pos token.LnColPos) (
 
 	// float
 	if l.DType == ast.Float || r.DType == ast.Float {
-		v, dtype, err := arithOpFloat(cast.ToFloat64(l.Value), cast.ToFloat64(r.Value), arithOp)
+		v, dtype, err := arithOpFloat(fastFloat64(l.Value), fastFloat64(r.Value), arithOp)
 		if err != nil {
 			return nil, ast.Invalid, NewRunError(ctx, err.Error(), pos)
 		}
@@ -858,7 +904,7 @@ func runAssignArith(ctx *Task, l, r *Varb, op ast.Op, pos token.LnColPos) (
 
 	// bool or int
 
-	v, dtype, errOp := arithOpInt(cast.ToInt64(l.Value), cast.ToInt64(r.Value), arithOp)
+	v, dtype, errOp := arithOpInt(fastInt64(l.Value), fastInt64(r.Value), arithOp)
 
 	if errOp != nil {
 		return nil, ast.Invalid, NewRunError(ctx, errOp.Error(), pos)
@@ -875,18 +921,40 @@ func RunAssignmentExpr(ctx *Task, expr *ast.AssignmentExpr) (any, ast.DType, *er
 
 	RHS := expr.RHS[0]
 	LHS := expr.LHS[0]
-	v, dtype, err := RunStmt(ctx, RHS)
+	if LHS.NodeType == ast.TypeIdentifier {
+		switch expr.Op {
+		case ast.SUBEQ,
+			ast.ADDEQ,
+			ast.MULEQ,
+			ast.DIVEQ,
+			ast.MODEQ:
+			lVarb, err := ctx.GetKey(LHS.Identifier().Name)
+			if err == nil && (lVarb.DType == ast.Int || lVarb.DType == ast.Bool) {
+				if rhs, ok := runIntLikeNode(ctx, RHS); ok {
+					arithOp, _ := assign2arithOp(expr.Op)
+					v, dt, errOp := arithOpInt(fastInt64(lVarb.Value), rhs, arithOp)
+					if errOp != nil {
+						return nil, ast.Invalid, NewRunError(ctx, errOp.Error(), expr.OpPos)
+					}
+					lVarb.Value = v
+					lVarb.DType = dt
+					return v, dt, nil
+				}
+			}
+		}
+	}
+
+	rhsVal, rhsType, err := RunStmt(ctx, RHS)
 	if err != nil {
 		return nil, ast.Invalid, err
 	}
-	rVarb := &Varb{Value: v, DType: dtype}
 
 	switch LHS.NodeType { //nolint:exhaustive
 	case ast.TypeIdentifier:
 		switch expr.Op {
 		case ast.EQ:
-			_ = ctx.SetVarb(LHS.Identifier().Name, v, dtype)
-			return v, dtype, nil
+			_ = ctx.SetVarb(LHS.Identifier().Name, rhsVal, rhsType)
+			return rhsVal, rhsType, nil
 
 		case ast.SUBEQ,
 			ast.ADDEQ,
@@ -897,10 +965,12 @@ func RunAssignmentExpr(ctx *Task, expr *ast.AssignmentExpr) (any, ast.DType, *er
 			if err != nil {
 				return nil, ast.Nil, nil
 			}
-			if v, dt, errR := runAssignArith(ctx, lVarb, rVarb, expr.Op, expr.OpPos); errR != nil {
+			rVarb := Varb{Value: rhsVal, DType: rhsType}
+			if v, dt, errR := runAssignArith(ctx, lVarb, &rVarb, expr.Op, expr.OpPos); errR != nil {
 				return nil, ast.Void, errR
 			} else {
-				_ = ctx.SetVarb(LHS.Identifier().Name, v, dt)
+				lVarb.Value = v
+				lVarb.DType = dt
 				return v, dt, nil
 			}
 
@@ -916,7 +986,7 @@ func RunAssignmentExpr(ctx *Task, expr *ast.AssignmentExpr) (any, ast.DType, *er
 				return nil, ast.Invalid, NewRunError(ctx, err.Error(), LHS.IndexExpr().Obj.Start)
 			}
 			return changeListOrMapValue(ctx, varb.Value, LHS.IndexExpr().Index,
-				v, dtype)
+				rhsVal, rhsType)
 		case ast.ADDEQ,
 			ast.SUBEQ,
 			ast.MULEQ,
@@ -929,7 +999,9 @@ func RunAssignmentExpr(ctx *Task, expr *ast.AssignmentExpr) (any, ast.DType, *er
 			if v, dt, errR := searchListAndMap(ctx, varb.Value, LHS.IndexExpr().Index); errR != nil {
 				return nil, ast.Invalid, errR
 			} else {
-				v, dt, err := runAssignArith(ctx, &Varb{Value: v, DType: dt}, rVarb, expr.Op, expr.OpPos)
+				lVarb := Varb{Value: v, DType: dt}
+				rVarb := Varb{Value: rhsVal, DType: rhsType}
+				v, dt, err := runAssignArith(ctx, &lVarb, &rVarb, expr.Op, expr.OpPos)
 				if err != nil {
 					return nil, ast.Invalid, err
 				}
@@ -1160,6 +1232,97 @@ func typePromotion(l ast.DType, r ast.DType) ast.DType {
 	return ast.Int
 }
 
+func fastString(v any) string {
+	if s, ok := v.(string); ok {
+		return s
+	}
+	return cast.ToString(v)
+}
+
+func fastBool(v any) bool {
+	if b, ok := v.(bool); ok {
+		return b
+	}
+	return cast.ToBool(v)
+}
+
+func fastInt(v any) int {
+	switch x := v.(type) {
+	case int:
+		return x
+	case int64:
+		return int(x)
+	case bool:
+		if x {
+			return 1
+		}
+		return 0
+	default:
+		return cast.ToInt(v)
+	}
+}
+
+func fastInt64(v any) int64 {
+	switch x := v.(type) {
+	case int64:
+		return x
+	case int:
+		return int64(x)
+	case bool:
+		if x {
+			return 1
+		}
+		return 0
+	default:
+		return cast.ToInt64(v)
+	}
+}
+
+func runIntLikeNode(ctx *Task, node *ast.Node) (int64, bool) {
+	switch node.NodeType { //nolint:exhaustive
+	case ast.TypeIntegerLiteral:
+		return node.IntegerLiteral().Val, true
+	case ast.TypeBoolLiteral:
+		if node.BoolLiteral().Val {
+			return 1, true
+		}
+		return 0, true
+	case ast.TypeIdentifier:
+		v, err := ctx.GetKey(node.Identifier().Name)
+		if err != nil {
+			return 0, false
+		}
+		switch v.DType { //nolint:exhaustive
+		case ast.Int, ast.Bool:
+			return fastInt64(v.Value), true
+		default:
+			return 0, false
+		}
+	case ast.TypeParenExpr:
+		return runIntLikeNode(ctx, node.ParenExpr().Param)
+	default:
+		return 0, false
+	}
+}
+
+func fastFloat64(v any) float64 {
+	switch x := v.(type) {
+	case float64:
+		return x
+	case int64:
+		return float64(x)
+	case int:
+		return float64(x)
+	case bool:
+		if x {
+			return 1
+		}
+		return 0
+	default:
+		return cast.ToFloat64(v)
+	}
+}
+
 func condOp(lhs, rhs any, lhsT, rhsT ast.DType, op ast.Op) (any, ast.DType, error) {
 	switch op { //nolint:exhaustive
 	case ast.EQEQ:
@@ -1172,14 +1335,14 @@ func condOp(lhs, rhs any, lhsT, rhsT ast.DType, op ast.Op) (any, ast.DType, erro
 			}
 			dtype := typePromotion(lhsT, rhsT)
 			if dtype == ast.Float {
-				return cast.ToFloat64(lhs) == cast.ToFloat64(rhs), ast.Bool, nil
+				return fastFloat64(lhs) == fastFloat64(rhs), ast.Bool, nil
 			}
-			return cast.ToFloat64(lhs) == cast.ToFloat64(rhs), ast.Bool, nil
+			return fastFloat64(lhs) == fastFloat64(rhs), ast.Bool, nil
 		case ast.String:
 			if rhsT != ast.String {
 				return false, ast.Bool, nil
 			}
-			return cast.ToString(lhs) == cast.ToString(rhs), ast.Bool, nil
+			return fastString(lhs) == fastString(rhs), ast.Bool, nil
 		case ast.Nil:
 			if rhsT != ast.Nil {
 				return false, ast.Bool, nil
@@ -1199,14 +1362,14 @@ func condOp(lhs, rhs any, lhsT, rhsT ast.DType, op ast.Op) (any, ast.DType, erro
 			}
 			dtype := typePromotion(lhsT, rhsT)
 			if dtype == ast.Float {
-				return cast.ToFloat64(lhs) != cast.ToFloat64(rhs), ast.Bool, nil
+				return fastFloat64(lhs) != fastFloat64(rhs), ast.Bool, nil
 			}
-			return cast.ToFloat64(lhs) != cast.ToFloat64(rhs), ast.Bool, nil
+			return fastFloat64(lhs) != fastFloat64(rhs), ast.Bool, nil
 		case ast.String:
 			if rhsT != ast.String {
 				return true, ast.Bool, nil
 			}
-			return cast.ToString(lhs) != cast.ToString(rhs), ast.Bool, nil
+			return fastString(lhs) != fastString(rhs), ast.Bool, nil
 		case ast.Nil:
 			if rhsT != ast.Nil {
 				return true, ast.Bool, nil
@@ -1231,35 +1394,35 @@ func condOp(lhs, rhs any, lhsT, rhsT ast.DType, op ast.Op) (any, ast.DType, erro
 				op, lhsT, rhsT)
 		}
 		if op == ast.AND {
-			return cast.ToBool(lhs) && cast.ToBool(rhs), ast.Bool, nil
+			return fastBool(lhs) && fastBool(rhs), ast.Bool, nil
 		} else {
-			return cast.ToBool(lhs) || cast.ToBool(rhs), ast.Bool, nil
+			return fastBool(lhs) || fastBool(rhs), ast.Bool, nil
 		}
 
 	case ast.LT:
 		dtype := typePromotion(lhsT, rhsT)
 		if dtype == ast.Float {
-			return cast.ToFloat64(lhs) < cast.ToFloat64(rhs), ast.Bool, nil
+			return fastFloat64(lhs) < fastFloat64(rhs), ast.Bool, nil
 		}
-		return cast.ToInt(lhs) < cast.ToInt(rhs), ast.Bool, nil
+		return fastInt(lhs) < fastInt(rhs), ast.Bool, nil
 	case ast.LTE:
 		dtype := typePromotion(lhsT, rhsT)
 		if dtype == ast.Float {
-			return cast.ToFloat64(lhs) <= cast.ToFloat64(rhs), ast.Bool, nil
+			return fastFloat64(lhs) <= fastFloat64(rhs), ast.Bool, nil
 		}
-		return cast.ToInt(lhs) <= cast.ToInt(rhs), ast.Bool, nil
+		return fastInt(lhs) <= fastInt(rhs), ast.Bool, nil
 	case ast.GT:
 		dtype := typePromotion(lhsT, rhsT)
 		if dtype == ast.Float {
-			return cast.ToFloat64(lhs) > cast.ToFloat64(rhs), ast.Bool, nil
+			return fastFloat64(lhs) > fastFloat64(rhs), ast.Bool, nil
 		}
-		return cast.ToInt(lhs) > cast.ToInt(rhs), ast.Bool, nil
+		return fastInt(lhs) > fastInt(rhs), ast.Bool, nil
 	case ast.GTE:
 		dtype := typePromotion(lhsT, rhsT)
 		if dtype == ast.Float {
-			return cast.ToFloat64(lhs) >= cast.ToFloat64(rhs), ast.Bool, nil
+			return fastFloat64(lhs) >= fastFloat64(rhs), ast.Bool, nil
 		}
-		return cast.ToInt(lhs) >= cast.ToInt(rhs), ast.Bool, nil
+		return fastInt(lhs) >= fastInt(rhs), ast.Bool, nil
 	default:
 		return nil, ast.Invalid, fmt.Errorf("op error")
 	}
