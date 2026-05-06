@@ -1332,6 +1332,82 @@ add_key("total", total)
 	}
 }
 
+func BenchmarkRuntimeRunComplexReuseInput(b *testing.B) {
+	script := mustBenchmarkScript(b, `
+total = 0
+even = 0
+odd = 0
+arr = [1, 2, 3, 4, 5, 6, 7, 8]
+obj = {"base": 3, "factor": 2, "arr": arr}
+
+for i = 0; i < 30; i = i + 1 {
+	idx = i % 4
+	v = arr[idx]
+	if i % 2 {
+		odd += v + i
+	} else {
+		even += v
+	}
+	total = total + even + odd + obj["base"]
+}
+
+obj["total"] = total
+obj["part"] = arr[1:7:2]
+add_key("total", total)
+add_key("obj", obj)
+`)
+	inData := &inputImpl{data: map[string]any{}}
+
+	b.ReportAllocs()
+	for i := 0; i < b.N; i++ {
+		clearInputData(inData)
+		if err := script.Run(inData, nil); err != nil {
+			b.Fatal(err)
+		}
+	}
+}
+
+func BenchmarkRuntimeRunForInReuseInput(b *testing.B) {
+	script := mustBenchmarkScript(b, `
+score = 0
+text = ""
+weights = {"a": 1, "b": 2, "c": 3}
+vals = [1, 2, 3, 4, 5]
+
+for key in weights {
+	score += weights[key]
+}
+
+for v in vals {
+	for i = 0; i < 5; i = i + 1 {
+		score += v * i
+	}
+}
+
+for ch in "abcd" {
+	text = text + ch
+}
+
+add_key("score", score)
+add_key("text", text)
+`)
+	inData := &inputImpl{data: map[string]any{}}
+
+	b.ReportAllocs()
+	for i := 0; i < b.N; i++ {
+		clearInputData(inData)
+		if err := script.Run(inData, nil); err != nil {
+			b.Fatal(err)
+		}
+	}
+}
+
+func clearInputData(inData *inputImpl) {
+	for k := range inData.data {
+		delete(inData.data, k)
+	}
+}
+
 func mustBenchmarkScript(b *testing.B, pl string) *Script {
 	b.Helper()
 

@@ -96,7 +96,13 @@ func (s *Script) Check(funcsCheck map[string]FuncCheck) *errchain.PlError {
 
 func RunStmts(ctx *Task, nodes ast.Stmts) *errchain.PlError {
 	for _, node := range nodes {
-		if _, _, err := RunStmt(ctx, node); err != nil {
+		var err *errchain.PlError
+		if node != nil && node.NodeType == ast.TypeAssignmentExpr {
+			_, _, err = RunAssignmentExpr(ctx, node.AssignmentExpr())
+		} else {
+			_, _, err = RunStmt(ctx, node)
+		}
+		if err != nil {
 			ctx.procExit = true
 			return err
 		}
@@ -217,18 +223,33 @@ func RunForStmt(ctx *Task, stmt *ast.ForStmt) (any, ast.DType, *errchain.PlError
 
 	for {
 		if stmt.Cond != nil {
-			val, dtype, err := RunStmt(ctx, stmt.Cond)
-			if err != nil {
-				return nil, ast.Invalid, err
-			}
-			if !condTrue(val, dtype) {
-				break
+			if ok, fast := runFastBoolNode(ctx, stmt.Cond); fast {
+				if !ok {
+					break
+				}
+			} else {
+				val, dtype, err := RunStmt(ctx, stmt.Cond)
+				if err != nil {
+					return nil, ast.Invalid, err
+				}
+				if !condTrue(val, dtype) {
+					break
+				}
 			}
 		}
 
 		if stmt.Body != nil {
 			ctx.StackEnterNew()
-			err := RunStmts(ctx, stmt.Body.Stmts)
+			var err *errchain.PlError
+			if len(stmt.Body.Stmts) == 1 && stmt.Body.Stmts[0] != nil &&
+				stmt.Body.Stmts[0].NodeType == ast.TypeAssignmentExpr {
+				_, _, err = RunAssignmentExpr(ctx, stmt.Body.Stmts[0].AssignmentExpr())
+				if err != nil {
+					ctx.procExit = true
+				}
+			} else {
+				err = RunStmts(ctx, stmt.Body.Stmts)
+			}
 			ctx.StackExitCur()
 			if err != nil {
 				return nil, ast.Invalid, err
@@ -250,6 +271,13 @@ func RunForStmt(ctx *Task, stmt *ast.ForStmt) (any, ast.DType, *errchain.PlError
 
 		// loop stmt
 		if stmt.Loop != nil {
+			if stmt.Loop.NodeType == ast.TypeAssignmentExpr {
+				_, _, err := RunAssignmentExpr(ctx, stmt.Loop.AssignmentExpr())
+				if err != nil {
+					return nil, ast.Invalid, err
+				}
+				continue
+			}
 			_, _, err := RunStmt(ctx, stmt.Loop)
 			if err != nil {
 				return nil, ast.Invalid, err
@@ -258,6 +286,133 @@ func RunForStmt(ctx *Task, stmt *ast.ForStmt) (any, ast.DType, *errchain.PlError
 	}
 
 	return nil, ast.Void, nil
+}
+
+func runFastBoolNode(ctx *Task, node *ast.Node) (bool, bool) {
+	switch node.NodeType { //nolint:exhaustive
+	case ast.TypeBoolLiteral:
+		return node.BoolLiteral().Val, true
+	case ast.TypeIdentifier:
+		v, err := ctx.GetKey(node.Identifier().Name)
+		if err != nil || v.DType != ast.Bool {
+			return false, false
+		}
+		return fastBool(v.Value), true
+	case ast.TypeConditionalExpr:
+		expr := node.ConditionalExpr()
+		switch expr.Op { //nolint:exhaustive
+		case ast.EQEQ, ast.NEQ, ast.LT, ast.LTE, ast.GT, ast.GTE:
+			if lhs, ok := runIntLikeNode(ctx, expr.LHS); ok {
+				if rhs, ok := runIntLikeNode(ctx, expr.RHS); ok {
+					return compareIntFast(lhs, rhs, expr.Op), true
+				}
+			}
+		}
+	case ast.TypeParenExpr:
+		return runFastBoolNode(ctx, node.ParenExpr().Param)
+	}
+	return false, false
+}
+
+func compareIntFast(lhs, rhs int64, op ast.Op) bool {
+	switch op { //nolint:exhaustive
+	case ast.EQEQ:
+		return lhs == rhs
+	case ast.NEQ:
+		return lhs != rhs
+	case ast.LT:
+		return lhs < rhs
+	case ast.LTE:
+		return lhs <= rhs
+	case ast.GT:
+		return lhs > rhs
+	case ast.GTE:
+		return lhs >= rhs
+	default:
+		return false
+	}
+}
+
+func runAssignmentExprFast(ctx *Task, expr *ast.AssignmentExpr, lhs *ast.Node, rhs *ast.Node) (
+	any, ast.DType, bool, *errchain.PlError) {
+	if lhs.NodeType != ast.TypeIdentifier {
+		return nil, ast.Invalid, false, nil
+	}
+
+	name := lhs.Identifier().Name
+	switch expr.Op { //nolint:exhaustive
+	case ast.EQ:
+		if v, ok, err := runIntArithmeticNode(ctx, rhs, expr.OpPos); err != nil {
+			return nil, ast.Invalid, true, err
+		} else if ok {
+			_ = ctx.SetVarb(name, v, ast.Int)
+			return v, ast.Int, true, nil
+		}
+	case ast.SUBEQ,
+		ast.ADDEQ,
+		ast.MULEQ,
+		ast.DIVEQ,
+		ast.MODEQ:
+		lVarb, err := ctx.GetKey(name)
+		if err != nil || (lVarb.DType != ast.Int && lVarb.DType != ast.Bool) {
+			return nil, ast.Invalid, false, nil
+		}
+		rhsVal, ok := runIntLikeNode(ctx, rhs)
+		if !ok {
+			return nil, ast.Invalid, false, nil
+		}
+		v, dt, errOp := arithAssignIntFast(fastInt64(lVarb.Value), rhsVal, expr.Op)
+		if errOp != nil {
+			return nil, ast.Invalid, true, NewRunError(ctx, errOp.Error(), expr.OpPos)
+		}
+		lVarb.Value = v
+		lVarb.DType = dt
+		return v, dt, true, nil
+	}
+	return nil, ast.Invalid, false, nil
+}
+
+func runIntArithmeticNode(ctx *Task, node *ast.Node, pos token.LnColPos) (int64, bool, *errchain.PlError) {
+	if node.NodeType != ast.TypeArithmeticExpr {
+		return 0, false, nil
+	}
+	expr := node.ArithmeticExpr()
+	lhs, ok := runIntLikeNode(ctx, expr.LHS)
+	if !ok {
+		return 0, false, nil
+	}
+	rhs, ok := runIntLikeNode(ctx, expr.RHS)
+	if !ok {
+		return 0, false, nil
+	}
+	v, _, errOp := arithOpInt(lhs, rhs, expr.Op)
+	if errOp != nil {
+		return 0, true, NewRunError(ctx, errOp.Error(), pos)
+	}
+	return v, true, nil
+}
+
+func arithAssignIntFast(lhs, rhs int64, op ast.Op) (int64, ast.DType, error) {
+	switch op { //nolint:exhaustive
+	case ast.ADDEQ:
+		return lhs + rhs, ast.Int, nil
+	case ast.SUBEQ:
+		return lhs - rhs, ast.Int, nil
+	case ast.MULEQ:
+		return lhs * rhs, ast.Int, nil
+	case ast.DIVEQ:
+		if rhs == 0 {
+			return 0, ast.Invalid, fmt.Errorf("integer division by zero")
+		}
+		return lhs / rhs, ast.Int, nil
+	case ast.MODEQ:
+		if rhs == 0 {
+			return 0, ast.Invalid, fmt.Errorf("integer modulo by zero")
+		}
+		return lhs % rhs, ast.Int, nil
+	default:
+		return 0, ast.Invalid, fmt.Errorf("unsupported op: %s", op)
+	}
 }
 
 func RunForInStmt(ctx *Task, stmt *ast.ForInStmt) (any, ast.DType, *errchain.PlError) {
@@ -553,8 +708,12 @@ func RunUnaryExpr(ctx *Task, expr *ast.UnaryExpr) (any, ast.DType, *errchain.PlE
 
 func RunListInitExpr(ctx *Task, expr *ast.ListLiteral) (any, ast.DType, *errchain.PlError) {
 	ret := make([]any, 0, len(expr.List))
-	for _, v := range expr.List {
-		v, _, err := RunStmt(ctx, v)
+	for _, node := range expr.List {
+		if v, _, ok := runBasicLiteralNode(node); ok {
+			ret = append(ret, v)
+			continue
+		}
+		v, _, err := RunStmt(ctx, node)
 		if err != nil {
 			return nil, ast.Invalid, err
 		}
@@ -566,27 +725,37 @@ func RunListInitExpr(ctx *Task, expr *ast.ListLiteral) (any, ast.DType, *errchai
 func RunMapInitExpr(ctx *Task, expr *ast.MapLiteral) (any, ast.DType, *errchain.PlError) {
 	ret := make(map[string]any, len(expr.KeyValeList))
 
-	for _, v := range expr.KeyValeList {
-		k, keyType, err := RunStmt(ctx, v[0])
-		if err != nil {
-			return nil, ast.Invalid, err
+	for _, item := range expr.KeyValeList {
+		var key string
+		if item[0].NodeType == ast.TypeStringLiteral {
+			key = item[0].StringLiteral().Val
+		} else {
+			k, keyType, err := RunStmt(ctx, item[0])
+			if err != nil {
+				return nil, ast.Invalid, err
+			}
+			var ok bool
+			key, ok = k.(string)
+			if !ok {
+				return nil, ast.Invalid, NewRunError(ctx, fmt.Sprintf(
+					"unsupported key data type: %s", keyType), item[0].StartPos())
+			}
 		}
 
-		key, ok := k.(string)
+		value, valueType, ok := runBasicLiteralNode(item[1])
 		if !ok {
-			return nil, ast.Invalid, NewRunError(ctx, fmt.Sprintf(
-				"unsupported key data type: %s", keyType), v[0].StartPos())
-		}
-		value, valueType, err := RunStmt(ctx, v[1])
-		if err != nil {
-			return nil, ast.Invalid, err
+			var err *errchain.PlError
+			value, valueType, err = RunStmt(ctx, item[1])
+			if err != nil {
+				return nil, ast.Invalid, err
+			}
 		}
 		switch valueType { //nolint:exhaustive
 		case ast.String, ast.Bool, ast.Float, ast.Int,
 			ast.Nil, ast.List, ast.Map:
 		default:
 			return nil, ast.Invalid, NewRunError(ctx, fmt.Sprintf(
-				"unsupported value data type: %s", keyType), v[1].StartPos())
+				"unsupported value data type: %s", valueType), item[1].StartPos())
 		}
 		ret[key] = value
 	}
@@ -630,14 +799,55 @@ func RunIndexExprGet(ctx *Task, expr *ast.IndexExpr) (any, ast.DType, *errchain.
 			"unindexable type: %s", varb.DType), expr.Obj.Start)
 	}
 
+	if len(expr.Index) == 1 {
+		return indexSingle(ctx, varb.Value, expr.Index[0])
+	}
 	return searchListAndMap(ctx, varb.Value, expr.Index)
+}
+
+func indexSingle(ctx *Task, obj any, node *ast.Node) (any, ast.DType, *errchain.PlError) {
+	key, keyType, err := runIndexKey(ctx, node)
+	if err != nil {
+		return nil, ast.Invalid, err
+	}
+	switch curVal := obj.(type) {
+	case map[string]any:
+		if keyType != ast.String {
+			return nil, ast.Invalid, NewRunError(ctx,
+				"key type is not string", node.StartPos())
+		}
+		v, ok := curVal[fastString(key)]
+		if !ok {
+			return nil, ast.Nil, nil
+		}
+		v, dtype := dataTypeFast(v)
+		return v, dtype, nil
+	case []any:
+		if keyType != ast.Int {
+			return nil, ast.Invalid, NewRunError(ctx,
+				"key type is not int", node.StartPos())
+		}
+		keyInt := fastInt(key)
+		if keyInt < 0 {
+			keyInt = len(curVal) + keyInt
+		}
+		if keyInt < 0 || keyInt >= len(curVal) {
+			return nil, ast.Invalid, NewRunError(ctx,
+				"list index out of range", node.StartPos())
+		}
+		v, dtype := dataTypeFast(curVal[keyInt])
+		return v, dtype, nil
+	default:
+		return nil, ast.Invalid, NewRunError(ctx,
+			"not found", node.StartPos())
+	}
 }
 
 func searchListAndMap(ctx *Task, obj any, index []*ast.Node) (any, ast.DType, *errchain.PlError) {
 	cur := obj
 
 	for _, i := range index {
-		key, keyType, err := RunStmt(ctx, i)
+		key, keyType, err := runIndexKey(ctx, i)
 		if err != nil {
 			return nil, ast.Invalid, err
 		}
@@ -648,7 +858,7 @@ func searchListAndMap(ctx *Task, obj any, index []*ast.Node) (any, ast.DType, *e
 					"key type is not string", i.StartPos())
 			}
 			var ok bool
-			cur, ok = curVal[key.(string)]
+			cur, ok = curVal[fastString(key)]
 			if !ok {
 				return nil, ast.Nil, nil
 			}
@@ -657,7 +867,7 @@ func searchListAndMap(ctx *Task, obj any, index []*ast.Node) (any, ast.DType, *e
 				return nil, ast.Invalid, NewRunError(ctx,
 					"key type is not int", i.StartPos())
 			}
-			keyInt := cast.ToInt(key)
+			keyInt := fastInt(key)
 
 			// 反转负数
 			if keyInt < 0 {
@@ -675,8 +885,56 @@ func searchListAndMap(ctx *Task, obj any, index []*ast.Node) (any, ast.DType, *e
 		}
 	}
 	var dtype ast.DType
-	cur, dtype = ast.DectDataType(cur)
+	cur, dtype = dataTypeFast(cur)
 	return cur, dtype, nil
+}
+
+func dataTypeFast(v any) (any, ast.DType) {
+	switch x := v.(type) {
+	case nil:
+		return nil, ast.Nil
+	case string:
+		return x, ast.String
+	case int64:
+		return x, ast.Int
+	case float64:
+		return x, ast.Float
+	case bool:
+		return x, ast.Bool
+	case []any:
+		return x, ast.List
+	case map[string]any:
+		return x, ast.Map
+	default:
+		return ast.DectDataType(v)
+	}
+}
+
+func runBasicLiteralNode(node *ast.Node) (any, ast.DType, bool) {
+	if node == nil {
+		return nil, ast.Invalid, false
+	}
+	switch node.NodeType { //nolint:exhaustive
+	case ast.TypeStringLiteral:
+		return node.StringLiteral().Val, ast.String, true
+	case ast.TypeIntegerLiteral:
+		return node.IntegerLiteral().Val, ast.Int, true
+	case ast.TypeFloatLiteral:
+		return node.FloatLiteral().Val, ast.Float, true
+	case ast.TypeBoolLiteral:
+		return node.BoolLiteral().Val, ast.Bool, true
+	case ast.TypeNilLiteral:
+		return nil, ast.Nil, true
+	default:
+		return nil, ast.Invalid, false
+	}
+}
+
+func runIndexKey(ctx *Task, node *ast.Node) (any, ast.DType, *errchain.PlError) {
+	if v, dtype, ok := runBasicLiteralNode(node); ok {
+		return v, dtype, nil
+	}
+	return RunStmt(ctx, node)
 }
 
 func RunParenExpr(ctx *Task, expr *ast.ParenExpr) (any, ast.DType, *errchain.PlError) {
@@ -922,24 +1180,26 @@ func RunAssignmentExpr(ctx *Task, expr *ast.AssignmentExpr) (any, ast.DType, *er
 	RHS := expr.RHS[0]
 	LHS := expr.LHS[0]
 	if LHS.NodeType == ast.TypeIdentifier {
-		switch expr.Op {
+		switch expr.Op { //nolint:exhaustive
+		case ast.EQ:
+			if RHS.NodeType == ast.TypeArithmeticExpr {
+				if v, ok, err := runIntArithmeticNode(ctx, RHS, expr.OpPos); err != nil {
+					return nil, ast.Invalid, err
+				} else if ok {
+					_ = ctx.SetVarb(LHS.Identifier().Name, v, ast.Int)
+					return v, ast.Int, nil
+				}
+			}
 		case ast.SUBEQ,
 			ast.ADDEQ,
 			ast.MULEQ,
 			ast.DIVEQ,
 			ast.MODEQ:
-			lVarb, err := ctx.GetKey(LHS.Identifier().Name)
-			if err == nil && (lVarb.DType == ast.Int || lVarb.DType == ast.Bool) {
-				if rhs, ok := runIntLikeNode(ctx, RHS); ok {
-					arithOp, _ := assign2arithOp(expr.Op)
-					v, dt, errOp := arithOpInt(fastInt64(lVarb.Value), rhs, arithOp)
-					if errOp != nil {
-						return nil, ast.Invalid, NewRunError(ctx, errOp.Error(), expr.OpPos)
-					}
-					lVarb.Value = v
-					lVarb.DType = dt
-					return v, dt, nil
+			if v, dtype, ok, err := runAssignmentExprFast(ctx, expr, LHS, RHS); ok || err != nil {
+				if err != nil {
+					return nil, ast.Invalid, err
 				}
+				return v, dtype, nil
 			}
 		}
 	}
@@ -1019,11 +1279,15 @@ func RunAssignmentExpr(ctx *Task, expr *ast.AssignmentExpr) (any, ast.DType, *er
 }
 
 func changeListOrMapValue(ctx *Task, obj any, index []*ast.Node, val any, dtype ast.DType) (any, ast.DType, *errchain.PlError) {
+	if len(index) == 1 {
+		return changeSingleIndexValue(ctx, obj, index[0], val, dtype)
+	}
+
 	cur := obj
 	lenIdx := len(index)
 
 	for idx, node := range index {
-		key, keyType, err := RunStmt(ctx, node)
+		key, keyType, err := runIndexKey(ctx, node)
 		if err != nil {
 			return nil, ast.Invalid, err
 		}
@@ -1034,12 +1298,12 @@ func changeListOrMapValue(ctx *Task, obj any, index []*ast.Node, val any, dtype 
 					"key type is not string", node.StartPos())
 			}
 			if idx+1 == lenIdx {
-				curVal[key.(string)] = val
+				curVal[fastString(key)] = val
 				return val, dtype, nil
 			}
 
 			var ok bool
-			cur, ok = curVal[key.(string)]
+			cur, ok = curVal[fastString(key)]
 			if !ok {
 				return nil, ast.Invalid, NewRunError(ctx,
 					"key not found", node.StartPos())
@@ -1049,7 +1313,7 @@ func changeListOrMapValue(ctx *Task, obj any, index []*ast.Node, val any, dtype 
 				return nil, ast.Invalid, NewRunError(ctx,
 					"key type is not int", node.StartPos())
 			}
-			keyInt := cast.ToInt(key)
+			keyInt := fastInt(key)
 
 			// 反转负数
 			if keyInt < 0 {
@@ -1073,6 +1337,40 @@ func changeListOrMapValue(ctx *Task, obj any, index []*ast.Node, val any, dtype 
 		}
 	}
 	return nil, ast.Nil, nil
+}
+
+func changeSingleIndexValue(ctx *Task, obj any, node *ast.Node, val any, dtype ast.DType) (any, ast.DType, *errchain.PlError) {
+	key, keyType, err := runIndexKey(ctx, node)
+	if err != nil {
+		return nil, ast.Invalid, err
+	}
+	switch curVal := obj.(type) {
+	case map[string]any:
+		if keyType != ast.String {
+			return nil, ast.Invalid, NewRunError(ctx,
+				"key type is not string", node.StartPos())
+		}
+		curVal[fastString(key)] = val
+		return val, dtype, nil
+	case []any:
+		if keyType != ast.Int {
+			return nil, ast.Invalid, NewRunError(ctx,
+				"key type is not int", node.StartPos())
+		}
+		keyInt := fastInt(key)
+		if keyInt < 0 {
+			keyInt = len(curVal) + keyInt
+		}
+		if keyInt < 0 || keyInt >= len(curVal) {
+			return nil, ast.Invalid, NewRunError(ctx,
+				"list index out of range", node.StartPos())
+		}
+		curVal[keyInt] = val
+		return val, dtype, nil
+	default:
+		return nil, ast.Invalid, NewRunError(ctx,
+			"obj not map or list", node.StartPos())
+	}
 }
 
 func RunCallExpr(ctx *Task, expr *ast.CallExpr) (any, ast.DType, *errchain.PlError) {
