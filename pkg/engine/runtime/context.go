@@ -19,7 +19,7 @@ import (
 const (
 	ploriginkey        = "message"
 	PlRunInfoField     = "pl_msg"
-	localVarCacheSlots = 4
+	localVarCacheSlots = 8
 )
 
 type Task struct {
@@ -36,7 +36,6 @@ type Task struct {
 	prevVarb    *Varb
 	varCacheKey [localVarCacheSlots]string
 	varCacheVal [localVarCacheSlots]*Varb
-	varCachePos uint8
 
 	funcCall  map[string]FuncCall
 	funcCheck map[string]FuncCheck
@@ -222,7 +221,26 @@ func (ctx *Task) GetKeyConv2Str(key string) (string, error) {
 		key = ploriginkey
 	}
 
+	if ctx.lastVarb != nil && ctx.lastVarKey == key {
+		return Conv2String(ctx.lastVarb.Value, ctx.lastVarb.DType)
+	}
+	if ctx.prevVarb != nil && ctx.prevVarKey == key {
+		v := ctx.prevVarb
+		ctx.prevVarKey, ctx.prevVarb = ctx.lastVarKey, ctx.lastVarb
+		ctx.lastVarKey, ctx.lastVarb = key, v
+		return Conv2String(v.Value, v.DType)
+	}
+	if v := ctx.getCachedVarb(key); v != nil {
+		return Conv2String(v.Value, v.DType)
+	}
+	if ctx.varCache != nil {
+		if v, ok := ctx.varCache[key]; ok {
+			ctx.touchVarb(key, v)
+			return Conv2String(v.Value, v.DType)
+		}
+	}
 	if v, err := ctx.stackCur.Get(key); err == nil {
+		ctx.cacheVarb(key, v)
 		return Conv2String(v.Value, v.DType)
 	}
 
@@ -277,10 +295,6 @@ func (ctx *Task) StackClear() {
 }
 
 func (ctx *Task) cacheVarb(key string, v *Varb) {
-	if ctx.varCache == nil {
-		ctx.varCache = make(map[string]*Varb, 8)
-	}
-	ctx.varCache[key] = v
 	ctx.touchVarb(key, v)
 
 	for i := range ctx.varCacheVal {
@@ -290,10 +304,15 @@ func (ctx *Task) cacheVarb(key string, v *Varb) {
 			return
 		}
 	}
-	idx := int(ctx.varCachePos % localVarCacheSlots)
-	ctx.varCachePos++
-	ctx.varCacheKey[idx] = key
-	ctx.varCacheVal[idx] = v
+	if ctx.varCache == nil {
+		ctx.varCache = make(map[string]*Varb, 8)
+		for i, cached := range ctx.varCacheVal {
+			if cached != nil {
+				ctx.varCache[ctx.varCacheKey[i]] = cached
+			}
+		}
+	}
+	ctx.varCache[key] = v
 }
 
 func (ctx *Task) touchVarb(key string, v *Varb) {
@@ -321,7 +340,6 @@ func (ctx *Task) clearVarCache() {
 	ctx.lastVarb = nil
 	ctx.prevVarKey = ""
 	ctx.prevVarb = nil
-	ctx.varCachePos = 0
 	for i := range ctx.varCacheVal {
 		ctx.varCacheKey[i] = ""
 		ctx.varCacheVal[i] = nil
@@ -336,7 +354,7 @@ func (ctx *Task) clearVarCache() {
 }
 
 func (ctx *Task) invalidateStackVars(stack *Stack) {
-	if ctx.varCache == nil || stack == nil {
+	if stack == nil {
 		return
 	}
 	for _, k := range stack.keys {
@@ -344,7 +362,7 @@ func (ctx *Task) invalidateStackVars(stack *Stack) {
 		if v == nil {
 			continue
 		}
-		if ctx.varCache[k] == v {
+		if ctx.varCache != nil && ctx.varCache[k] == v {
 			delete(ctx.varCache, k)
 		}
 		if ctx.lastVarb == v {

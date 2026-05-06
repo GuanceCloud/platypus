@@ -133,6 +133,10 @@ func (stack *Stack) Get(key string) (*Varb, error) {
 }
 
 func (stack *Stack) Clear() {
+	stack.clearRetainingStorage()
+}
+
+func (stack *Stack) clearRetainingStorage() {
 	stack.CheckPattern = nil
 	if len(stack.Data) > maxRetainedStackVars {
 		stack.Data = nil
@@ -161,32 +165,9 @@ func (stack *Stack) Clear() {
 
 func (stack *Stack) ResetChain() {
 	for stack != nil {
+		next := stack.Next
 		stack.Before = nil
-		stack.CheckPattern = nil
-		if len(stack.Data) > maxRetainedStackVars {
-			stack.Data = nil
-			stack.free = nil
-			stack.keys = nil
-			stack = stack.Next
-			continue
-		}
-		for _, k := range stack.keys {
-			v := stack.Data[k]
-			if v == nil {
-				continue
-			}
-			if len(stack.free) < maxRetainedStackVars {
-				v.Value = nil
-				v.DType = ast.Void
-				stack.free = append(stack.free, v)
-			}
-			delete(stack.Data, k)
-		}
-		if cap(stack.keys) > maxRetainedStackVars {
-			stack.keys = nil
-		} else {
-			stack.keys = stack.keys[:0]
-		}
-		stack = stack.Next
+		stack.clearRetainingStorage()
+		stack = next
 	}
 }

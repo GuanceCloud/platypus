@@ -2,6 +2,7 @@ package runtimev2
 
 import (
 	"fmt"
+	"sync"
 
 	"github.com/GuanceCloud/platypus/pkg/ast"
 	"github.com/GuanceCloud/platypus/pkg/engine/runtime"
@@ -21,7 +22,9 @@ type Script struct {
 }
 
 func (s *Script) Run(signal Signal, opt ...Opt) *errchain.PlError {
-	task := NewTask(s.Name, s.Fn)
+	task := acquireTask(s.Name, s.Fn)
+	defer releaseTask(task)
+
 	task.signal = signal
 	for _, o := range opt {
 		if o != nil {
@@ -36,6 +39,20 @@ func (s *Script) Run(signal Signal, opt ...Opt) *errchain.PlError {
 		return err
 	}
 	return nil
+}
+
+var taskPool sync.Pool
+
+func acquireTask(name string, funcs map[string]*Fn) *Task {
+	if task, _ := taskPool.Get().(*Task); task != nil {
+		return initTask(task, name, funcs)
+	}
+	return initTask(&Task{}, name, funcs)
+}
+
+func releaseTask(task *Task) {
+	*task = Task{}
+	taskPool.Put(task)
 }
 
 func (s *Script) Check() *errchain.PlError {
@@ -118,7 +135,7 @@ type slotFrame struct {
 }
 
 type slotCell struct {
-	varb *runtime.Varb
+	varb runtime.Varb
 	set  bool
 }
 
@@ -306,12 +323,13 @@ func (ctx *Task) slotSetIndex(idx int, v V) bool {
 		return false
 	}
 	if ctx.slotVal[idx].set {
-		ctx.slotVal[idx].varb.Value = v.V
-		ctx.slotVal[idx].varb.DType = v.T
+		cell := &ctx.slotVal[idx]
+		cell.varb.Value = v.V
+		cell.varb.DType = v.T
 		return true
 	}
 	ctx.slotVal[idx] = slotCell{
-		varb: &runtime.Varb{Value: v.V, DType: v.T},
+		varb: runtime.Varb{Value: v.V, DType: v.T},
 		set:  true,
 	}
 	frame := &ctx.frames[len(ctx.frames)-1]
@@ -324,11 +342,11 @@ func (ctx *Task) slotVarb(key string) (*runtime.Varb, bool) {
 	if !ok || idx < 0 || idx >= len(ctx.slotVal) {
 		return nil, false
 	}
-	cell := ctx.slotVal[idx]
-	if !cell.set || cell.varb == nil {
+	cell := &ctx.slotVal[idx]
+	if !cell.set {
 		return nil, false
 	}
-	return cell.varb, true
+	return &cell.varb, true
 }
 
 func (ctx *Task) slotGet(key string) (V, bool) {
@@ -343,8 +361,8 @@ func (ctx *Task) slotGetIndex(idx int) (V, bool) {
 	if idx < 0 || idx >= len(ctx.slotVal) {
 		return V{}, false
 	}
-	cell := ctx.slotVal[idx]
-	if cell.set && cell.varb != nil {
+	cell := &ctx.slotVal[idx]
+	if cell.set {
 		return V{V: cell.varb.Value, T: cell.varb.DType}, true
 	}
 	return V{}, false
@@ -455,7 +473,11 @@ func (ctx *Task) stmtReturnFast() bool {
 }
 
 func NewTask(name string, funcs map[string]*Fn) *Task {
-	task := &Task{
+	return initTask(&Task{}, name, funcs)
+}
+
+func initTask(task *Task, name string, funcs map[string]*Fn) *Task {
+	*task = Task{
 		funcs: funcs,
 		name:  name,
 	}

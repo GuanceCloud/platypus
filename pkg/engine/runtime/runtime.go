@@ -98,7 +98,7 @@ func RunStmts(ctx *Task, nodes ast.Stmts) *errchain.PlError {
 	for _, node := range nodes {
 		var err *errchain.PlError
 		if node != nil && node.NodeType == ast.TypeAssignmentExpr {
-			_, _, err = RunAssignmentExpr(ctx, node.AssignmentExpr())
+			err = runAssignmentStmt(ctx, node.AssignmentExpr())
 		} else {
 			_, _, err = RunStmt(ctx, node)
 		}
@@ -215,7 +215,12 @@ func RunForStmt(ctx *Task, stmt *ast.ForStmt) (any, ast.DType, *errchain.PlError
 
 	// for init
 	if stmt.Init != nil {
-		_, _, err := RunStmt(ctx, stmt.Init)
+		var err *errchain.PlError
+		if stmt.Init.NodeType == ast.TypeAssignmentExpr {
+			err = runAssignmentStmt(ctx, stmt.Init.AssignmentExpr())
+		} else {
+			_, _, err = RunStmt(ctx, stmt.Init)
+		}
 		if err != nil {
 			return nil, ast.Invalid, err
 		}
@@ -243,7 +248,7 @@ func RunForStmt(ctx *Task, stmt *ast.ForStmt) (any, ast.DType, *errchain.PlError
 			var err *errchain.PlError
 			if len(stmt.Body.Stmts) == 1 && stmt.Body.Stmts[0] != nil &&
 				stmt.Body.Stmts[0].NodeType == ast.TypeAssignmentExpr {
-				_, _, err = RunAssignmentExpr(ctx, stmt.Body.Stmts[0].AssignmentExpr())
+				err = runAssignmentStmt(ctx, stmt.Body.Stmts[0].AssignmentExpr())
 				if err != nil {
 					ctx.procExit = true
 				}
@@ -272,8 +277,7 @@ func RunForStmt(ctx *Task, stmt *ast.ForStmt) (any, ast.DType, *errchain.PlError
 		// loop stmt
 		if stmt.Loop != nil {
 			if stmt.Loop.NodeType == ast.TypeAssignmentExpr {
-				_, _, err := RunAssignmentExpr(ctx, stmt.Loop.AssignmentExpr())
-				if err != nil {
+				if err := runAssignmentStmt(ctx, stmt.Loop.AssignmentExpr()); err != nil {
 					return nil, ast.Invalid, err
 				}
 				continue
@@ -357,9 +361,15 @@ func runAssignmentExprFast(ctx *Task, expr *ast.AssignmentExpr, lhs *ast.Node, r
 		if err != nil || (lVarb.DType != ast.Int && lVarb.DType != ast.Bool) {
 			return nil, ast.Invalid, false, nil
 		}
-		rhsVal, ok := runIntLikeNode(ctx, rhs)
+		rhsVal, ok, errFast := runIntArithmeticNode(ctx, rhs, expr.OpPos)
+		if errFast != nil {
+			return nil, ast.Invalid, true, errFast
+		}
 		if !ok {
-			return nil, ast.Invalid, false, nil
+			rhsVal, ok = runIntLikeNode(ctx, rhs)
+			if !ok {
+				return nil, ast.Invalid, false, nil
+			}
 		}
 		v, dt, errOp := arithAssignIntFast(fastInt64(lVarb.Value), rhsVal, expr.Op)
 		if errOp != nil {
@@ -370,6 +380,71 @@ func runAssignmentExprFast(ctx *Task, expr *ast.AssignmentExpr, lhs *ast.Node, r
 		return v, dt, true, nil
 	}
 	return nil, ast.Invalid, false, nil
+}
+
+func runAssignmentStmt(ctx *Task, expr *ast.AssignmentExpr) *errchain.PlError {
+	if !(len(expr.RHS) == 1 && len(expr.LHS) == 1) {
+		return NewRunError(ctx,
+			"it does not support assigning values to multiple variables at the same time", expr.OpPos)
+	}
+
+	rhs := expr.RHS[0]
+	lhs := expr.LHS[0]
+	if lhs.NodeType == ast.TypeIdentifier {
+		if handled, err := runAssignmentStmtFast(ctx, expr, lhs.Identifier().Name, rhs); handled || err != nil {
+			return err
+		}
+	}
+
+	_, _, err := RunAssignmentExpr(ctx, expr)
+	return err
+}
+
+func runAssignmentStmtFast(ctx *Task, expr *ast.AssignmentExpr, name string, rhs *ast.Node) (
+	bool, *errchain.PlError) {
+	switch expr.Op { //nolint:exhaustive
+	case ast.EQ:
+		if v, dtype, ok := runBasicLiteralNode(rhs); ok {
+			_ = ctx.SetVarb(name, v, dtype)
+			return true, nil
+		}
+		if v, ok, err := runIntArithmeticNode(ctx, rhs, expr.OpPos); err != nil {
+			return true, err
+		} else if ok {
+			_ = ctx.SetVarb(name, v, ast.Int)
+			return true, nil
+		}
+	case ast.SUBEQ,
+		ast.ADDEQ,
+		ast.MULEQ,
+		ast.DIVEQ,
+		ast.MODEQ:
+		lVarb, err := ctx.GetKey(name)
+		if err != nil {
+			return true, nil
+		}
+		if lVarb.DType != ast.Int && lVarb.DType != ast.Bool {
+			return false, nil
+		}
+		rhsVal, ok, errFast := runIntArithmeticNode(ctx, rhs, expr.OpPos)
+		if errFast != nil {
+			return true, errFast
+		}
+		if !ok {
+			rhsVal, ok = runIntLikeNode(ctx, rhs)
+			if !ok {
+				return false, nil
+			}
+		}
+		v, dt, errOp := arithAssignIntFast(fastInt64(lVarb.Value), rhsVal, expr.Op)
+		if errOp != nil {
+			return true, NewRunError(ctx, errOp.Error(), expr.OpPos)
+		}
+		lVarb.Value = v
+		lVarb.DType = dt
+		return true, nil
+	}
+	return false, nil
 }
 
 func runIntArithmeticNode(ctx *Task, node *ast.Node, pos token.LnColPos) (int64, bool, *errchain.PlError) {
@@ -385,11 +460,34 @@ func runIntArithmeticNode(ctx *Task, node *ast.Node, pos token.LnColPos) (int64,
 	if !ok {
 		return 0, false, nil
 	}
-	v, _, errOp := arithOpInt(lhs, rhs, expr.Op)
-	if errOp != nil {
-		return 0, true, NewRunError(ctx, errOp.Error(), pos)
+	v, errMsg := arithOpIntValue(lhs, rhs, expr.Op)
+	if errMsg != "" {
+		return 0, true, NewRunError(ctx, errMsg, pos)
 	}
 	return v, true, nil
+}
+
+func arithOpIntValue(lhs, rhs int64, op ast.Op) (int64, string) {
+	switch op { //nolint:exhaustive
+	case ast.ADD:
+		return lhs + rhs, ""
+	case ast.SUB:
+		return lhs - rhs, ""
+	case ast.MUL:
+		return lhs * rhs, ""
+	case ast.DIV:
+		if rhs == 0 {
+			return 0, "integer division by zero"
+		}
+		return lhs / rhs, ""
+	case ast.MOD:
+		if rhs == 0 {
+			return 0, "integer modulo by zero"
+		}
+		return lhs % rhs, ""
+	default:
+		return 0, fmt.Sprintf("unsupported op: %s", op)
+	}
 }
 
 func arithAssignIntFast(lhs, rhs int64, op ast.Op) (int64, ast.DType, error) {
@@ -1468,6 +1566,9 @@ func RunSliceExpr(ctx *Task, expr *ast.SliceExpr) (any, ast.DType, *errchain.PlE
 	switch objT {
 	case ast.String:
 		str := obj.(string)
+		if result, ok := sliceSmallString(str, startInt, endInt, stepInt, length); ok {
+			return result, ast.String, nil
+		}
 		if stepInt > 0 {
 			var result strings.Builder
 			if startInt < 0 {
@@ -1528,6 +1629,52 @@ func RunSliceExpr(ctx *Task, expr *ast.SliceExpr) (any, ast.DType, *errchain.PlE
 		}
 	}
 }
+
+func sliceSmallString(str string, startInt, endInt, stepInt, length int) (string, bool) {
+	var buf [64]byte
+	n := 0
+
+	if stepInt > 0 {
+		if startInt < 0 {
+			startInt = 0
+		}
+		if endInt > length {
+			endInt = length
+		}
+		if startInt >= endInt {
+			return "", true
+		}
+		count := (endInt - startInt + stepInt - 1) / stepInt
+		if count > len(buf) {
+			return "", false
+		}
+		for i := startInt; i < endInt; i += stepInt {
+			buf[n] = str[i]
+			n++
+		}
+		return string(buf[:n]), true
+	}
+
+	if startInt > length-1 {
+		startInt = length - 1
+	}
+	if endInt < -1 {
+		endInt = -1
+	}
+	if startInt <= endInt {
+		return "", true
+	}
+	count := (startInt - endInt - stepInt - 1) / (-stepInt)
+	if count > len(buf) {
+		return "", false
+	}
+	for i := startInt; i > endInt; i += stepInt {
+		buf[n] = str[i]
+		n++
+	}
+	return string(buf[:n]), true
+}
+
 func typePromotion(l ast.DType, r ast.DType) ast.DType {
 	if l == ast.Float || r == ast.Float {
 		return ast.Float
