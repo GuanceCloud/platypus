@@ -118,8 +118,8 @@ type slotFrame struct {
 }
 
 type slotCell struct {
-	val V
-	set bool
+	varb *runtime.Varb
+	set  bool
 }
 
 func (reg *PlReg) ReturnAppend(val ...V) {
@@ -203,8 +203,7 @@ func (ctx *Task) PValue(k TaskP) (any, bool) {
 
 func (ctx *Task) StackExitCur() {
 	cur := ctx.stackCur
-	cur.Data = nil
-	cur.CheckPattern = nil
+	cur.Clear()
 
 	ctx.stackCur = cur.Before
 	cur.Before = nil
@@ -236,11 +235,8 @@ func (ctx *Task) SetVarb(key string, v V) {
 }
 
 func (ctx *Task) GetKey(key string) (*runtime.Varb, error) {
-	if v, ok := ctx.slotGet(key); ok {
-		return &runtime.Varb{
-			Value: v.V,
-			DType: v.T,
-		}, nil
+	if v, ok := ctx.slotVarb(key); ok {
+		return v, nil
 	}
 	if v, err := ctx.stackCur.Get(key); err == nil {
 		return v, nil
@@ -250,6 +246,7 @@ func (ctx *Task) GetKey(key string) (*runtime.Varb, error) {
 }
 
 func (ctx *Task) useSlots(slots map[string]int) {
+	ctx.stackClearCur()
 	ctx.slots = slots
 	if len(slots) <= len(ctx.slotBuf) {
 		ctx.slotVal = ctx.slotBuf[:len(slots)]
@@ -309,13 +306,29 @@ func (ctx *Task) slotSetIndex(idx int, v V) bool {
 		return false
 	}
 	if ctx.slotVal[idx].set {
-		ctx.slotVal[idx].val = v
+		ctx.slotVal[idx].varb.Value = v.V
+		ctx.slotVal[idx].varb.DType = v.T
 		return true
 	}
-	ctx.slotVal[idx] = slotCell{val: v, set: true}
+	ctx.slotVal[idx] = slotCell{
+		varb: &runtime.Varb{Value: v.V, DType: v.T},
+		set:  true,
+	}
 	frame := &ctx.frames[len(ctx.frames)-1]
 	frame.locals = append(frame.locals, idx)
 	return true
+}
+
+func (ctx *Task) slotVarb(key string) (*runtime.Varb, bool) {
+	idx, ok := ctx.slots[key]
+	if !ok || idx < 0 || idx >= len(ctx.slotVal) {
+		return nil, false
+	}
+	cell := ctx.slotVal[idx]
+	if !cell.set || cell.varb == nil {
+		return nil, false
+	}
+	return cell.varb, true
 }
 
 func (ctx *Task) slotGet(key string) (V, bool) {
@@ -330,8 +343,9 @@ func (ctx *Task) slotGetIndex(idx int) (V, bool) {
 	if idx < 0 || idx >= len(ctx.slotVal) {
 		return V{}, false
 	}
-	if ctx.slotVal[idx].set {
-		return ctx.slotVal[idx].val, true
+	cell := ctx.slotVal[idx]
+	if cell.set && cell.varb != nil {
+		return V{V: cell.varb.Value, T: cell.varb.DType}, true
 	}
 	return V{}, false
 }

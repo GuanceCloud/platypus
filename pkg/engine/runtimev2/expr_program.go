@@ -1095,11 +1095,14 @@ func (e sliceExpr) evalString(str string, startInt, endInt, stepInt, length int)
 
 	var result strings.Builder
 	if stepInt > 0 {
-		if n := (endInt - startInt + stepInt - 1) / stepInt; n > 0 {
-			result.Grow(n)
-		}
 		if startInt < 0 {
 			startInt = 0
+		}
+		if endInt > length {
+			endInt = length
+		}
+		if n := (endInt - startInt + stepInt - 1) / stepInt; n > 0 {
+			result.Grow(n)
 		}
 		for i := startInt; i < endInt && i < length; i += stepInt {
 			result.WriteByte(str[i])
@@ -1107,6 +1110,9 @@ func (e sliceExpr) evalString(str string, startInt, endInt, stepInt, length int)
 	} else {
 		if startInt > length-1 {
 			startInt = length - 1
+		}
+		if endInt < -1 {
+			endInt = -1
 		}
 		if n := (startInt - endInt - stepInt - 1) / (-stepInt); n > 0 {
 			result.Grow(n)

@@ -483,6 +483,20 @@ func TestSliceExpr(t *testing.T) {
 			},
 		},
 		{
+			name: "slice string clamps bounds before preallocation",
+			pl: `
+			s = "hello"
+			v1 = s[-1000000000000000000:]
+			v2 = s[:-1000000000000000000:-1]
+			add_key("v1", v1)
+			add_key("v2", v2)
+			`,
+			v: map[string]any{
+				"v1": "hello",
+				"v2": "olleh",
+			},
+		},
+		{
 			name: "valid slice list with positive step",
 			pl: `
 			l = [1, 2, 3, 4, 5]

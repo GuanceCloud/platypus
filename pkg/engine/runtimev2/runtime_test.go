@@ -1,6 +1,7 @@
 package runtimev2
 
 import (
+	"reflect"
 	"testing"
 
 	"github.com/GuanceCloud/platypus/pkg/ast"
@@ -350,6 +351,67 @@ func TestProgramRunResetsSlotsForReusedTask(t *testing.T) {
 	}
 }
 
+func TestProgramRunClearsFallbackVarsForReusedTask(t *testing.T) {
+	funcs := map[string]*Fn{
+		"set": {
+			CallCheck: func(ctx *Task, fn *ast.CallExpr) *errchain.PlError {
+				return CheckPassParam(ctx, fn, nil)
+			},
+			Call: func(ctx *Task, fn *ast.CallExpr) *errchain.PlError {
+				ctx.SetVarb("dyn", V{V: int64(7), T: ast.Int})
+				return nil
+			},
+		},
+	}
+	first := parseTestScript(t, "first-fallback-var", `set()`, funcs)
+	second := parseTestScript(t, "second-fallback-var", `dyn`, nil)
+
+	task := NewTask(first.Name, first.Fn)
+	if err := first.Program.Run(task); err != nil {
+		t.Fatal(err)
+	}
+	if err := second.Program.Run(task); err == nil {
+		t.Fatal("expected fallback variable from first run to be cleared")
+	}
+}
+
+func TestProgramGetKeyReturnsMutableSlotVarb(t *testing.T) {
+	funcs := map[string]*Fn{
+		"mutate": {
+			CallCheck: func(ctx *Task, fn *ast.CallExpr) *errchain.PlError {
+				return CheckPassParam(ctx, fn, nil)
+			},
+			Call: func(ctx *Task, fn *ast.CallExpr) *errchain.PlError {
+				v, err := ctx.GetKey("a")
+				if err != nil {
+					return NewRunError(ctx, err.Error(), fn.NamePos)
+				}
+				v.Value = int64(9)
+				v.DType = ast.Int
+				return nil
+			},
+		},
+	}
+
+	s := parseTestScript(t, "mutable-slot-varb", `
+a = 1
+mutate()
+b = a
+`, funcs)
+
+	task := NewTask(s.Name, s.Fn)
+	if err := s.Program.Run(task); err != nil {
+		t.Fatal(err)
+	}
+	b, err := task.GetKey("b")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if b.Value != int64(9) {
+		t.Fatalf("expected GetKey mutation to update slotted variable, got %v", b.Value)
+	}
+}
+
 func TestProgramCallUsesCurrentFunctionTable(t *testing.T) {
 	funcs := map[string]*Fn{
 		"dyn": {
@@ -599,9 +661,80 @@ func TestProgramVMUnwindsBlockScopeOnError(t *testing.T) {
 	}
 }
 
+func TestStackExitClearsReusedStackKeys(t *testing.T) {
+	task := NewTask("stack-reuse", nil)
+
+	for i := 0; i < 10; i++ {
+		task.StackEnterNew()
+		task.SetVarb("tmp", V{int64(i), ast.Int})
+		task.StackExitCur()
+	}
+
+	if len(task.stackFree) != 1 {
+		t.Fatalf("expected one reused stack, got %d", len(task.stackFree))
+	}
+	stack := task.stackFree[0]
+	if got := reflect.ValueOf(stack).Elem().FieldByName("keys").Len(); got != 0 {
+		t.Fatalf("expected reused stack keys to be cleared, got %d", got)
+	}
+	if _, ok := stack.Data["tmp"]; ok {
+		t.Fatal("expected reused stack data to be cleared")
+	}
+}
+
 func TestCheckSliceStepWithoutEnd(t *testing.T) {
 	s := parseTestScript(t, "slice-step", `a = "abcdef"[::2]`, nil)
 	if err := s.Run(nil); err != nil {
 		t.Fatal(err)
 	}
+}
+
+func TestStringSliceClampsBoundsBeforePreallocation(t *testing.T) {
+	const longString = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyz"
+	script := `
+s = "` + longString + `"
+a = s[-1000000000000000000:]
+b = s[:-1000000000000000000:-1]
+`
+
+	t.Run("interpreter", func(t *testing.T) {
+		s := parseTestScript(t, "slice-clamp-interpreter", script, nil)
+		s.Program = nil
+		task := NewTask(s.Name, s.Fn)
+		if err := RunStmts(task, s.Stmts); err != nil {
+			t.Fatal(err)
+		}
+		assertStringKey(t, task, "a", longString)
+		assertStringKey(t, task, "b", reverseString(longString))
+	})
+
+	t.Run("compiled", func(t *testing.T) {
+		s := parseTestScript(t, "slice-clamp-compiled", script, nil)
+		task := NewTask(s.Name, s.Fn)
+		if err := s.Program.Run(task); err != nil {
+			t.Fatal(err)
+		}
+		assertStringKey(t, task, "a", longString)
+		assertStringKey(t, task, "b", reverseString(longString))
+	})
+}
+
+func assertStringKey(t testing.TB, task *Task, key, want string) {
+	t.Helper()
+
+	got, err := task.GetKey(key)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got.Value != want {
+		t.Fatalf("expected %s=%q, got %q", key, want, got.Value)
+	}
+}
+
+func reverseString(s string) string {
+	b := make([]byte, len(s))
+	for i := range s {
+		b[len(s)-1-i] = s[i]
+	}
+	return string(b)
 }

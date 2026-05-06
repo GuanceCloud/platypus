@@ -1160,11 +1160,14 @@ func RunSliceExpr(ctx *Task, expr *ast.SliceExpr) *errchain.PlError {
 		str := obj.V.(string)
 		if stepInt > 0 {
 			var result strings.Builder
-			if n := (endInt - startInt + stepInt - 1) / stepInt; n > 0 {
-				result.Grow(n)
-			}
 			if startInt < 0 {
 				startInt = 0
+			}
+			if endInt > length {
+				endInt = length
+			}
+			if n := (endInt - startInt + stepInt - 1) / stepInt; n > 0 {
+				result.Grow(n)
 			}
 			for i := startInt; i < endInt && i < length; i += stepInt {
 				result.WriteByte(str[i])
@@ -1175,6 +1178,9 @@ func RunSliceExpr(ctx *Task, expr *ast.SliceExpr) *errchain.PlError {
 			var result strings.Builder
 			if startInt > length-1 {
 				startInt = length - 1
+			}
+			if endInt < -1 {
+				endInt = -1
 			}
 			if n := (startInt - endInt - stepInt - 1) / (-stepInt); n > 0 {
 				result.Grow(n)
