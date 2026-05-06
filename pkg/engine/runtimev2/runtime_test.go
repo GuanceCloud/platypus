@@ -375,6 +375,75 @@ func TestProgramRunClearsFallbackVarsForReusedTask(t *testing.T) {
 	}
 }
 
+func TestScriptRunPoolClearsFallbackVarsBetweenRuns(t *testing.T) {
+	funcs := map[string]*Fn{
+		"set": {
+			CallCheck: func(ctx *Task, fn *ast.CallExpr) *errchain.PlError {
+				return CheckPassParam(ctx, fn, nil)
+			},
+			Call: func(ctx *Task, fn *ast.CallExpr) *errchain.PlError {
+				ctx.SetVarb("dyn", V{V: int64(7), T: ast.Int})
+				return nil
+			},
+		},
+	}
+	first := parseTestScript(t, "script-pool-first", `set()`, funcs)
+	second := parseTestScript(t, "script-pool-second", `dyn`, nil)
+
+	for i := 0; i < 20; i++ {
+		if err := first.Run(nil); err != nil {
+			t.Fatal(err)
+		}
+		if err := second.Run(nil); err == nil {
+			t.Fatal("expected pooled task fallback variables to be cleared")
+		}
+	}
+}
+
+func TestScriptRunPoolReinitializesTaskState(t *testing.T) {
+	type snapshot struct {
+		name       string
+		privateSet bool
+		signalSet  bool
+	}
+	var snapshots []snapshot
+
+	funcs := map[string]*Fn{
+		"record": {
+			CallCheck: func(ctx *Task, fn *ast.CallExpr) *errchain.PlError {
+				return CheckPassParam(ctx, fn, nil)
+			},
+			Call: func(ctx *Task, fn *ast.CallExpr) *errchain.PlError {
+				_, privateSet := ctx.private[TaskP("p")]
+				snapshots = append(snapshots, snapshot{
+					name:       ctx.name,
+					privateSet: privateSet,
+					signalSet:  ctx.signal != nil,
+				})
+				return nil
+			},
+		},
+	}
+
+	first := parseTestScript(t, "script-pool-state-first", `record()`, funcs)
+	second := parseTestScript(t, "script-pool-state-second", `record()`, funcs)
+	if err := first.Run(&testSignal{limit: 100}, WithPrivate(map[TaskP]any{TaskP("p"): int64(1)})); err != nil {
+		t.Fatal(err)
+	}
+	if err := second.Run(nil); err != nil {
+		t.Fatal(err)
+	}
+	if len(snapshots) != 2 {
+		t.Fatalf("expected two snapshots, got %d", len(snapshots))
+	}
+	if snapshots[0] != (snapshot{name: "script-pool-state-first", privateSet: true, signalSet: true}) {
+		t.Fatalf("unexpected first task state: %+v", snapshots[0])
+	}
+	if snapshots[1] != (snapshot{name: "script-pool-state-second"}) {
+		t.Fatalf("unexpected pooled task state leak: %+v", snapshots[1])
+	}
+}
+
 func TestProgramGetKeyReturnsMutableSlotVarb(t *testing.T) {
 	funcs := map[string]*Fn{
 		"mutate": {

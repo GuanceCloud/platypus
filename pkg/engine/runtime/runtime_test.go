@@ -8,6 +8,7 @@ package runtime
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/GuanceCloud/platypus/pkg/ast"
@@ -497,6 +498,26 @@ func TestSliceExpr(t *testing.T) {
 			},
 		},
 		{
+			name: "slice string small buffer boundary",
+			pl: `
+			s = "` + strings.Repeat("a", 65) + `"
+			v1 = s[:64]
+			v2 = s[:65]
+			v3 = s[64::-1]
+			v4 = s[63::-1]
+			add_key("v1", v1)
+			add_key("v2", v2)
+			add_key("v3", v3)
+			add_key("v4", v4)
+			`,
+			v: map[string]any{
+				"v1": strings.Repeat("a", 64),
+				"v2": strings.Repeat("a", 65),
+				"v3": strings.Repeat("a", 65),
+				"v4": strings.Repeat("a", 64),
+			},
+		},
+		{
 			name: "valid slice list with positive step",
 			pl: `
 			l = [1, 2, 3, 4, 5]
@@ -650,6 +671,136 @@ func TestStackReuseScopeIsolation(t *testing.T) {
 	_, err = ctx.GetKey("scoped")
 	assert.Error(t, err)
 	ctx.StackExitCur()
+}
+
+func TestVarCacheInvalidatesManyScopedVars(t *testing.T) {
+	ctx := GetContext()
+	defer PutContext(ctx)
+
+	ctx.input = &inputImpl{data: map[string]any{}}
+	ctx.StackEnterNew()
+	for i := 0; i < localVarCacheSlots+4; i++ {
+		key := fmt.Sprintf("scoped_%d", i)
+		assert.NoError(t, ctx.SetVarb(key, int64(i), ast.Int))
+		if i%2 == 0 {
+			_, err := ctx.GetKey(key)
+			assert.NoError(t, err)
+		} else {
+			got, err := ctx.GetKeyConv2Str(key)
+			assert.NoError(t, err)
+			assert.Equal(t, fmt.Sprintf("%d", i), got)
+		}
+	}
+	ctx.StackExitCur()
+
+	for i := 0; i < localVarCacheSlots+4; i++ {
+		_, err := ctx.GetKey(fmt.Sprintf("scoped_%d", i))
+		assert.Error(t, err)
+	}
+}
+
+func TestGetKeyConv2StrFallsBackAfterScopedVarExit(t *testing.T) {
+	ctx := GetContext()
+	defer PutContext(ctx)
+
+	ctx.input = &inputImpl{data: map[string]any{
+		"k": "input-value",
+	}}
+	ctx.StackEnterNew()
+	assert.NoError(t, ctx.SetVarb("k", []any{int64(1), int64(2)}, ast.List))
+	got, err := ctx.GetKeyConv2Str("k")
+	assert.NoError(t, err)
+	assert.Equal(t, "[1,2]", got)
+	ctx.StackExitCur()
+
+	got, err = ctx.GetKeyConv2Str("k")
+	assert.NoError(t, err)
+	assert.Equal(t, "input-value", got)
+}
+
+func TestAssignmentStmtFastPathSemantics(t *testing.T) {
+	pl := `
+i = 2
+b = true
+f = 1.5
+s = "a"
+arr = [1, 2]
+m = {"x": 3}
+
+i += 1 + 2
+i *= b
+f += 2
+s += "b"
+arr[0] += 4
+m["x"] += 5
+literal = 9
+bool_literal = false
+from_expr = i + arr[0]
+
+add_key("i", i)
+add_key("f", f)
+add_key("s", s)
+add_key("arr", arr)
+add_key("m", m)
+add_key("literal", literal)
+add_key("bool_literal", bool_literal)
+add_key("from_expr", from_expr)
+`
+	stmts, err := parseScript(pl)
+	if err != nil {
+		t.Fatal(err)
+	}
+	script := &Script{
+		FuncCall: map[string]FuncCall{
+			"add_key": addkeytest,
+		},
+		Name:    "assignment-fast-path",
+		Content: pl,
+		Ast:     stmts,
+	}
+	if errR := script.Check(map[string]FuncCheck{"add_key": addkeycheck}); errR != nil {
+		t.Fatal(errR)
+	}
+
+	inData := &inputImpl{data: map[string]any{}}
+	if errR := script.Run(inData, nil); errR != nil {
+		t.Fatal(errR)
+	}
+	assert.Equal(t, map[string]any{
+		"i":            int64(5),
+		"f":            3.5,
+		"s":            "ab",
+		"arr":          "[5,2]",
+		"m":            `{"x":8}`,
+		"literal":      int64(9),
+		"bool_literal": false,
+		"from_expr":    int64(10),
+	}, inData.data)
+}
+
+func TestAssignmentStmtFastPathErrors(t *testing.T) {
+	cases := []string{
+		`z = 0
+x = 1 / z`,
+		`x = 1
+x %= z`,
+		`x = 1
+z = 0
+x += 1 / z`,
+	}
+	for _, pl := range cases {
+		t.Run(pl, func(t *testing.T) {
+			stmts, err := parseScript(pl)
+			if err != nil {
+				t.Fatal(err)
+			}
+			script := &Script{Name: "assignment-errors", Content: pl, Ast: stmts}
+			errR := script.Run(&inputImpl{data: map[string]any{}}, nil)
+			if errR == nil {
+				t.Fatal("expected runtime error")
+			}
+		})
+	}
 }
 
 func TestUnaryAndAssignOP(t *testing.T) {
