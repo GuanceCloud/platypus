@@ -68,6 +68,37 @@ type ContinueStmt struct {
 	Start token.LnColPos
 }
 
+// FuncDeclStmt declares a script-defined function. Parameters are dynamically
+// typed and are bound in a fresh local scope for each invocation.
+type FuncDeclStmt struct {
+	Name   string
+	Params []*Identifier
+	Body   *BlockStmt
+
+	Start   token.LnColPos
+	NamePos token.LnColPos
+}
+
+func (e *FuncDeclStmt) String() string {
+	params := make([]string, 0, len(e.Params))
+	for _, param := range e.Params {
+		params = append(params, param.Name)
+	}
+	return "fn " + e.Name + "(" + strings.Join(params, ", ") + ")"
+}
+
+type ReturnStmt struct {
+	Value *Node
+	Start token.LnColPos
+}
+
+func (e *ReturnStmt) String() string {
+	if e.Value == nil {
+		return "return"
+	}
+	return "return " + e.Value.String()
+}
+
 func (e *ContinueStmt) String() string {
 	return "continue"
 }

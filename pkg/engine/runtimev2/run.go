@@ -25,6 +25,22 @@ func RunStmts(ctx *Task, nodes ast.Stmts) *errchain.PlError {
 	return nil
 }
 
+func RunScriptStmts(ctx *Task, nodes ast.Stmts) *errchain.PlError {
+	for _, node := range nodes {
+		if node != nil && node.NodeType == ast.TypeFuncDeclStmt {
+			continue
+		}
+		if err := RunExpr(ctx, node); err != nil {
+			ctx.procExit = true
+			return err
+		}
+		if ctx.StmtRetrun() {
+			return nil
+		}
+	}
+	return nil
+}
+
 func RunIfElseStmt(ctx *Task, stmt *ast.IfelseStmt) *errchain.PlError {
 	ctx.StackEnterNew()
 	defer ctx.StackExitCur()
@@ -364,6 +380,11 @@ func RunExpr(ctx *Task, node *ast.Node) *errchain.PlError {
 		return RunBreakStmt(ctx, node.BreakStmt())
 	case ast.TypeContinueStmt:
 		return RunContinueStmt(ctx, node.ContinueStmt())
+	case ast.TypeReturnStmt:
+		return RunReturnStmt(ctx, node.ReturnStmt())
+	case ast.TypeFuncDeclStmt:
+		return NewRunError(ctx,
+			"function declarations are only allowed at script top level", node.StartPos())
 	default:
 		return NewRunError(ctx, fmt.Sprintf(
 			"unsupported ast node: %s", reflect.TypeOf(node).String()), node.StartPos())
@@ -1034,6 +1055,9 @@ func changeListOrMapValue(ctx *Task, obj any, index []*ast.Node, val V) *errchai
 }
 
 func RunCallExpr(ctx *Task, expr *ast.CallExpr) *errchain.PlError {
+	if fn, ok := ctx.GetUserFunc(expr.Name); ok {
+		return RunUserFunc(ctx, fn, expr)
+	}
 	if funcCall, ok := ctx.GetFn(expr.Name); ok {
 		if err := funcCall(ctx, expr); err != nil {
 			return err

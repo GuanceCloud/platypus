@@ -2,8 +2,10 @@ package runtimev2
 
 import (
 	"fmt"
+	"sync"
 
 	"github.com/GuanceCloud/platypus/pkg/ast"
+	userfunccheck "github.com/GuanceCloud/platypus/pkg/engine/internal/userfunc"
 	"github.com/GuanceCloud/platypus/pkg/engine/runtime"
 	"github.com/GuanceCloud/platypus/pkg/errchain"
 	"github.com/GuanceCloud/platypus/pkg/token"
@@ -17,26 +19,49 @@ type Script struct {
 	Name  string
 	Stmts ast.Stmts
 	Fn    map[string]*Fn
+
+	userFuncs     map[string]*ast.FuncDeclStmt
+	userFuncsOnce sync.Once
+	userFuncsErr  *errchain.PlError
 }
 
 func (s *Script) Run(signal Signal, opt ...Opt) *errchain.PlError {
+	if err := s.ensureUserFuncs(); err != nil {
+		return err
+	}
 	task := NewTask(s.Name, s.Fn)
+	task.userFuncs = s.userFuncs
 	task.signal = signal
 	for _, o := range opt {
 		if o != nil {
 			o(task)
 		}
 	}
-	if err := RunStmts(task, s.Stmts); err != nil {
+	if err := RunScriptStmts(task, s.Stmts); err != nil {
 		return err
 	}
 	return nil
 }
 
 func (s *Script) Check() *errchain.PlError {
-	task := NewTask(s.Name, s.Fn)
-	if err := RunStmtsCheck(task, &ContextCheck{}, s.Stmts); err != nil {
+	if err := s.ensureUserFuncs(); err != nil {
 		return err
+	}
+	task := NewTask(s.Name, s.Fn)
+	task.userFuncs = s.userFuncs
+	for _, node := range s.Stmts {
+		if node.NodeType == ast.TypeFuncDeclStmt {
+			if err := userfunccheck.CheckDecl(node.FuncDeclStmt(),
+				func(stmts ast.Stmts) *errchain.PlError {
+					return RunStmtsCheck(task, &ContextCheck{inFunction: true}, stmts)
+				}, task.name); err != nil {
+				return err
+			}
+			continue
+		}
+		if err := RunStmtCheck(task, &ContextCheck{}, node); err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -55,9 +80,10 @@ func WithPrivate(v map[TaskP]any) Opt {
 type TaskP string
 
 type Task struct {
-	name    string
-	private map[TaskP]any
-	funcs   map[string]*Fn
+	name      string
+	private   map[TaskP]any
+	funcs     map[string]*Fn
+	userFuncs map[string]*ast.FuncDeclStmt
 
 	Regs        PlReg
 	stackHeader *runtime.Stack
@@ -67,8 +93,12 @@ type Task struct {
 	loopBreak    bool
 	loopContinue bool
 
-	signal   Signal
-	procExit bool
+	signal     Signal
+	procExit   bool
+	returning  bool
+	returnVal  V
+	inFunction bool
+	callDepth  int
 }
 
 type PlReg struct {
@@ -175,8 +205,13 @@ func (ctx *Task) GetFnCheck(name string) (FnCall, bool) {
 	return nil, false
 }
 
+func (ctx *Task) GetUserFunc(name string) (*ast.FuncDeclStmt, bool) {
+	fn, ok := ctx.userFuncs[name]
+	return fn, ok
+}
+
 func (ctx *Task) StmtRetrun() bool {
-	if ctx.ProcExit() || ctx.loopBreak || ctx.loopContinue {
+	if ctx.ProcExit() || ctx.loopBreak || ctx.loopContinue || ctx.returning {
 		return true
 	}
 	return false

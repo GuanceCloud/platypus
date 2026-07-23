@@ -281,6 +281,41 @@ func (p *parser) newContinueStmt(pos plToken.Pos) *ast.Node {
 	})
 }
 
+func (p *parser) newReturnStmt(returnTk Item, value *ast.Node) *ast.Node {
+	return ast.WrapReturnStmt(&ast.ReturnStmt{
+		Value: value,
+		Start: p.posCache.LnCol(returnTk.Pos),
+	})
+}
+
+func (p *parser) newFuncDeclStmt(fnTk Item, name *ast.Node, params []*ast.Node,
+	lParen, rParen Item, body *ast.BlockStmt,
+) *ast.Node {
+	if name == nil || name.NodeType != ast.TypeIdentifier {
+		p.addParseErrf(p.yyParser.lval.item.PositionRange(), "invalid function name")
+		return nil
+	}
+
+	identifiers := make([]*ast.Identifier, 0, len(params))
+	for _, param := range params {
+		if param == nil || param.NodeType != ast.TypeIdentifier {
+			p.addParseErrf(p.yyParser.lval.item.PositionRange(), "invalid function parameter")
+			return nil
+		}
+		identifiers = append(identifiers, param.Identifier())
+	}
+
+	_ = lParen
+	_ = rParen
+	return ast.WrapFuncDeclStmt(&ast.FuncDeclStmt{
+		Name:    name.Identifier().Name,
+		Params:  identifiers,
+		Body:    body,
+		Start:   p.posCache.LnCol(fnTk.Pos),
+		NamePos: name.Identifier().Start,
+	})
+}
+
 func (p *parser) newForStmt(initExpr *ast.Node, condExpr *ast.Node, loopExpr *ast.Node, body *ast.BlockStmt) *ast.Node {
 	pos := p.yyParser.lval.item.PositionRange()
 

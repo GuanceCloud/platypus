@@ -43,7 +43,7 @@ import (
 // keywords
 %token keywordsStart
 %token <item>
-TRUE FALSE IDENTIFIER AND OR 
+TRUE FALSE IDENTIFIER AND OR FN
 NIL NULL IF ELIF ELSE
 %token keywordsEnd
 
@@ -78,6 +78,7 @@ NIL NULL IF ELIF ELSE
 %type<nodes>
 	function_args
 	comma_params
+	function_params
 
 %type <node>
 	stmt
@@ -86,6 +87,8 @@ NIL NULL IF ELIF ELSE
 	for_stmt
 	continue_stmt
 	break_stmt
+	function_decl_stmt
+	return_stmt
 	ifelse_stmt
 	call_expr
 	named_arg
@@ -192,6 +195,8 @@ stmt: ifelse_stmt
 | for_stmt
 | continue_stmt
 | break_stmt
+| function_decl_stmt
+| return_stmt
 | value_stmt
 | assignment_stmt
 ;
@@ -278,6 +283,36 @@ break_stmt: BREAK
 continue_stmt: CONTINUE
 {
 	$$ = yylex.(*parser).newContinueStmt($1.Pos)
+}
+;
+
+return_stmt: RETURN
+{
+	$$ = yylex.(*parser).newReturnStmt($1, nil)
+}
+| RETURN expr
+{
+	$$ = yylex.(*parser).newReturnStmt($1, $2)
+}
+;
+
+function_decl_stmt: FN identifier LEFT_PAREN SPACE_EOLS function_params SPACE_EOLS RIGHT_PAREN stmt_block
+{
+	$$ = yylex.(*parser).newFuncDeclStmt($1, $2, $5, $3, $7, $8)
+}
+| FN identifier LEFT_PAREN SPACE_EOLS RIGHT_PAREN stmt_block
+{
+	$$ = yylex.(*parser).newFuncDeclStmt($1, $2, nil, $3, $5, $6)
+}
+;
+
+function_params: identifier
+{
+	$$ = []*ast.Node{$1}
+}
+| function_params COMMA SPACE_EOLS identifier
+{
+	$$ = append($$, $4)
 }
 ;
 
@@ -719,6 +754,10 @@ map_literal_start: LEFT_BRACE SPACE_EOLS expr COLON SPACE_EOLS expr
 
 
 identifier: ID
+{
+	$$ = yylex.(*parser).newIdentifierLiteral($1)
+}
+| FN
 {
 	$$ = yylex.(*parser).newIdentifierLiteral($1)
 }

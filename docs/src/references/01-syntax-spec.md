@@ -31,7 +31,7 @@ In some functions, `_` is treated as an alias for ` message ` for forward compat
 
 ### Keywords
 
-Keywords have special meanings, such as `if`, `elif`, `else`, `for`, `in`, `break` and `continue` .
+Keywords have special meanings, such as `fn`, `return`, `if`, `elif`, `else`, `for`, `in`, `break` and `continue`.
 
 ## Notes
 
@@ -348,3 +348,35 @@ for c in "abcdef" {
 
 # s == "abc"
 ```
+
+## User-defined functions
+
+Use `fn` to declare a function at script top level. Parameters are dynamically typed and are bound positionally. Use `return` to return one value, or an empty `return` to exit the function early.
+
+```txt
+fn classify_status(status) {
+  if status >= 500 {
+    return "error"
+  }
+
+  if status >= 400 {
+    return "warning"
+  }
+
+  return "info"
+}
+
+level = classify_status(status_code)
+```
+
+Each invocation has an isolated local scope. Parameters and variables created in the function do not overwrite caller-local variables, while the function can still read Pipeline input fields and call built-in functions. A function may be called before its declaration.
+
+Reassigning a scalar parameter does not affect the caller. Map and list parameters are not deep-copied, so mutating their elements affects the same object held by the caller. Construct a new map or list inside the function when complete isolation is required.
+
+Current limitations:
+
+- Functions can only be declared at script top level; nested functions are not supported
+- Only positional arguments are supported; default and named arguments are not supported
+- `return` returns at most one value
+- A user-defined function cannot have the same name as a built-in function
+- The maximum call depth is 64

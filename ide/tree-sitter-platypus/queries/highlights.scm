@@ -9,7 +9,8 @@
   ; "while" ; TODO: why is this here?
   "break"
   "continue"
-  ; "return"
+  "fn"
+  "return"
 ] @keyword
 
 ; Function calls
@@ -17,6 +18,7 @@
  (#eq? @function.method.builtin "use"))
 
 (call_expr name: (identifier) @function.method)
+(function_decl_stmt name: (identifier) @function)
 
 ; Identifiers
 (identifier) @variable
