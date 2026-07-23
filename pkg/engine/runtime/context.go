@@ -31,6 +31,7 @@ type Task struct {
 
 	funcCall  map[string]FuncCall
 	funcCheck map[string]FuncCheck
+	userFuncs map[string]*ast.FuncDeclStmt
 
 	input Input
 
@@ -40,7 +41,12 @@ type Task struct {
 
 	signal Signal
 
-	procExit bool
+	procExit   bool
+	returning  bool
+	returnVal  any
+	returnType ast.DType
+	inFunction bool
+	callDepth  int
 
 	callRef []*ast.CallExpr
 
@@ -77,6 +83,7 @@ func InitCtx(ctx *Task, input Input, script *Script, signal Signal) *Task {
 
 	ctx.funcCall = script.FuncCall
 	ctx.funcCheck = nil
+	ctx.userFuncs = script.userFuncs
 
 	ctx.callRef = script.CallRef
 	ctx.loopBreak = false
@@ -84,6 +91,9 @@ func InitCtx(ctx *Task, input Input, script *Script, signal Signal) *Task {
 
 	ctx.signal = signal
 	ctx.procExit = false
+	ctx.returning = false
+	ctx.inFunction = false
+	ctx.callDepth = 0
 
 	ctx.name = script.Name
 
@@ -100,12 +110,16 @@ func InitCtxForCheck(ctx *Task, script *Script, checkFn map[string]FuncCheck) *T
 
 	ctx.funcCall = script.FuncCall
 	ctx.funcCheck = checkFn
+	ctx.userFuncs = script.userFuncs
 
 	ctx.callRef = []*ast.CallExpr{}
 	ctx.loopBreak = false
 	ctx.loopContinue = false
 
 	ctx.procExit = false
+	ctx.returning = false
+	ctx.inFunction = false
+	ctx.callDepth = 0
 
 	ctx.name = script.Name
 	return ctx
@@ -181,6 +195,11 @@ func (ctx *Task) GetFuncCheck(key string) (FuncCheck, bool) {
 	return v, ok
 }
 
+func (ctx *Task) GetUserFunc(key string) (*ast.FuncDeclStmt, bool) {
+	v, ok := ctx.userFuncs[key]
+	return v, ok
+}
+
 func (ctx *Task) StackEnterNew() {
 	next := &Stack{
 		Data:   map[string]*Varb{},
@@ -220,7 +239,7 @@ func (ctx *Task) SetPattern(patternAlias string, gPattern *grok.GrokPattern) {
 }
 
 func (ctx *Task) StmtRetrun() bool {
-	if ctx.ProcExit() || ctx.loopBreak || ctx.loopContinue {
+	if ctx.ProcExit() || ctx.loopBreak || ctx.loopContinue || ctx.returning {
 		return true
 	}
 	return false

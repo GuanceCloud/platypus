@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"reflect"
 	"strings"
+	"sync"
 
 	"github.com/GuanceCloud/platypus/pkg/ast"
 	"github.com/GuanceCloud/platypus/pkg/errchain"
@@ -35,6 +36,10 @@ type Script struct {
 	Content string // deprecated
 
 	Ast ast.Stmts
+
+	userFuncs     map[string]*ast.FuncDeclStmt
+	userFuncsOnce sync.Once
+	userFuncsErr  *errchain.PlError
 }
 
 type Signal interface {
@@ -54,6 +59,10 @@ func (s *Script) Run(data Input, signal Signal, fn ...Opt) *errchain.PlError {
 		return nil
 	}
 
+	if err := s.ensureUserFuncs(); err != nil {
+		return err
+	}
+
 	ctx := GetContext()
 	defer PutContext(ctx)
 
@@ -62,7 +71,7 @@ func (s *Script) Run(data Input, signal Signal, fn ...Opt) *errchain.PlError {
 	}
 
 	ctx = InitCtx(ctx, data, s, signal)
-	return RunStmts(ctx, s.Ast)
+	return RunScriptStmts(ctx, s.Ast)
 }
 
 func (s *Script) RefRun(ctx *Task) *errchain.PlError {
@@ -70,12 +79,16 @@ func (s *Script) RefRun(ctx *Task) *errchain.PlError {
 		return nil
 	}
 
+	if err := s.ensureUserFuncs(); err != nil {
+		return err
+	}
+
 	newctx := GetContext()
 	defer PutContext(newctx)
 
 	InitCtx(newctx, ctx.input, s, ctx.signal)
 
-	return RunStmts(newctx, s.Ast)
+	return RunScriptStmts(newctx, s.Ast)
 }
 
 func (s *Script) Check(funcsCheck map[string]FuncCheck) *errchain.PlError {
@@ -83,14 +96,70 @@ func (s *Script) Check(funcsCheck map[string]FuncCheck) *errchain.PlError {
 		return nil
 	}
 
-	ctx := GetContext()
-	defer PutContext(ctx)
-	InitCtxForCheck(ctx, s, funcsCheck)
-	if err := RunStmtsCheck(ctx, &ContextCheck{}, s.Ast); err != nil {
+	if err := s.ensureUserFuncs(); err != nil {
 		return err
 	}
 
+	ctx := GetContext()
+	defer PutContext(ctx)
+	InitCtxForCheck(ctx, s, funcsCheck)
+	for _, node := range s.Ast {
+		if node.NodeType == ast.TypeFuncDeclStmt {
+			if err := RunFuncDeclStmtCheck(ctx, node.FuncDeclStmt()); err != nil {
+				return err
+			}
+			continue
+		}
+		if err := RunStmtCheck(ctx, &ContextCheck{}, node); err != nil {
+			return err
+		}
+	}
+
 	s.CallRef = ctx.callRef
+	return nil
+}
+
+func (s *Script) indexUserFuncs() *errchain.PlError {
+	funcs := make(map[string]*ast.FuncDeclStmt)
+	for _, node := range s.Ast {
+		if node == nil || node.NodeType != ast.TypeFuncDeclStmt {
+			continue
+		}
+		fn := node.FuncDeclStmt()
+		if _, ok := funcs[fn.Name]; ok {
+			return errchain.NewErr(s.Name, fn.NamePos,
+				fmt.Sprintf("function `%s` is already declared", fn.Name))
+		}
+		if _, ok := s.FuncCall[fn.Name]; ok {
+			return errchain.NewErr(s.Name, fn.NamePos,
+				fmt.Sprintf("function `%s` conflicts with a built-in function", fn.Name))
+		}
+		funcs[fn.Name] = fn
+	}
+	s.userFuncs = funcs
+	return nil
+}
+
+func (s *Script) ensureUserFuncs() *errchain.PlError {
+	s.userFuncsOnce.Do(func() {
+		s.userFuncsErr = s.indexUserFuncs()
+	})
+	return s.userFuncsErr
+}
+
+func RunScriptStmts(ctx *Task, nodes ast.Stmts) *errchain.PlError {
+	for _, node := range nodes {
+		if node != nil && node.NodeType == ast.TypeFuncDeclStmt {
+			continue
+		}
+		if _, _, err := RunStmt(ctx, node); err != nil {
+			ctx.procExit = true
+			return err
+		}
+		if ctx.StmtRetrun() {
+			return nil
+		}
+	}
 	return nil
 }
 
@@ -428,6 +497,11 @@ func RunStmt(ctx *Task, node *ast.Node) (any, ast.DType, *errchain.PlError) {
 		return RunBreakStmt(ctx, node.BreakStmt())
 	case ast.TypeContinueStmt:
 		return RunContinueStmt(ctx, node.ContinueStmt())
+	case ast.TypeReturnStmt:
+		return RunReturnStmt(ctx, node.ReturnStmt())
+	case ast.TypeFuncDeclStmt:
+		return nil, ast.Invalid, NewRunError(ctx,
+			"function declarations are only allowed at script top level", node.StartPos())
 	default:
 		return nil, ast.Invalid, NewRunError(ctx, fmt.Sprintf(
 			"unsupported ast node: %s", reflect.TypeOf(node).String()), node.StartPos())
@@ -1000,6 +1074,9 @@ func changeListOrMapValue(ctx *Task, obj any, index []*ast.Node, val any, dtype 
 }
 
 func RunCallExpr(ctx *Task, expr *ast.CallExpr) (any, ast.DType, *errchain.PlError) {
+	if fn, ok := ctx.GetUserFunc(expr.Name); ok {
+		return RunUserFunc(ctx, fn, expr)
+	}
 	defer ctx.Regs.Reset()
 	if funcCall, ok := ctx.GetFuncCall(expr.Name); ok {
 		if err := funcCall(ctx, expr); err != nil {

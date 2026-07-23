@@ -17,6 +17,7 @@ type ContextCheck struct {
 
 	breakstmt    bool
 	continuestmt bool
+	inFunction   bool
 }
 
 func RunStmtsCheck(ctx *Task, ctxCheck *ContextCheck, nodes ast.Stmts) *errchain.PlError {
@@ -86,6 +87,10 @@ func RunStmtCheck(ctx *Task, ctxCheck *ContextCheck, node *ast.Node) *errchain.P
 		return RunContinueStmtCheck(ctx, ctxCheck, node.ContinueStmt())
 	case ast.TypeBreakStmt:
 		return RunBreakStmtCheck(ctx, ctxCheck, node.BreakStmt())
+	case ast.TypeReturnStmt:
+		return RunReturnStmtCheck(ctx, ctxCheck, node.ReturnStmt())
+	case ast.TypeFuncDeclStmt:
+		return NewRunError(ctx, "function declarations are only allowed at script top level", node.StartPos())
 	}
 
 	return nil
@@ -176,6 +181,22 @@ func RunIndexExprGetCheck(ctx *Task, ctxCheck *ContextCheck, expr *ast.IndexExpr
 }
 
 func RunCallExprCheck(ctx *Task, ctxCheck *ContextCheck, expr *ast.CallExpr) *errchain.PlError {
+	if fn, ok := ctx.GetUserFunc(expr.Name); ok {
+		if err := RunStmtsCheck(ctx, ctxCheck, expr.Param); err != nil {
+			return err.ChainAppend(ctx.name, expr.NamePos)
+		}
+		if len(expr.Param) != len(fn.Params) {
+			return NewRunError(ctx, fmt.Sprintf(
+				"function `%s` expects %d arguments, got %d", fn.Name, len(fn.Params), len(expr.Param)), expr.NamePos)
+		}
+		for _, param := range expr.Param {
+			if param.NodeType == ast.TypeAssignmentExpr {
+				return NewRunError(ctx, "script-defined functions only accept positional arguments", param.StartPos())
+			}
+		}
+		return nil
+	}
+
 	_, ok := ctx.GetFn(expr.Name)
 	if !ok {
 		return NewRunError(ctx, fmt.Sprintf(
