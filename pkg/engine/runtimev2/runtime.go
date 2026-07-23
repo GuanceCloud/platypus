@@ -5,6 +5,7 @@ import (
 	"sync"
 
 	"github.com/GuanceCloud/platypus/pkg/ast"
+	userfunccheck "github.com/GuanceCloud/platypus/pkg/engine/internal/userfunc"
 	"github.com/GuanceCloud/platypus/pkg/engine/runtime"
 	"github.com/GuanceCloud/platypus/pkg/errchain"
 	"github.com/GuanceCloud/platypus/pkg/token"
@@ -50,7 +51,10 @@ func (s *Script) Check() *errchain.PlError {
 	task.userFuncs = s.userFuncs
 	for _, node := range s.Stmts {
 		if node.NodeType == ast.TypeFuncDeclStmt {
-			if err := RunFuncDeclStmtCheck(task, node.FuncDeclStmt()); err != nil {
+			if err := userfunccheck.CheckDecl(node.FuncDeclStmt(),
+				func(stmts ast.Stmts) *errchain.PlError {
+					return RunStmtsCheck(task, &ContextCheck{inFunction: true}, stmts)
+				}, task.name); err != nil {
 				return err
 			}
 			continue

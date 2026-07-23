@@ -15,22 +15,6 @@ import (
 const maxUserFuncCallDepth = 64
 const maxUserFuncErrorFrames = 16
 
-func RunFuncDeclStmtCheck(ctx *Task, fn *ast.FuncDeclStmt) *errchain.PlError {
-	seen := make(map[string]struct{}, len(fn.Params))
-	for _, param := range fn.Params {
-		if _, ok := seen[param.Name]; ok {
-			return NewRunError(ctx, fmt.Sprintf(
-				"function `%s` has duplicate parameter `%s`", fn.Name, param.Name), param.Start)
-		}
-		seen[param.Name] = struct{}{}
-	}
-
-	if fn.Body == nil {
-		return nil
-	}
-	return RunStmtsCheck(ctx, &ContextCheck{inFunction: true}, fn.Body.Stmts)
-}
-
 func RunReturnStmtCheck(ctx *Task, check *ContextCheck, stmt *ast.ReturnStmt) *errchain.PlError {
 	if !check.inFunction {
 		return NewRunError(ctx, "return is only allowed inside a function", stmt.Start)

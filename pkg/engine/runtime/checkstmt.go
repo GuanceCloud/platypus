@@ -9,6 +9,7 @@ import (
 	"fmt"
 
 	"github.com/GuanceCloud/platypus/pkg/ast"
+	userfunccheck "github.com/GuanceCloud/platypus/pkg/engine/internal/userfunc"
 	"github.com/GuanceCloud/platypus/pkg/errchain"
 )
 
@@ -182,19 +183,10 @@ func RunIndexExprGetCheck(ctx *Task, ctxCheck *ContextCheck, expr *ast.IndexExpr
 
 func RunCallExprCheck(ctx *Task, ctxCheck *ContextCheck, expr *ast.CallExpr) *errchain.PlError {
 	if fn, ok := ctx.GetUserFunc(expr.Name); ok {
-		if err := RunStmtsCheck(ctx, ctxCheck, expr.Param); err != nil {
-			return err.ChainAppend(ctx.name, expr.NamePos)
-		}
-		if len(expr.Param) != len(fn.Params) {
-			return NewRunError(ctx, fmt.Sprintf(
-				"function `%s` expects %d arguments, got %d", fn.Name, len(fn.Params), len(expr.Param)), expr.NamePos)
-		}
-		for _, param := range expr.Param {
-			if param.NodeType == ast.TypeAssignmentExpr {
-				return NewRunError(ctx, "script-defined functions only accept positional arguments", param.StartPos())
-			}
-		}
-		return nil
+		return userfunccheck.CheckCall(fn, expr,
+			func(stmts ast.Stmts) *errchain.PlError {
+				return RunStmtsCheck(ctx, ctxCheck, stmts)
+			}, ctx.name)
 	}
 
 	_, ok := ctx.GetFuncCall(expr.Name)

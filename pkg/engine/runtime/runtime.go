@@ -13,6 +13,7 @@ import (
 	"sync"
 
 	"github.com/GuanceCloud/platypus/pkg/ast"
+	userfunccheck "github.com/GuanceCloud/platypus/pkg/engine/internal/userfunc"
 	"github.com/GuanceCloud/platypus/pkg/errchain"
 	"github.com/GuanceCloud/platypus/pkg/token"
 	"github.com/spf13/cast"
@@ -105,7 +106,10 @@ func (s *Script) Check(funcsCheck map[string]FuncCheck) *errchain.PlError {
 	InitCtxForCheck(ctx, s, funcsCheck)
 	for _, node := range s.Ast {
 		if node.NodeType == ast.TypeFuncDeclStmt {
-			if err := RunFuncDeclStmtCheck(ctx, node.FuncDeclStmt()); err != nil {
+			if err := userfunccheck.CheckDecl(node.FuncDeclStmt(),
+				func(stmts ast.Stmts) *errchain.PlError {
+					return RunStmtsCheck(ctx, &ContextCheck{inFunction: true}, stmts)
+				}, ctx.name); err != nil {
 				return err
 			}
 			continue
