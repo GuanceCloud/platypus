@@ -34,6 +34,8 @@ module.exports = grammar({
       $.for_in_stmt,
       $.continue_stmt,
       $.break_stmt,
+      $.function_decl_stmt,
+      $.return_stmt,
       $.expr_stmt,
 
       // TODO: why it is expr
@@ -79,6 +81,24 @@ module.exports = grammar({
 
     break_stmt: $ => seq(
       'break',
+    ),
+
+    function_decl_stmt: $ => seq(
+      'fn',
+      field('name', $.identifier),
+      $.parameter_list,
+      field('body', $.block_stmts),
+    ),
+
+    parameter_list: $ => seq(
+      '(',
+      commaSep($.identifier),
+      ')',
+    ),
+
+    return_stmt: $ => seq(
+      'return',
+      optional($._expr),
     ),
 
     assign_stmt: $ => seq(

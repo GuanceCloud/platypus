@@ -31,7 +31,7 @@
 
 ### 关键字
 
-关键字是具有特殊意义的单词，如 `if`, `elif`, `else`, `for`, `in`, `break`, `continue` 等
+关键字是具有特殊意义的单词，如 `fn`, `return`, `if`, `elif`, `else`, `for`, `in`, `break`, `continue` 等
 
 ## 注释
 
@@ -348,3 +348,35 @@ for c in "abcdef" {
 
 # s == "abc"
 ```
+
+## 自定义函数
+
+使用 `fn` 在脚本顶层声明函数。函数参数为动态类型，调用时按位置绑定；使用 `return` 返回一个值，也可以使用空 `return` 提前结束函数。
+
+```txt
+fn classify_status(status) {
+  if status >= 500 {
+    return "error"
+  }
+
+  if status >= 400 {
+    return "warning"
+  }
+
+  return "info"
+}
+
+level = classify_status(status_code)
+```
+
+函数具有独立的局部作用域：参数和函数内新建的变量不会覆盖调用者的局部变量，但函数仍然可以读取 Pipeline 输入字段并调用内置函数。函数可以在声明之前调用。
+
+标量参数重新赋值不会影响调用者。map 和 list 参数不会自动深拷贝，因此修改其元素会反映到调用者持有的同一个对象；需要完全隔离时，应在函数中显式构造新的 map 或 list。
+
+当前限制：
+
+- 函数只能在脚本顶层声明，不支持嵌套函数
+- 仅支持位置参数，不支持默认参数和命名参数
+- `return` 最多返回一个值
+- 自定义函数名不能与内置函数重名
+- 最大调用深度为 64 层

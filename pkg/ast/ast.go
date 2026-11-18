@@ -52,6 +52,8 @@ const (
 	TypeForInStmt
 	TypeContinueStmt
 	TypeBreakStmt
+	TypeFuncDeclStmt
+	TypeReturnStmt
 )
 
 func (t NodeType) String() string {
@@ -106,6 +108,10 @@ func (t NodeType) String() string {
 		return "ContinueStmt"
 	case TypeBreakStmt:
 		return "BreakStmt"
+	case TypeFuncDeclStmt:
+		return "FuncDeclStmt"
+	case TypeReturnStmt:
+		return "ReturnStmt"
 	}
 	return "Undefined"
 }
@@ -226,6 +232,12 @@ func (n *Node) ContinueStmt() *ContinueStmt {
 }
 func (n *Node) BreakStmt() *BreakStmt {
 	return n.elem.(*BreakStmt)
+}
+func (n *Node) FuncDeclStmt() *FuncDeclStmt {
+	return n.elem.(*FuncDeclStmt)
+}
+func (n *Node) ReturnStmt() *ReturnStmt {
+	return n.elem.(*ReturnStmt)
 }
 
 func (n *Node) StartPos() token.LnColPos {
@@ -392,6 +404,20 @@ func WrapBreakStmt(node *BreakStmt) *Node {
 	}
 }
 
+func WrapFuncDeclStmt(node *FuncDeclStmt) *Node {
+	return &Node{
+		NodeType: TypeFuncDeclStmt,
+		elem:     node,
+	}
+}
+
+func WrapReturnStmt(node *ReturnStmt) *Node {
+	return &Node{
+		NodeType: TypeReturnStmt,
+		elem:     node,
+	}
+}
+
 func WrapeBlockStmt(node *BlockStmt) *Node {
 	return &Node{
 		NodeType: TypeBlockStmt,
@@ -465,6 +491,10 @@ func NodeStartPos(node *Node) token.LnColPos {
 		return node.ContinueStmt().Start
 	case TypeBreakStmt:
 		return node.BreakStmt().Start
+	case TypeFuncDeclStmt:
+		return node.FuncDeclStmt().Start
+	case TypeReturnStmt:
+		return node.ReturnStmt().Start
 	}
 	return token.InvalidLnColPos
 }

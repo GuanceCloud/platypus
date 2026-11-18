@@ -101,6 +101,7 @@ var (
 		"break":      BREAK,
 		"continue":   CONTINUE,
 		"return":     RETURN,
+		"fn":         FN,
 		"str":        STR,
 		"bool":       BOOL,
 		"int":        INT,

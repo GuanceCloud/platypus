@@ -9,6 +9,7 @@ import (
 	"fmt"
 
 	"github.com/GuanceCloud/platypus/pkg/ast"
+	userfunccheck "github.com/GuanceCloud/platypus/pkg/engine/internal/userfunc"
 	"github.com/GuanceCloud/platypus/pkg/errchain"
 )
 
@@ -17,6 +18,7 @@ type ContextCheck struct {
 
 	breakstmt    bool
 	continuestmt bool
+	inFunction   bool
 }
 
 func RunStmtsCheck(ctx *Task, ctxCheck *ContextCheck, nodes ast.Stmts) *errchain.PlError {
@@ -86,6 +88,10 @@ func RunStmtCheck(ctx *Task, ctxCheck *ContextCheck, node *ast.Node) *errchain.P
 		return RunContinueStmtCheck(ctx, ctxCheck, node.ContinueStmt())
 	case ast.TypeBreakStmt:
 		return RunBreakStmtCheck(ctx, ctxCheck, node.BreakStmt())
+	case ast.TypeReturnStmt:
+		return RunReturnStmtCheck(ctx, ctxCheck, node.ReturnStmt())
+	case ast.TypeFuncDeclStmt:
+		return NewRunError(ctx, "function declarations are only allowed at script top level", node.StartPos())
 	}
 
 	return nil
@@ -176,6 +182,13 @@ func RunIndexExprGetCheck(ctx *Task, ctxCheck *ContextCheck, expr *ast.IndexExpr
 }
 
 func RunCallExprCheck(ctx *Task, ctxCheck *ContextCheck, expr *ast.CallExpr) *errchain.PlError {
+	if fn, ok := ctx.GetUserFunc(expr.Name); ok {
+		return userfunccheck.CheckCall(fn, expr,
+			func(stmts ast.Stmts) *errchain.PlError {
+				return RunStmtsCheck(ctx, ctxCheck, stmts)
+			}, ctx.name)
+	}
+
 	_, ok := ctx.GetFn(expr.Name)
 	if !ok {
 		return NewRunError(ctx, fmt.Sprintf(

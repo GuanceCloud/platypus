@@ -35,7 +35,7 @@
 		"keywords": {
 			"patterns": [{
 				"name": "keyword.control.platypus",
-				"match": "\\b(as|assert|if|elif|else|lambda|for|import|schema|protocol|rule|mixin|relaxed|check|and|in|is|not|or|all|any|map|filter|type)\\b"
+				"match": "\\b(fn|return|if|elif|else|for|in|break|continue|and|or|true|false|nil|null)\\b"
 			}]
 		},
 		"number": {
