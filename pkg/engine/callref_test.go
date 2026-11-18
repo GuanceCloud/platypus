@@ -64,6 +64,14 @@ func TestCallRefCheck(t *testing.T) {
 			},
 			err: map[string]string{"c.p": "c.p:1:9: map key expect string"},
 		},
+		{
+			desc: "repeated dependency",
+			script: map[string]string{
+				"a.p": `use("b.p"); use("b.p"); use("b.p")`,
+				"b.p": `value = 1`,
+			},
+			err: map[string]string{},
+		},
 	}
 
 	for _, c := range cases {
