@@ -92,12 +92,12 @@ func EngineCallRefLinkAndCheck(allNg map[string]*runtime.Script, allErrNg map[st
 }
 
 func dfs(name string, procc *runtime.Script, sPath *searchPath, p *param) error {
-	if err := sPath.Push(name); err != nil {
-		return errchain.NewErr(p.name, p.namePos, err.Error())
-	}
-
 	if _, ok := p.retMap[name]; ok {
 		return nil
+	}
+
+	if err := sPath.Push(name); err != nil {
+		return errchain.NewErr(p.name, p.namePos, err.Error())
 	}
 
 	for _, expr := range procc.CallRef {
